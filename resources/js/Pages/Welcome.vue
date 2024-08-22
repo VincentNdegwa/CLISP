@@ -14,5 +14,8 @@ export default {
   <Head title="Welcome to CLISP" />
   <div class="bg-white text-slate-800">
     <Hero/>
+    <section class=" h-dvh">
+      hello
+    </section>
   </div>
 </template>
