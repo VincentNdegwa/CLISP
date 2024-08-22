@@ -1,3 +1,11 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+*{
+    transition: all ease-in-out 300ms;
+}
+@layer utilities {
+    .clip-triangle {
+        clip-path: polygon(50% 100%, 0 0, 100% 0);
+    }
+}
