@@ -14,7 +14,7 @@ export default {
 <template>
 
   <Head title="Welcome to CLISP" />
-  <div class="bg-white text-slate-800">
+  <div class=" text-slate-800">
     <Hero />
     <Goals />
   </div>

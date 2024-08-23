@@ -16,5 +16,10 @@
         "tailwindcss": "^3.2.1",
         "vite": "^5.0",
         "vue": "^3.4.0"
+    },
+    "dependencies": {
+        "@fortawesome/vue-fontawesome": "^3.0.8",
+        "bootstrap-icons": "^1.11.3",
+        "frappe-ui": "^0.1.67"
     }
 }
