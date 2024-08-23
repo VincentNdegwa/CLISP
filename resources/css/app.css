@@ -3,6 +3,9 @@
 @tailwind utilities;
 *{
     transition: all ease-in-out 300ms;
+    margin: 0;
+    border: 0;
+    box-sizing: border-box;
 }
 @layer utilities {
     .clip-triangle {
