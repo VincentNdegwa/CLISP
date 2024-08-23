@@ -1,6 +1,7 @@
 import './bootstrap';
 import '../css/app.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
+import { FrappeUI } from 'frappe-ui'
 
 
 import { createApp, h } from 'vue';
@@ -17,6 +18,7 @@ createInertiaApp({
         return createApp({ render: () => h(App, props) })
             .use(plugin)
             .use(ZiggyVue)
+            .use(FrappeUI)
             .mount(el);
     },
     progress: {
