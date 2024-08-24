@@ -10,6 +10,10 @@ class BusinessType extends Model
     use HasFactory;
     protected $table = 'business_types';
     protected $fillable = ['name'];
+    protected $hidden = [
+        'created_at',
+        'updated_at',
+    ];
 
     // Define the relationship with Business model
     public function businesses()

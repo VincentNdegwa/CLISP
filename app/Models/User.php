@@ -20,7 +20,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'profile_image'
+        'profile_image',
+        'busines_id'
     ];
 
     /**
@@ -44,5 +45,11 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+
+    public function business()
+    {
+        return $this->belongsTo(Business::class, 'busines_id');
     }
 }

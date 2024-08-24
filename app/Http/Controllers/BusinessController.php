@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Business;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
@@ -23,14 +24,24 @@ class BusinessController extends Controller
                 'email' => 'required|email|max:255|unique:business,email',
                 'registration_number' => 'required|string|max:50|unique:business,registration_number',
                 'date_registered' => 'required|date',
+                'business_type_id' => 'required|exists:business_types,id',
+                'industry_id' => 'required|exists:industries,id',
+                'location' => 'required',
+                // 'user_id' => 'required|exists:users,id'
             ]);
 
             $business = Business::create($validatedData);
+            // $user = User::where('id', $validatedData['user_id'])->first();
+
+            // $user->update([
+            //     "busines_id" => $business->id
+            // ]);
+            $newBusiness = Business::with(['businessType', 'industry'])->where("business_id", $business->id)->first();
 
             return response()->json([
                 'error' => false,
                 'message' => 'Business created successfully!',
-                'data' => $business
+                'data' => $newBusiness
             ], 201); // HTTP 201 Created
         } catch (ValidationException $e) {
             return response()->json([
