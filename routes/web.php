@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BusinessController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -24,4 +25,12 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-require __DIR__.'/auth.php';
+Route::middleware('auth')->prefix('business')->group(function () {
+    Route::post('/create', [BusinessController::class, 'Create'])->name('business.create');
+    Route::post('/update', [BusinessController::class, 'Update'])->name('business.update');
+    Route::post('/delete', [BusinessController::class, 'Delete'])->name('business.delete');
+});
+
+
+
+require __DIR__ . '/auth.php';
