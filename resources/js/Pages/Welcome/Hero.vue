@@ -85,10 +85,10 @@ export default {
                     <div
                         class="flex md:flex-row flex-col h-full items-center md:gap-20"
                     >
-                        <div class="logo avatar">
+                        <div class="logo-image">
                             <img
                                 src="images/CLISP-logo.png"
-                                class="rounded-full h-[70px]"
+                                class="rounded-full h-[50px] w-[50px]"
                                 alt="logo"
                             />
                         </div>
