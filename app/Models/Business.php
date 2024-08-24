@@ -11,12 +11,12 @@ class Business extends Model
     protected $table = 'business';
     protected $fillable = [
         'business_name',
-        'business_type',
+        'business_type_id',
         'location',
         'phone_number',
         'email',
         'website',
-        'industry',
+        'industry_id',
         'registration_number',
         'logo',
         'date_registered',
@@ -24,4 +24,14 @@ class Business extends Model
         'status',
         'subscription_plan',
     ];
+
+    public function businessType()
+    {
+        return $this->belongsTo(BusinessType::class, 'business_type_id');
+    }
+
+    public function industry()
+    {
+        return $this->belongsTo(Industry::class, 'industry_id');
+    }
 }
