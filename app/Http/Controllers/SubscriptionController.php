@@ -49,10 +49,11 @@ class SubscriptionController extends Controller
             $business = Business::where('business_id', $validate['business'])->update([
                 'subscription_plan' => $subscription_id,
             ]);
+
             return response()->json([
                 'error' => false,
                 'message' => 'Business Billed Successfully!!',
-                'data' => $business
+                'data' => Business::where("business_id", $validate['business'])->first()
             ]);
         } catch (ValidationException $e) {
             return response()->json([
