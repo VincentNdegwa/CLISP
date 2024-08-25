@@ -45,7 +45,10 @@ export default {
                 console.log(res);
 
                 if (!res.data.error) {
-                    router.visit("subscription", { method: "get" });
+                    router.visit("subscription", {
+                        method: "get",
+                        data: { id: res.data.data.business_id },
+                    });
                 }
 
                 if (res.data.error) {

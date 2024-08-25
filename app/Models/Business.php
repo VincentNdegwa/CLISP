@@ -39,4 +39,8 @@ class Business extends Model
     {
         return $this->hasMany(User::class, 'busines_id');
     }
+
+    public function subscription(){
+        return $this->belongsTo(Subscription::class, "subscription_plan");
+    }
 }
