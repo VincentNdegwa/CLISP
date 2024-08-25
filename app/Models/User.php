@@ -21,7 +21,6 @@ class User extends Authenticatable
         'email',
         'password',
         'profile_image',
-        'busines_id'
     ];
 
     /**
@@ -48,8 +47,13 @@ class User extends Authenticatable
     }
 
 
-    public function business()
+    // public function business()
+    // {
+    //     return $this->belongsTo(Business::class, 'busines_id');
+    // }
+
+    public function business_user()
     {
-        return $this->belongsTo(Business::class, 'busines_id');
+        return $this->hasMany(BusinessUser::class, "user_id");
     }
 }

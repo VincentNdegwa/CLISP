@@ -27,10 +27,33 @@ export default {
                 ]"
             >
                 <div class="flex flex-row items-center gap-5 h-[6vh]">
-                    <div class="h-14 w-14">
-                        <img src="images/CLISP-logo.png" alt="logo image" />
+                    <div
+                        class="relative w-full max-w-xs bg-white text-slate-950"
+                    >
+                        <div class="dropdown w-full p-0">
+                            <div
+                                tabindex="0"
+                                role="button"
+                                class="btn w-2/3 ms-1 bg-gray-100 text-slate-950 hover:bg-gray-200"
+                            >
+                                Click
+                            </div>
+                            <ul
+                                tabindex="0"
+                                class="dropdown-content menu bg-gray-100 z-[1] w-52 p-2 shadow"
+                            >
+                                <li
+                                    v-for="(item, index) in $page.props
+                                        .user_businesses.business_user"
+                                    :key="index"
+                                    :value="item.business.business_id"
+                                >
+                                    <a> {{ item.business.business_name }} </a>
+                                </li>
+                                <li class="mt-2"><a>Add Business</a></li>
+                            </ul>
+                        </div>
                     </div>
-                    <div class="text-lg font-extrabold">CLISP</div>
                 </div>
 
                 <div
@@ -71,7 +94,11 @@ export default {
                                     <div class="avatar online">
                                         <div class="w-10 h-10 rounded-full">
                                             <img
-                                                src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"
+                                                :src="
+                                                    $page.props.auth.user
+                                                        .profile_image ||
+                                                    'https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp'
+                                                "
                                             />
                                         </div>
                                     </div>

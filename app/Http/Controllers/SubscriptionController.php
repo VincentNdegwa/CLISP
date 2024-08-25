@@ -43,10 +43,11 @@ class SubscriptionController extends Controller
                 // "subscription_end" => $validate[''],
                 // "payment_status" => $validate[''],
                 "amount_paid" => $validate['subscription_amount'],
+                "payment_status" => 'Paid'
             ]);
 
             $subscription_id = $subscription->id;
-            $business = Business::where('business_id', $validate['business'])->update([
+            Business::where('business_id', $validate['business'])->update([
                 'subscription_plan' => $subscription_id,
             ]);
 

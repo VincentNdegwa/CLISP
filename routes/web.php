@@ -4,6 +4,8 @@ use App\Http\Controllers\BusinessController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SubscriptionController;
 use App\Models\Business;
+use App\Models\BusinessUser;
+use App\Models\User;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -22,26 +24,39 @@ Route::get('/', function () {
 
 Route::get('/dashboard', function () {
     $user = Auth()->user();
-    if (!$user->busines_id) {
-        $business = DB::table("business_types")->get(["id", "name"]);
+    $business_users = BusinessUser::where('user_id', $user->id)->with(['business', 'user'])->get();
+
+    // If the user is not associated with any business or the business is missing
+    if ($business_users->isEmpty() || $business_users->contains(function ($businessUser) {
+        return !$businessUser->business;
+    })) {
+        $businessTypes = DB::table("business_types")->get(["id", "name"]);
         $industries = DB::table("industries")->get(['id', 'name']);
+
         return Inertia::render('Auth/RegisterBusiness', [
             "user" => $user,
-            "businessTypes" => $business,
+            "businessTypes" => $businessTypes,
             "industries" => $industries,
         ]);
     }
-    if ($user->busines_id) {
-        $business = Business::where("business_id", $user->busines_id)->first();
-        if (!$business->subscription_plan) {
+
+    // Check if any business is missing a subscription plan
+    foreach ($business_users as $business_user) {
+        if ($business_user->business && !$business_user->business->subscription_plan) {
             return Inertia::render("Auth/ChoosePlan", [
-                "business" => $business
+                "business" => $business_user->business
             ]);
         }
     }
 
+    // Render the main dashboard
     return Inertia::render('Dashboard/Main', [
-        "user" => $user
+        "user" => $user,
+        "user_businesses" => User::where('id', $user->id)->with([
+            "business_user" => function ($query) {
+                $query->with(['business']);
+            }
+        ])->first()
     ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
