@@ -1,53 +1,102 @@
-<script setup>
-import { ref } from "vue";
+<script>
+import { Head, useForm } from "@inertiajs/vue3";
 
-// Define your plan options
-const plans = ref([
-    {
-        name: "Basic",
-        price: "$10/month",
-        features: ["10 projects", "24/7 Support", "Basic Analytics"],
-        isPopular: false,
-    },
-    {
-        name: "Pro",
-        price: "$30/month",
-        features: ["50 projects", "24/7 Support", "Advanced Analytics"],
-        isPopular: true, // Popular plan indicator
-    },
-    {
-        name: "Premium",
-        price: "$50/month",
-        features: [
-            "Unlimited projects",
-            "Priority Support",
-            "Premium Analytics",
-        ],
-        isPopular: false,
-    },
-]);
+import InputLabel from "@/Components/InputLabel.vue";
+import TextInput from "@/Components/TextInput.vue";
+import InputError from "@/Components/InputError.vue";
+import PrimaryButton from "@/Components/PrimaryButton.vue";
 
-// Function to handle plan selection
-const selectPlan = (plan) => {
-    console.log(`Selected plan: ${plan.name}`);
+export default {
+    props: ["business"],
+    data() {
+        const form = useForm({
+            subscription: "",
+            selected_plan: false,
+            paid: false,
+            business: this.business,
+        });
+        const paymentForm = useForm({
+            cardName: "",
+            cardNumber: "",
+            expiryDate: "",
+            cvc: "",
+            billingAddress: "",
+        });
+
+        return {
+            plans: [
+                {
+                    name: "Basic",
+                    price: "$10/month",
+                    amount: "$10",
+                    features: [
+                        "10 projects",
+                        "24/7 Support",
+                        "Basic Analytics",
+                    ],
+                    isPopular: false,
+                },
+                {
+                    name: "Pro", // Added the missing name for this plan
+                    price: "$30/month",
+                    amount: "$30",
+                    features: [
+                        "50 projects",
+                        "24/7 Support",
+                        "Advanced Analytics",
+                    ],
+                    isPopular: true,
+                },
+                {
+                    name: "Premium",
+                    price: "$50/month",
+                    amount: "$50",
+                    features: [
+                        "Unlimited projects",
+                        "Priority Support",
+                        "Premium Analytics",
+                    ],
+                    isPopular: false,
+                },
+            ],
+            form,
+            paymentForm,
+        };
+    },
+    methods: {
+        selectPlan(plan) {
+            this.form.subscription = plan;
+            this.form.selected_plan = true;
+        },
+    },
+    components: {
+        Head,
+        InputLabel,
+        TextInput,
+        InputError,
+        PrimaryButton,
+    },
 };
 </script>
 
 <template>
+    <Head title="Choose Plan" />
+
     <div
-        class="min-h-screen bg-slate-900 text-white flex flex-col items-center py-12"
+        class="min-h-screen bg-gray-100 text-gray-900 flex flex-col gap-10 items-center py-12"
+        v-if="!form.subscription && !form.selected_plan"
     >
         <ul class="steps hidden md:grid">
             <li class="step step-warning">Register</li>
             <li class="step step-warning">Register Business</li>
-            <li class="step">Choose Plan</li>
+            <li class="step step-warning">Choose Plan</li>
             <li class="step">Make Payment</li>
             <li class="step">Complete</li>
         </ul>
         <div class="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-12">
-                <h1 class="text-4xl font-bold">Choose Your Plan</h1>
-                <p class="mt-4 text-slate-400">
+            <div class="text-center">
+                <h1 class="text-2xl font-bold">Choose Your Plan</h1>
+                <p class="mt-4 text-gray-500">
                     Find the plan that best suits your needs.
                 </p>
             </div>
@@ -56,29 +105,31 @@ const selectPlan = (plan) => {
                 <div
                     v-for="plan in plans"
                     :key="plan.name"
-                    class="card w-full bg-slate-800 shadow-xl border border-slate-700 p-6 rounded-lg transform hover:scale-105 transition-all duration-300"
+                    class="card w-full mt-6 bg-white shadow-xl border border-gray-200 p-6 rounded-lg transform hover:scale-105 transition-all duration-300"
                 >
                     <div class="card-body">
                         <div class="flex items-center justify-between">
-                            <h2 class="text-2xl font-extrabold">
+                            <h2 class="text-2xl font-extrabold text-gray-900">
                                 {{ plan.name }}
                             </h2>
                             <div
                                 v-if="plan.isPopular"
-                                class="bg-indigo-600 text-white text-sm px-3 py-1 rounded-full"
+                                class="bg-rose-500 text-white text-sm px-3 py-1 rounded-full"
                             >
                                 Popular
                             </div>
                         </div>
-                        <p class="text-3xl font-bold mt-4">{{ plan.price }}</p>
-                        <ul class="mt-6 space-y-3 text-slate-400">
+                        <p class="text-3xl font-bold mt-4 text-gray-900">
+                            {{ plan.price }}
+                        </p>
+                        <ul class="mt-6 space-y-3 text-gray-600">
                             <li
                                 v-for="feature in plan.features"
                                 :key="feature"
                                 class="flex items-center"
                             >
                                 <svg
-                                    class="w-5 h-5 text-indigo-500 mr-2"
+                                    class="w-5 h-5 text-rose-500 mr-2"
                                     fill="currentColor"
                                     viewBox="0 0 20 20"
                                 >
@@ -93,7 +144,7 @@ const selectPlan = (plan) => {
                         </ul>
                         <div class="card-actions justify-center mt-8">
                             <button
-                                class="btn btn-primary w-full bg-indigo-600 hover:bg-indigo-700"
+                                class="btn btn-primary w-full bg-rose-500 hover:bg-rose-600 text-white"
                                 @click="selectPlan(plan)"
                             >
                                 Select {{ plan.name }}
@@ -102,6 +153,123 @@ const selectPlan = (plan) => {
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <div
+        class="min-h-screen bg-white text-slate-900 flex flex-col gap-10 items-center py-12"
+        v-else
+    >
+        <ul class="steps hidden md:grid">
+            <li class="step step-warning">Register</li>
+            <li class="step step-warning">Register Business</li>
+            <li class="step step-warning">Choose Plan</li>
+            <li class="step step-warning">Make Payment</li>
+            <li class="step">Complete</li>
+        </ul>
+
+        <div class="w-full max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center">
+                <h1 class="text-2xl font-bold">Make Your Payment</h1>
+                <p class="mt-4 text-slate-400">
+                    Complete your payment to activate your subscription.
+                </p>
+                <h3 class="text-2xl font-bold">
+                    Amount to pay {{ form.subscription.amount }}
+                </h3>
+            </div>
+
+            <form @submit.prevent="submit" class="mt-8 space-y-6">
+                <div>
+                    <InputLabel for="cardName" value="Cardholder Name" />
+                    <TextInput
+                        id="cardName"
+                        type="text"
+                        class="mt-1 block w-full"
+                        v-model="paymentForm.cardName"
+                        required
+                        placeholder="Enter your name as it appears on your card"
+                    />
+                    <InputError
+                        class="mt-2"
+                        :message="paymentForm.errors.cardName"
+                    />
+                </div>
+
+                <div>
+                    <InputLabel for="cardNumber" value="Card Number" />
+                    <TextInput
+                        id="cardNumber"
+                        type="text"
+                        class="mt-1 block w-full"
+                        v-model="paymentForm.cardNumber"
+                        required
+                        placeholder="1234 5678 9012 3456"
+                    />
+                    <InputError
+                        class="mt-2"
+                        :message="paymentForm.errors.cardNumber"
+                    />
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <InputLabel for="expiryDate" value="Expiry Date" />
+                        <TextInput
+                            id="expiryDate"
+                            type="text"
+                            class="mt-1 block w-full"
+                            v-model="paymentForm.expiryDate"
+                            required
+                            placeholder="MM/YY"
+                        />
+                        <InputError
+                            class="mt-2"
+                            :message="paymentForm.errors.expiryDate"
+                        />
+                    </div>
+
+                    <div>
+                        <InputLabel for="cvc" value="CVC" />
+                        <TextInput
+                            id="cvc"
+                            type="text"
+                            class="mt-1 block w-full"
+                            v-model="paymentForm.cvc"
+                            required
+                            placeholder="CVC"
+                        />
+                        <InputError
+                            class="mt-2"
+                            :message="paymentForm.errors.cvc"
+                        />
+                    </div>
+                </div>
+
+                <div>
+                    <InputLabel for="billingAddress" value="Billing Address" />
+                    <TextInput
+                        id="billingAddress"
+                        type="text"
+                        class="mt-1 block w-full"
+                        v-model="paymentForm.billingAddress"
+                        required
+                        placeholder="Enter your billing address"
+                    />
+                    <InputError
+                        class="mt-2"
+                        :message="paymentForm.errors.billingAddress"
+                    />
+                </div>
+
+                <PrimaryButton
+                    class="mt-8 w-full"
+                    :class="{ 'opacity-25': paymentForm.processing }"
+                    :disabled="paymentForm.processing"
+                >
+                    Make Payment
+                </PrimaryButton>
+            </form>
         </div>
     </div>
 </template>

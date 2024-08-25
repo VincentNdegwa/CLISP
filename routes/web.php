@@ -3,6 +3,7 @@
 use App\Http\Controllers\BusinessController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SubscriptionController;
+use App\Models\Business;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -30,6 +31,14 @@ Route::get('/dashboard', function () {
             "industries" => $industries,
         ]);
     }
+    if ($user->busines_id) {
+        $business = Business::where("business_id", $user->busines_id)->first();
+        if (!$business->subscription_plan) {
+            return Inertia::render("Auth/ChoosePlan", [
+                "business" => $business
+            ]);
+        }
+    }
 
     return Inertia::render('Dashboard/Main', [
         "user" => $user
@@ -42,7 +51,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::get('subscription', [SubscriptionController::class, 'create'])->name('view.subscriptions');
+// Route::get('subscription', [SubscriptionController::class, 'create'])->name('view.subscriptions');
 
 
 // Route::middleware('auth')->prefix('business')->group(function () {

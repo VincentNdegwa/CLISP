@@ -31,18 +31,18 @@ class BusinessController extends Controller
                 'user_id' => 'required|exists:users,id'
             ]);
 
-            // $business = Business::create($validatedData);
-            // $user = User::where('id', $validatedData['user_id'])->first();
+            $business = Business::create($validatedData);
+            $user = User::where('id', $validatedData['user_id'])->first();
 
-            // $user->update([
-            //     "busines_id" => $business->id
-            // ]);
-            // $newBusiness = Business::with(['businessType', 'industry'])->where("business_id", $business->id)->first();
+            $user->update([
+                "busines_id" => $business->id
+            ]);
+            $newBusiness = Business::with(['businessType', 'industry'])->where("business_id", $business->id)->first();
             return response()->json([
                 'error' => false,
                 'message' => 'Business created successfully!',
-                // 'data' => $newBusiness
-            ], 201); // HTTP 201 Created
+                'data' => $newBusiness
+            ], 201);
         } catch (ValidationException $e) {
             return response()->json([
                 'error' => true,
@@ -54,7 +54,7 @@ class BusinessController extends Controller
                 'error' => true,
                 'message' => 'An unexpected error occurred.',
                 'errors' => $e->getMessage()
-            ], 500); // HTTP 500 Internal Server Error
+            ], 500);
         }
     }
 

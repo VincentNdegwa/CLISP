@@ -2,13 +2,24 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Business;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class SubscriptionController extends Controller
 {
-    public function create()
+    public function create(Request $request)
     {
-        return Inertia::render("Auth/ChoosePlan");
+        $businessId = $request->query('id');
+
+        $business = Business::where("business_id", $businessId)->first();
+        if (!$business->subscription_plan) {
+            Inertia::render("Auth/ChoosePlan", [
+                "business" => $business
+            ]);
+        };
+    }
+    public function pay(Request $request){
+        
     }
 }
