@@ -1,10 +1,11 @@
 <script>
-import { Head, useForm } from "@inertiajs/vue3";
+import { Head, router, useForm } from "@inertiajs/vue3";
 
 import InputLabel from "@/Components/InputLabel.vue";
 import TextInput from "@/Components/TextInput.vue";
 import InputError from "@/Components/InputError.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
+import axios from "axios";
 
 export default {
     props: ["business"],
@@ -13,10 +14,10 @@ export default {
             subscription: "",
             selected_plan: false,
             paid: false,
-            business: this.business,
-        });
-        const paymentForm = useForm({
+            business: this.business.business_id,
             cardName: "",
+            subscription_name: "",
+            subscription_amount: "",
             cardNumber: "",
             expiryDate: "",
             cvc: "",
@@ -28,7 +29,7 @@ export default {
                 {
                     name: "Basic",
                     price: "$10/month",
-                    amount: "$10",
+                    amount: "10",
                     features: [
                         "10 projects",
                         "24/7 Support",
@@ -39,7 +40,7 @@ export default {
                 {
                     name: "Pro", // Added the missing name for this plan
                     price: "$30/month",
-                    amount: "$30",
+                    amount: "30",
                     features: [
                         "50 projects",
                         "24/7 Support",
@@ -50,7 +51,7 @@ export default {
                 {
                     name: "Premium",
                     price: "$50/month",
-                    amount: "$50",
+                    amount: "50",
                     features: [
                         "Unlimited projects",
                         "Priority Support",
@@ -60,13 +61,34 @@ export default {
                 },
             ],
             form,
-            paymentForm,
+            form,
         };
     },
     methods: {
         selectPlan(plan) {
             this.form.subscription = plan;
+            this.form.subscription_name = plan.name;
+            this.form.subscription_amount = plan.amount;
             this.form.selected_plan = true;
+        },
+        makePayment() {
+            axios
+                .post("api/subscription/make", this.form)
+                .then((res) => {
+                    console.log(res);
+
+                    if (res.data.error) {
+                        alert(res.data.errors);
+                    }
+                    if (!res.data.err) {
+                        router.visit("dashboard", {
+                            method: "get",
+                        });
+                    }
+                })
+                .catch((err) => {
+                    alert(err);
+                });
         },
     },
     components: {
@@ -179,21 +201,18 @@ export default {
                 </h3>
             </div>
 
-            <form @submit.prevent="submit" class="mt-8 space-y-6">
+            <form @submit.prevent="makePayment" class="mt-8 space-y-6">
                 <div>
                     <InputLabel for="cardName" value="Cardholder Name" />
                     <TextInput
                         id="cardName"
                         type="text"
                         class="mt-1 block w-full"
-                        v-model="paymentForm.cardName"
+                        v-model="form.cardName"
                         required
                         placeholder="Enter your name as it appears on your card"
                     />
-                    <InputError
-                        class="mt-2"
-                        :message="paymentForm.errors.cardName"
-                    />
+                    <InputError class="mt-2" :message="form.errors.cardName" />
                 </div>
 
                 <div>
@@ -202,13 +221,13 @@ export default {
                         id="cardNumber"
                         type="text"
                         class="mt-1 block w-full"
-                        v-model="paymentForm.cardNumber"
+                        v-model="form.cardNumber"
                         required
                         placeholder="1234 5678 9012 3456"
                     />
                     <InputError
                         class="mt-2"
-                        :message="paymentForm.errors.cardNumber"
+                        :message="form.errors.cardNumber"
                     />
                 </div>
 
@@ -219,13 +238,13 @@ export default {
                             id="expiryDate"
                             type="text"
                             class="mt-1 block w-full"
-                            v-model="paymentForm.expiryDate"
+                            v-model="form.expiryDate"
                             required
                             placeholder="MM/YY"
                         />
                         <InputError
                             class="mt-2"
-                            :message="paymentForm.errors.expiryDate"
+                            :message="form.errors.expiryDate"
                         />
                     </div>
 
@@ -235,14 +254,11 @@ export default {
                             id="cvc"
                             type="text"
                             class="mt-1 block w-full"
-                            v-model="paymentForm.cvc"
+                            v-model="form.cvc"
                             required
                             placeholder="CVC"
                         />
-                        <InputError
-                            class="mt-2"
-                            :message="paymentForm.errors.cvc"
-                        />
+                        <InputError class="mt-2" :message="form.errors.cvc" />
                     </div>
                 </div>
 
@@ -252,20 +268,20 @@ export default {
                         id="billingAddress"
                         type="text"
                         class="mt-1 block w-full"
-                        v-model="paymentForm.billingAddress"
+                        v-model="form.billingAddress"
                         required
                         placeholder="Enter your billing address"
                     />
                     <InputError
                         class="mt-2"
-                        :message="paymentForm.errors.billingAddress"
+                        :message="form.errors.billingAddress"
                     />
                 </div>
 
                 <PrimaryButton
                     class="mt-8 w-full"
-                    :class="{ 'opacity-25': paymentForm.processing }"
-                    :disabled="paymentForm.processing"
+                    :class="{ 'opacity-25': form.processing }"
+                    :disabled="form.processing"
                 >
                     Make Payment
                 </PrimaryButton>
