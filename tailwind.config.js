@@ -22,4 +22,16 @@ export default {
         forms,
         require('daisyui')
     ],
+    daisyui: {
+    themes: [
+      {
+        mytheme: {
+          "primary": "#020617",
+          "secondary": "##f43f5e",
+        },
+      },
+      "dark",
+      "cupcake",
+    ],
+  },
 };

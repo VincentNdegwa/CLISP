@@ -2,6 +2,7 @@
 import Dashboard from "@/Layouts/Dashboard.vue";
 
 export default {
+    props: ["data"],
     data() {
         return {};
     },
