@@ -7,12 +7,50 @@ export default {
     data() {
         return {
             menuOpen: true,
+            default_business: null,
         };
     },
     components: {
         Dropdown,
         DropdownLink,
         SideNavigations,
+    },
+    mounted() {
+        const def_business = JSON.parse(
+            window.localStorage.getItem("default_business")
+        );
+        if (!def_business) {
+            window.localStorage.setItem(
+                "default_business",
+                JSON.stringify(
+                    this.$page.props.user_businesses.default_business
+                )
+            );
+            this.default_business =
+                this.$page.props.user_businesses.default_business;
+        } else {
+            this.default_business = def_business;
+        }
+    },
+    methods: {
+        changeBusiness(data) {
+            const def_business = JSON.parse(
+                window.localStorage.getItem("default_business")
+            );
+            if (def_business) {
+                if (def_business.business_id != data.business_id) {
+                    window.localStorage.setItem(
+                        "default_business",
+                        JSON.stringify(data)
+                    );
+                    this.default_business = data;
+                    this.fetchBusinessData();
+                }
+            }
+        },
+        fetchBusinessData() {
+            console.log(this.default_business);
+        },
     },
 };
 </script>
@@ -36,7 +74,7 @@ export default {
                                 role="button"
                                 class="btn w-2/3 ms-1 bg-gray-100 text-slate-950 hover:bg-gray-200"
                             >
-                                Click
+                                {{ default_business?.business_name }}
                             </div>
                             <ul
                                 tabindex="0"
@@ -47,10 +85,16 @@ export default {
                                         .user_businesses.business_user"
                                     :key="index"
                                     :value="item.business.business_id"
+                                    @click="() => changeBusiness(item.business)"
                                 >
                                     <a> {{ item.business.business_name }} </a>
                                 </li>
-                                <li class="mt-2"><a>Add Business</a></li>
+                                <li class="mt-2">
+                                    <a>
+                                        <i class="bi bi-plus-circle"></i> Add
+                                        Business</a
+                                    >
+                                </li>
                             </ul>
                         </div>
                     </div>

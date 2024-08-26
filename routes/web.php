@@ -50,14 +50,7 @@ Route::get('/dashboard', function () {
     }
 
     // Render the main dashboard
-    return Inertia::render('Dashboard/Main', [
-        "user" => $user,
-        "user_businesses" => User::where('id', $user->id)->with([
-            "business_user" => function ($query) {
-                $query->with(['business']);
-            }
-        ])->first()
-    ]);
+    return Inertia::render('Dashboard/Main');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
