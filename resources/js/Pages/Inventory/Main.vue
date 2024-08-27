@@ -1,11 +1,16 @@
 <script>
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import { Head } from "@inertiajs/vue3";
+import InventoryList from "./InventoryList.vue";
 
 export default {
     components: {
         AuthenticatedLayout,
         Head,
+        InventoryList,
+    },
+    data() {
+        return {};
     },
 };
 </script>
@@ -13,6 +18,10 @@ export default {
 <template>
     <Head title="Inventory" />
     <AuthenticatedLayout>
-        <p>inventory</p>
+        <div class="h-[88vh] w-full">
+            <div class="w-full">Navigations</div>
+            <InventoryList />
+        </div>
     </AuthenticatedLayout>
 </template>
+<style></style>
