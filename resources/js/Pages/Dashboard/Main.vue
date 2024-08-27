@@ -2,7 +2,7 @@
 import Dashboard from "@/Layouts/Dashboard.vue";
 
 export default {
-    props: ["data"],
+    props: ["business_id"],
     data() {
         return {};
     },

@@ -15,9 +15,7 @@ class DashboardController extends Controller
                 "business_id" => 'required|exists:business,business_id'
             ]);
             $business_id = $validate['business_id'];
-            return Inertia::render("Dashboard/Main", [
-                
-            ]);
+            return Inertia::render("Dashboard/Main", []);
         } catch (ValidationException $e) {
             return response()->json([
                 'error' => true,

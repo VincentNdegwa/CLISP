@@ -49,10 +49,10 @@ Route::get('/dashboard', function () {
             ]);
         }
     }
-
-    // Render the main dashboard
-    return Inertia::render('Dashboard/Main');
-    
+    $default_business = $business_users->first()->business ?? null;
+    return Inertia::render('Dashboard/Main', [
+        "business_id" => $business_users->first()->business->business_id ?? null
+    ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
