@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Business;
+use App\Models\BusinessUser;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -32,11 +33,13 @@ class BusinessController extends Controller
             ]);
 
             $business = Business::create($validatedData);
-            $user = User::where('id', $validatedData['user_id'])->first();
 
-            $user->update([
-                "busines_id" => $business->id
+            BusinessUser::create([
+                "business_id" => $business->id,
+                "user_id" => $validatedData['user_id'],
+                'role' => 'Owner'
             ]);
+
             $newBusiness = Business::with(['businessType', 'industry'])->where("business_id", $business->id)->first();
             return response()->json([
                 'error' => false,

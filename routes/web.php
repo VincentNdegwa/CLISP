@@ -1,9 +1,13 @@
 <?php
 
 use App\Http\Controllers\BusinessController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SubscriptionController;
 use App\Models\Business;
+use App\Models\BusinessUser;
+use App\Models\User;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -22,26 +26,32 @@ Route::get('/', function () {
 
 Route::get('/dashboard', function () {
     $user = Auth()->user();
-    if (!$user->busines_id) {
-        $business = DB::table("business_types")->get(["id", "name"]);
+    $business_users = BusinessUser::where('user_id', $user->id)->with(['business', 'user'])->get();
+
+    // If the user is not associated with any business or the business is missing
+    if ($business_users->isEmpty() || $business_users->contains(function ($businessUser) {
+        return !$businessUser->business;
+    })) {
+        $businessTypes = DB::table("business_types")->get(["id", "name"]);
         $industries = DB::table("industries")->get(['id', 'name']);
+
         return Inertia::render('Auth/RegisterBusiness', [
             "user" => $user,
-            "businessTypes" => $business,
+            "businessTypes" => $businessTypes,
             "industries" => $industries,
         ]);
     }
-    if ($user->busines_id) {
-        $business = Business::where("business_id", $user->busines_id)->first();
-        if (!$business->subscription_plan) {
+
+    // Check if any business is missing a subscription plan
+    foreach ($business_users as $business_user) {
+        if ($business_user->business && !$business_user->business->subscription_plan) {
             return Inertia::render("Auth/ChoosePlan", [
-                "business" => $business
+                "business" => $business_user->business
             ]);
         }
     }
-
     return Inertia::render('Dashboard/Main', [
-        "user" => $user
+        "business_id" => $business_users->first()->business->business_id ?? null
     ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
@@ -51,14 +61,16 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+Route::prefix('/dash')->group(function () {
+    Route::post('/details', [DashboardController::class, 'create'])->name("dashboard.details");
+});
+
 // Route::get('subscription', [SubscriptionController::class, 'create'])->name('view.subscriptions');
 
 
-// Route::middleware('auth')->prefix('business')->group(function () {
-//     Route::post('/create', [BusinessController::class, 'Create'])->name('business.create');
-//     Route::post('/update', [BusinessController::class, 'Update'])->name('business.update');
-//     Route::post('/delete', [BusinessController::class, 'Delete'])->name('business.delete');
-// });
+Route::middleware('auth')->prefix('inventory')->group(function () {
+    Route::get('/', [InventoryController::class, 'create'])->name('inventory.open');
+});
 
 
 

@@ -2,7 +2,9 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -29,11 +31,28 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        // Check if the user is authenticated
+        $user = Auth::user();
+        $user_businesses = null;
+
+        if ($user) {
+            $user_id = $user->id;
+            $user_businesses = User::where('id', $user_id)->with([
+                'business_user' => function ($query) {
+                    $query->with(['business']);
+                }
+            ])->first();
+
+            $default_business = $user_businesses->business_user->first()->business ?? null;
+            $user_businesses->default_business = $default_business;
+        }
+
         return [
             ...parent::share($request),
             'auth' => [
                 'user' => $request->user(),
             ],
+            "user_businesses" => $user_businesses,
         ];
     }
 }

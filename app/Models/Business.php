@@ -35,12 +35,13 @@ class Business extends Model
         return $this->belongsTo(Industry::class, 'industry_id');
     }
 
-    public function businesUser()
-    {
-        return $this->hasMany(User::class, 'busines_id');
-    }
 
-    public function subscription(){
+    public function subscription()
+    {
         return $this->belongsTo(Subscription::class, "subscription_plan");
+    }
+    public function business_user()
+    {
+        return $this->hasMany(BusinessUser::class, 'business_id');
     }
 }
