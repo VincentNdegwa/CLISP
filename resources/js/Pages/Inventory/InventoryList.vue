@@ -2,6 +2,7 @@
 import Modal from "@/Components/Modal.vue";
 import SearchInput from "@/Components/SearchInput.vue";
 import NewResource from "./NewResource.vue";
+import NewCategory from "./NewCategory.vue";
 
 export default {
     data() {
@@ -40,6 +41,10 @@ export default {
             this.modal.open = true;
             this.modal.component = "NewResource";
         },
+        openNewCategoryForm() {
+            this.modal.open = true;
+            this.modal.component = "NewCategory";
+        },
         closeModal() {
             this.modal.open = false;
         },
@@ -48,6 +53,7 @@ export default {
         SearchInput,
         Modal,
         NewResource,
+        NewCategory,
     },
 };
 </script>
@@ -56,15 +62,22 @@ export default {
     <div class="h-[83vh]">
         <div class="w-full mt-2 flex justify-between">
             <SearchInput />
-            <div class="join">
-                <button class="btn join-item text-white">
+            <div class="join gap-2">
+                <!-- <button class="btn join-item text-white">
                     <i class="bi bi-funnel"></i> Filter
-                </button>
+                </button> -->
                 <button
                     class="btn join-item text-white"
                     @click="openNewResorceForm"
                 >
                     Add Resources
+                </button>
+
+                <button
+                    @click="openNewCategoryForm"
+                    class="btn bg-slate-950 text-white"
+                >
+                    Add Categories
                 </button>
             </div>
         </div>
@@ -130,6 +143,11 @@ export default {
     <Modal :show="modal.open" @close="closeModal">
         <NewResource
             v-if="modal.component === 'NewResource'"
+            @close="closeModal"
+        />
+
+        <NewCategory
+            v-if="modal.component === 'NewCategory'"
             @close="closeModal"
         />
     </Modal>

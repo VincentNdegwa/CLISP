@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BusinessController;
+use App\Http\Controllers\FileSystemController;
 use App\Http\Controllers\SubscriptionController;
 use Illuminate\Support\Facades\Route;
 
@@ -13,6 +14,7 @@ Route::prefix('business')->group(function () {
 Route::prefix('subscription')->group(function () {
     Route::post('/make', [SubscriptionController::class, 'pay'])->name('subscription.pay');
 });
-Route::get("/test", function () {
-    return ["hello" => '009'];
+Route::prefix('file')->group(function () {
+    Route::post('/upload', [FileSystemController::class, 'upload'])->name('file.upload');
+    Route::post('/delete', [FileSystemController::class, 'delete'])->name('file.delete');
 });
