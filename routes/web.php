@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\BusinessController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SubscriptionController;
 use App\Models\Business;
@@ -49,7 +50,6 @@ Route::get('/dashboard', function () {
             ]);
         }
     }
-    $default_business = $business_users->first()->business ?? null;
     return Inertia::render('Dashboard/Main', [
         "business_id" => $business_users->first()->business->business_id ?? null
     ]);
@@ -68,11 +68,9 @@ Route::prefix('/dash')->group(function () {
 // Route::get('subscription', [SubscriptionController::class, 'create'])->name('view.subscriptions');
 
 
-// Route::middleware('auth')->prefix('business')->group(function () {
-//     Route::post('/create', [BusinessController::class, 'Create'])->name('business.create');
-//     Route::post('/update', [BusinessController::class, 'Update'])->name('business.update');
-//     Route::post('/delete', [BusinessController::class, 'Delete'])->name('business.delete');
-// });
+Route::middleware('auth')->prefix('inventory')->group(function () {
+    Route::get('/', [InventoryController::class, 'create'])->name('inventory.open');
+});
 
 
 

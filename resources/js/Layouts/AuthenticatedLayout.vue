@@ -190,7 +190,15 @@ export default {
                     !menuOpen ? 'ps-0' : 'ps-[230px]',
                 ]"
             >
-                <slot />
+                <div class="py-5">
+                    <div class="w-full mx-auto sm:px-4 lg:px-6">
+                        <div
+                            class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-2"
+                        >
+                            <slot />
+                        </div>
+                    </div>
+                </div>
             </main>
         </div>
     </div>

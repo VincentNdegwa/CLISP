@@ -1,12 +1,13 @@
 <script>
-import { Link } from "@inertiajs/vue3";
+import { Link, usePage } from "@inertiajs/vue3";
+
 export default {
     components: {
         Link,
     },
     data() {
         return {
-            active: "Dashboard",
+            active: "",
             navItems: [
                 {
                     name: "Dashboard",
@@ -15,11 +16,25 @@ export default {
                 },
                 {
                     name: "Inventory",
-                    route: "dashboard",
+                    route: "inventory.open",
                     icon: "bi bi-box-seam-fill",
                 },
             ],
         };
+    },
+    mounted() {
+        this.setActiveLink();
+    },
+    methods: {
+        setActiveLink() {
+            const currentUrl = `${window.location.origin + this.$page.url}`;
+
+            this.navItems.forEach((item) => {
+                if (this.route(item.route) === currentUrl) {
+                    this.active = item.name;
+                }
+            });
+        },
     },
 };
 </script>
