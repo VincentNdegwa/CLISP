@@ -57,7 +57,7 @@ export default {
 
 <template>
     <div>
-        <div class="min-h-screen bg-gray-100 text-slate-950">
+        <div class="min-h-screen bg-gray-100 text-slate-950 relative">
             <nav
                 :class="[
                     'bg-white border-b w-[230px] fixed top-0 left-0 h-[100vh] border-gray-100 z-20 transition-all duration-200 ease-linear',

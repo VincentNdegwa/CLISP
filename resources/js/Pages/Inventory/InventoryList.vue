@@ -3,8 +3,13 @@ import Modal from "@/Components/Modal.vue";
 import SearchInput from "@/Components/SearchInput.vue";
 import NewResource from "./NewResource.vue";
 import NewCategory from "./NewCategory.vue";
+import { useResourceCategoryStore } from "@/Store/ResourceCategory";
 
 export default {
+    setup() {
+        const category = useResourceCategoryStore();
+        category.fetchResourceCategory();
+    },
     data() {
         return {
             inventoryItems: [
@@ -31,6 +36,11 @@ export default {
                 open: false,
                 component: "",
             },
+            notification: {
+                open: false,
+                message: "",
+                status: "",
+            },
         };
     },
     methods: {
@@ -48,6 +58,33 @@ export default {
         closeModal() {
             this.modal.open = false;
         },
+        async newCategory(data) {
+            this.hideNotification();
+            const categoryStore = useResourceCategoryStore();
+            try {
+                await categoryStore.addItem(data);
+
+                if (categoryStore.error) {
+                    console.log(categoryStore.error);
+                    this.displayNotification(categoryStore.error, "error");
+                } else {
+                    this.displayNotification(categoryStore.success, "success");
+                    this.closeModal();
+                }
+            } catch (error) {
+                console.error("Failed to add category:", error);
+                this.displayNotification(categoryStore.error, "error");
+            }
+        },
+        displayNotification(message, status) {
+            this.notification.open = true;
+            this.notification.message = message;
+            this.notification.status = status;
+        },
+        hideNotification() {
+            this.notification.open = false;
+            this.notification.message = "";
+        },
     },
     components: {
         SearchInput,
@@ -60,6 +97,11 @@ export default {
 
 <template>
     <div class="h-[83vh]">
+        <AlertNotification
+            :open="notification.open"
+            :message="notification.message"
+            :status="notification.status"
+        />
         <div class="w-full mt-2 flex justify-between">
             <SearchInput />
             <div class="join gap-2">
@@ -149,6 +191,7 @@ export default {
         <NewCategory
             v-if="modal.component === 'NewCategory'"
             @close="closeModal"
+            @newCategory="newCategory"
         />
     </Modal>
 </template>

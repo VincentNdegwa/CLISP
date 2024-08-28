@@ -2,20 +2,23 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Business;
 use App\Models\ResourceCategory;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 class ResourceCategoryController extends Controller
 {
-    public function create(Request $request)
+    public function create(Request $request, $business_id)
     {
         try {
-            $validate = $request->validate([
-                "business_id" => 'required|exists:business,business_id',
+            $request->validate([
                 "name" => 'required'
             ]);
-            $category = ResourceCategory::create($request->all());
+            $data = $request->all();
+            $data['business_id'] = $business_id;
+            
+            $category = ResourceCategory::create($data);
             $new_category = ResourceCategory::where('id', $category->id)->first();
             return response()->json([
                 'error' => false,
@@ -35,5 +38,25 @@ class ResourceCategoryController extends Controller
                 'errors' => $e->getMessage()
             ]);
         }
+    }
+
+    public function read($business_id)
+    {
+        $business = Business::where('business_id', $business_id)->first();
+
+        if (!$business) {
+            return response()->json([
+                'error' => true,
+                'message' => 'Business not found.'
+            ]);
+        }
+
+        $items = ResourceCategory::where('business_id', $business_id)
+            ->paginate(20);
+        return response()->json([
+            'error' => false,
+            'message' => 'Resource category fetched successfully.',
+            'data' => $items
+        ]);
     }
 }

@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Business;
 use App\Models\ResourceItem;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 class ResourceItemController extends Controller
 {
-    public function create(Request $request)
+    public function create(Request $request, $business_id)
     {
         try {
-            $validate = $request->validate([
-                "business_id" => 'required|exists:businesses,id',
+            $request->validate([
                 "item_name" => 'required|string|max:255',
                 "category_id" => 'required|exists:resource_category,id',
                 "quantity" => 'required|min:0',
@@ -20,7 +20,10 @@ class ResourceItemController extends Controller
                 "price" => 'required|numeric|min:0',
             ]);
 
-            $resourceItem = ResourceItem::create($request->all());
+            $data = $request->all();
+            $data['business_id'] = $business_id;
+
+            $resourceItem = ResourceItem::create($data);
 
             return response()->json([
                 'error' => false,
@@ -40,5 +43,26 @@ class ResourceItemController extends Controller
                 'errors' => $e->getMessage()
             ]);
         }
+    }
+
+    public function read($business_id)
+    {
+        $business = Business::where('business_id', $business_id)->first();
+
+        if (!$business) {
+            return response()->json([
+                'error' => true,
+                'message' => 'Business not found.'
+            ]);
+        }
+
+        $items = ResourceItem::where('business_id', $business_id)
+            ->with('category')
+            ->paginate(20);
+        return response()->json([
+            'error' => false,
+            'message' => 'Resource items fetched successfully.',
+            'data' => $items
+        ]);
     }
 }

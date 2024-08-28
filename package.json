@@ -20,6 +20,7 @@
     },
     "dependencies": {
         "@fortawesome/vue-fontawesome": "^3.0.8",
-        "bootstrap-icons": "^1.11.3"
+        "bootstrap-icons": "^1.11.3",
+        "pinia": "^2.2.2"
     }
 }

@@ -9,7 +9,7 @@ class ResourceItem extends Model
 {
     use HasFactory;
     protected $table = 'resource_item';
-    protected $fillables = [
+    protected $fillable = [
         'business_id',
         'item_name',
         'description',

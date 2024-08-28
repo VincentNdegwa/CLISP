@@ -59,8 +59,7 @@ export default {
     },
     methods: {
         submitForm() {
-            // Handle form submission logic here
-            console.log("Form submitted:", this.form);
+            this.$emit("newCategory", this.form);
         },
     },
     components: {
