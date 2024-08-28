@@ -9,6 +9,10 @@ export default {
     setup() {
         const category = useResourceCategoryStore();
         category.fetchResourceCategory();
+
+        return {
+            category,
+        };
     },
     data() {
         return {
@@ -102,6 +106,7 @@ export default {
             :message="notification.message"
             :status="notification.status"
         />
+
         <div class="w-full mt-2 flex justify-between">
             <SearchInput />
             <div class="join gap-2">
@@ -186,6 +191,7 @@ export default {
         <NewResource
             v-if="modal.component === 'NewResource'"
             @close="closeModal"
+            :category="category"
         />
 
         <NewCategory

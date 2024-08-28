@@ -10,7 +10,7 @@ class ResourceCategory extends Model
     use HasFactory;
     protected $table = 'resource_category';
 
-    protected $fillables = [
+    protected $fillable = [
         "business_id",
         "name",
         "description",

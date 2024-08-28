@@ -1,3 +1,38 @@
+<script>
+import InputLabel from "@/Components/InputLabel.vue";
+import PrimaryButton from "@/Components/PrimaryButton.vue";
+
+export default {
+    props: ["category"],
+    data() {
+        return {
+            form: {
+                item_name: "",
+                description: "",
+                category: "",
+                quantity: "",
+                unit: "",
+                price: "",
+                date_added: "",
+                photos: null,
+            },
+        };
+    },
+    methods: {
+        submitForm() {
+            // Handle form submission logic here
+            console.log("Form submitted:", this.form);
+        },
+    },
+    components: {
+        InputLabel,
+        PrimaryButton,
+    },
+};
+</script>
+
+<style scoped></style>
+
 <template>
     <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-6">
         <h2 class="text-2xl font-semibold mb-6">New Inventory Item</h2>
@@ -26,10 +61,13 @@
                         required
                     >
                         <option disabled value="">Select Category</option>
-                        <option>Electronics</option>
-                        <option>Furniture</option>
-                        <option>Office Supplies</option>
-                        <option>Other</option>
+                        <option
+                            v-for="(item, index) in category.items.data"
+                            :key="index"
+                            :value="item.id"
+                        >
+                            {{ item.name }}
+                        </option>
                     </select>
                 </div>
 
@@ -124,39 +162,3 @@
         </form>
     </div>
 </template>
-
-<script>
-import InputLabel from "@/Components/InputLabel.vue";
-import PrimaryButton from "@/Components/PrimaryButton.vue";
-
-export default {
-    data() {
-        return {
-            form: {
-                item_name: "",
-                description: "",
-                category: "",
-                quantity: "",
-                unit: "",
-                price: "",
-                date_added: "",
-                photos: null,
-            },
-        };
-    },
-    methods: {
-        submitForm() {
-            // Handle form submission logic here
-            console.log("Form submitted:", this.form);
-        },
-    },
-    components: {
-        InputLabel,
-        PrimaryButton,
-    },
-};
-</script>
-
-<style scoped>
-/* Additional styling can be added here if needed */
-</style>

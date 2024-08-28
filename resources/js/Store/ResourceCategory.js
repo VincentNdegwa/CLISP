@@ -25,8 +25,11 @@ export const useResourceCategoryStore = defineStore("resource_category", {
                 const response = await axios.get(`/api/category/${businessId}/list`);
                 if (response.data.error) {
                     this.error = response.data.message;
+                    if (response.data.errors) {
+                        this.error = response.data.errors
+                    }
                 } else {
-                    this.items = response.data.data; // Assigning the data to items
+                    this.items = response.data.data;
                 }
             } catch (error) {
                 this.error = error.response ? error.response.data.message : error.message;
