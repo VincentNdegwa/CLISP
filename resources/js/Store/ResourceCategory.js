@@ -4,7 +4,7 @@ import { useUserStore } from "./UserStore";
 
 export const useResourceCategoryStore = defineStore("resource_category", {
     state: () => ({
-        items: [],
+        items: {},
         loading: false,
         error: null,
         success: null
@@ -58,7 +58,7 @@ export const useResourceCategoryStore = defineStore("resource_category", {
                     }
                 } else {
                     this.success = response.data.message
-                    // this.items.push(response.data.data);
+                    this.items.data.push(response.data.data);
                 }
             } catch (error) {
                 this.error = error.response ? error.response.data.message : error.message;
@@ -67,7 +67,7 @@ export const useResourceCategoryStore = defineStore("resource_category", {
             }
         },
         removeItem(itemId) {
-            this.items = this.items.filter((item) => item.id !== itemId);
+            this.items = this.items.data.filter((item) => item.id !== itemId);
         },
     },
 });
