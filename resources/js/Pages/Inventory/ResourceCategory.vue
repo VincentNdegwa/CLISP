@@ -77,12 +77,15 @@ export default {
             </div>
 
             <div class="h-[74vh] overflow-y-scroll relative mt-1">
-                <table class="min-w-full bg-white relative">
-                    <thead class="sticky top-0 bg-slate-200">
+                <table class="min-w-full bg-white relative table">
+                    <thead
+                        class="sticky top-0 bg-gray-200 z-[2] font-bold text-slate-950"
+                    >
                         <tr>
-                            <th class="py-2 px-4 border-b">#</th>
-                            <th class="py-2 px-4 border-b">Name</th>
-                            <th class="py-2 px-4 border-b">Description</th>
+                            <th class="py-2 px-4 border">#</th>
+                            <th class="py-2 px-4 border">Name</th>
+                            <th class="py-2 px-4 border">Description</th>
+                            <th class="py-2 px-4 border">Actions</th>
                         </tr>
                     </thead>
 
@@ -96,6 +99,23 @@ export default {
                             <td class="py-2 px-4 border-b">{{ item.name }}</td>
                             <td class="py-2 px-4 border-b">
                                 {{ item.description }}
+                            </td>
+                            <td>
+                                <div class="dropdown dropdown-left">
+                                    <div
+                                        tabindex="0"
+                                        class="btn btn-xs bg-blue-500 text-white"
+                                    >
+                                        Action
+                                    </div>
+                                    <ul
+                                        tabindex="0"
+                                        class="dropdown-content menu bg-white rounded-box z-[1] w-52 p-2 shadow"
+                                    >
+                                        <li><a>Edit</a></li>
+                                        <li><a>Delete</a></li>
+                                    </ul>
+                                </div>
                             </td>
                         </tr>
                     </tbody>

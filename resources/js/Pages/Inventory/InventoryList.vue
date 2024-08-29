@@ -155,10 +155,21 @@ export default {
                         <td>{{ item.price }}</td>
                         <td>{{ formatDate(item.date_added) }}</td>
                         <td>
-                            <button class="btn btn-sm btn-primary mr-2">
-                                Edit
-                            </button>
-                            <button class="btn btn-sm btn-error">Delete</button>
+                            <div class="dropdown dropdown-left">
+                                <div
+                                    tabindex="0"
+                                    class="btn btn-xs bg-blue-500 text-white"
+                                >
+                                    Action
+                                </div>
+                                <ul
+                                    tabindex="0"
+                                    class="dropdown-content menu bg-white rounded-box z-[1] w-52 p-2 shadow"
+                                >
+                                    <li><a>Edit</a></li>
+                                    <li><a>Delete</a></li>
+                                </ul>
+                            </div>
                         </td>
                     </tr>
                 </tbody>
