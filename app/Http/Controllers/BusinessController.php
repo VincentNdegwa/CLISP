@@ -45,7 +45,7 @@ class BusinessController extends Controller
                 'error' => false,
                 'message' => 'Business created successfully!',
                 'data' => $newBusiness
-            ], 201);
+            ]);
         } catch (ValidationException $e) {
             return response()->json([
                 'error' => true,
@@ -57,7 +57,7 @@ class BusinessController extends Controller
                 'error' => true,
                 'message' => 'An unexpected error occurred.',
                 'errors' => $e->getMessage()
-            ], 500);
+            ]);
         }
     }
 

@@ -44,4 +44,9 @@ class Business extends Model
     {
         return $this->hasMany(BusinessUser::class, 'business_id');
     }
+
+    public function resource_category()
+    {
+        return $this->hasMany(ResourceCategory::class, 'business_id', 'business_id');
+    }
 }

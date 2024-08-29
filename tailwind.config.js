@@ -31,7 +31,7 @@ export default {
         },
       },
       "dark",
-      "cupcake",
+    //   "cupcake",
     ],
   },
 };

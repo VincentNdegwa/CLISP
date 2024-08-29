@@ -42,7 +42,6 @@ Route::get('/dashboard', function () {
         ]);
     }
 
-    // Check if any business is missing a subscription plan
     foreach ($business_users as $business_user) {
         if ($business_user->business && !$business_user->business->subscription_plan) {
             return Inertia::render("Auth/ChoosePlan", [
@@ -55,6 +54,7 @@ Route::get('/dashboard', function () {
     ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -64,8 +64,6 @@ Route::middleware('auth')->group(function () {
 Route::prefix('/dash')->group(function () {
     Route::post('/details', [DashboardController::class, 'create'])->name("dashboard.details");
 });
-
-// Route::get('subscription', [SubscriptionController::class, 'create'])->name('view.subscriptions');
 
 
 Route::middleware('auth')->prefix('inventory')->group(function () {

@@ -1,7 +1,7 @@
 <template>
     <div
         v-if="isVisible"
-        :class="`alert ${statusClass} absolute top-0 left-1 min-w-[200px] max-w-fit`"
+        :class="`alert ${statusClass} absolute bottom-1 right-1 min-w-[200px] max-w-fit z-[1000]`"
         role="alert"
     >
         <svg
@@ -26,7 +26,7 @@ export default {
     props: {
         status: {
             type: String,
-            default: "info",
+            default: "success",
         },
         message: {
             type: String,
@@ -39,20 +39,44 @@ export default {
     },
     data() {
         return {
-            isVisible: this.open,
+            isVisible: this.props,
             statusClass: "",
             iconPath: "",
+            timeoutId: null,
         };
     },
-    mounted() {
-        this.setStatusClass();
-        this.setIconPath();
-
-        setTimeout(() => {
-            this.isVisible = false;
-        }, 5000);
+    watch: {
+        open: {
+            immediate: true,
+            handler(newVal) {
+                if (newVal) {
+                    this.showAlert();
+                }
+            },
+            deep: true,
+        },
+        status: {
+            handler(newVal) {
+                if (newVal) {
+                    this.statusClass = newVal;
+                    this.setStatusClass();
+                }
+            },
+            deep: true,
+        },
     },
     methods: {
+        showAlert() {
+            if (this.timeoutId) {
+                clearTimeout(this.timeoutId);
+            }
+
+            this.isVisible = true;
+
+            this.timeoutId = setTimeout(() => {
+                this.isVisible = false;
+            }, 5000);
+        },
         setStatusClass() {
             switch (this.status) {
                 case "error":
@@ -87,6 +111,10 @@ export default {
                         "M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z";
             }
         },
+    },
+    mounted() {
+        this.setStatusClass();
+        this.setIconPath();
     },
 };
 </script>

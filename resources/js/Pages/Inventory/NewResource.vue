@@ -1,0 +1,164 @@
+<script>
+import InputLabel from "@/Components/InputLabel.vue";
+import PrimaryButton from "@/Components/PrimaryButton.vue";
+
+export default {
+    props: ["category"],
+    data() {
+        return {
+            form: {
+                item_name: "",
+                description: "",
+                category: "",
+                quantity: "",
+                unit: "",
+                price: "",
+                date_added: "",
+                photos: null,
+            },
+        };
+    },
+    methods: {
+        submitForm() {
+            // Handle form submission logic here
+            console.log("Form submitted:", this.form);
+        },
+    },
+    components: {
+        InputLabel,
+        PrimaryButton,
+    },
+};
+</script>
+
+<style scoped></style>
+
+<template>
+    <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-6">
+        <h2 class="text-2xl font-semibold mb-6">New Inventory Item</h2>
+
+        <form @submit.prevent="submitForm" class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Item Name -->
+                <div>
+                    <InputLabel value="Item Name" required />
+                    <input
+                        v-model="form.item_name"
+                        type="text"
+                        id="item_name"
+                        class="input input-bordered w-full bg-white ring-1 ring-slate-300"
+                        required
+                    />
+                </div>
+
+                <!-- Category -->
+                <div>
+                    <InputLabel value="Category" required />
+                    <select
+                        v-model="form.category"
+                        id="category"
+                        class="select select-bordered w-full bg-white ring-1 ring-slate-300"
+                        required
+                    >
+                        <option disabled value="">Select Category</option>
+                        <option
+                            v-for="(item, index) in category.items.data"
+                            :key="index"
+                            :value="item.id"
+                        >
+                            {{ item.name }}
+                        </option>
+                    </select>
+                </div>
+
+                <!-- Quantity -->
+                <div>
+                    <InputLabel value="Quantity" required />
+                    <input
+                        v-model="form.quantity"
+                        type="number"
+                        id="quantity"
+                        class="input input-bordered w-full bg-white ring-1 ring-slate-300"
+                        min="1"
+                        required
+                    />
+                </div>
+
+                <!-- Unit -->
+                <div>
+                    <InputLabel value="Unit" required />
+                    <input
+                        v-model="form.unit"
+                        type="text"
+                        id="unit"
+                        class="input input-bordered w-full bg-white ring-1 ring-slate-300"
+                        required
+                    />
+                </div>
+
+                <!-- Price -->
+                <div>
+                    <InputLabel value="Price" required />
+                    <input
+                        v-model="form.price"
+                        type="number"
+                        id="price"
+                        class="input input-bordered w-full bg-white ring-1 ring-slate-300"
+                        min="0"
+                        step="0.01"
+                        required
+                    />
+                </div>
+
+                <!-- Date Added -->
+                <div>
+                    <InputLabel value="Date Added" required />
+                    <input
+                        v-model="form.date_added"
+                        type="date"
+                        id="date_added"
+                        class="input input-bordered w-full bg-white ring-1 ring-slate-300"
+                        required
+                    />
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div>
+                <InputLabel value="Description" required />
+                <textarea
+                    v-model="form.description"
+                    id="description"
+                    class="textarea textarea-bordered w-full bg-white ring-1 ring-slate-300"
+                    rows="3"
+                    required
+                ></textarea>
+            </div>
+
+            <!-- Photos -->
+            <div>
+                <InputLabel value="Photos" />
+                <input
+                    type="file"
+                    id="photos"
+                    class="file-input file-input-bordered w-full bg-white ring-1 ring-slate-300"
+                    multiple
+                />
+            </div>
+
+            <!-- Submit Button -->
+            <div class="flex w-full text-white gap-2">
+                <PrimaryButton type="submit" class="btn bg-slate-900 flex-1">
+                    Save Item
+                </PrimaryButton>
+                <PrimaryButton
+                    type="button"
+                    @click="$emit('close')"
+                    class="btn bg-rose-600 hover:bg-rose-500 text-white flex-1"
+                >
+                    Cancel
+                </PrimaryButton>
+            </div>
+        </form>
+    </div>
+</template>
