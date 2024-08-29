@@ -4,6 +4,7 @@ use App\Http\Controllers\BusinessController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ResourceCategoryController;
 use App\Http\Controllers\SubscriptionController;
 use App\Models\Business;
 use App\Models\BusinessUser;
@@ -66,8 +67,11 @@ Route::prefix('/dash')->group(function () {
 });
 
 
-Route::middleware('auth')->prefix('inventory')->group(function () {
-    Route::get('/', [InventoryController::class, 'create'])->name('inventory.open');
+Route::middleware('auth')->prefix('/')->group(function () {
+    Route::prefix("inventory")->group(function () {
+        Route::get('/resources', [InventoryController::class, 'view'])->name('inventory.resources');
+        Route::get('/categories', [ResourceCategoryController::class, 'view'])->name('inventory.categories');
+    });
 });
 
 

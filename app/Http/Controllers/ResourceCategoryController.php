@@ -6,9 +6,15 @@ use App\Models\Business;
 use App\Models\ResourceCategory;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use Inertia\Inertia;
 
 class ResourceCategoryController extends Controller
 {
+
+    public function view()
+    {
+        return Inertia::render("Inventory/ResourceCategory", []);
+    }
     public function create(Request $request, $business_id)
     {
         try {
@@ -17,7 +23,7 @@ class ResourceCategoryController extends Controller
             ]);
             $data = $request->all();
             $data['business_id'] = $business_id;
-            
+
             $category = ResourceCategory::create($data);
             $new_category = ResourceCategory::where('id', $category->id)->first();
             return response()->json([

@@ -25,12 +25,12 @@ export default {
                     subItems: [
                         {
                             name: "Resources",
-                            route: "inventory.open",
+                            route: "inventory.resources",
                             icon: "bi bi-archive-fill",
                         },
                         {
-                            name: "Profile",
-                            route: "profile.edit",
+                            name: "Categories",
+                            route: "inventory.categories",
                             icon: "bi bi-menu-up",
                         },
                     ],
@@ -91,7 +91,7 @@ export default {
             <div class="h-full w-full flex flex-col items-start">
                 <div
                     v-if="!item.subItems"
-                    class="hover:bg-gray-100 w-full p-2"
+                    :class="['hover:bg-gray-100 w-full p-2']"
                     @click="toggleMainNav(item)"
                 >
                     <Link :href="route(item.route)" :key="index" class="p-0">
@@ -103,7 +103,9 @@ export default {
                 </div>
                 <div
                     v-else
-                    class="flex justify-between w-full hover:bg-gray-100 p-2"
+                    :class="[
+                        'flex justify-between w-full hover:bg-gray-100 p-2',
+                    ]"
                     @click="toggleMainNav(item)"
                 >
                     <div class="text-sm flex flex-row gap-2">
