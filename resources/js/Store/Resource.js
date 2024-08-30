@@ -10,18 +10,29 @@ export const useResourceStore = defineStore("resource_store", {
         success: null,
     }),
     actions: {
-        async fetchResources() {
+        async fetchResources(queries) {
             const store = useUserStore();
             const businessId = store.business;
 
+            let link = `/api/item/${businessId}/list`
+            if (queries) {
+                if (queries.search) {
+                    link+=`?search=${queries.search}`
+                }
+                if (queries.category) {
+                    link+=`?category=${queries.category}`
+                }
+            }
             if (!businessId) {
                 this.error = "Business ID not found.";
                 return;
             }
             this.loading = true
             this.error = null
+
+
             try {
-                const response = await axios.get(`/api/item/${businessId}/list`)
+                const response = await axios.get(link)
                 if (response.data.error) {
                     this.error = response.data.error
                 } else {

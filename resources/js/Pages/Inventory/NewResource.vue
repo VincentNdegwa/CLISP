@@ -152,13 +152,12 @@ export default {
 
             <!-- Description -->
             <div>
-                <InputLabel value="Description" required />
+                <InputLabel value="Description" />
                 <textarea
                     v-model="form.description"
                     id="description"
                     class="textarea textarea-bordered w-full bg-white ring-1 ring-slate-300"
                     rows="3"
-                    required
                 ></textarea>
             </div>
 

@@ -38,6 +38,10 @@ export default {
             modal.value.component = "NewCategory";
         };
 
+        const makeQuery = async (query) => {
+            resources.fetchResources(query);
+        };
+
         return {
             category,
             resources,
@@ -46,6 +50,7 @@ export default {
             openNewResorceForm,
             openNewCategoryForm,
             closeModal,
+            makeQuery,
         };
     },
     data() {
@@ -54,6 +59,10 @@ export default {
                 open: false,
                 message: "",
                 status: "",
+            },
+            query: {
+                search: null,
+                category: null,
             },
         };
     },
@@ -87,6 +96,10 @@ export default {
             this.notification.open = false;
             this.notification.message = "";
         },
+        makeSearch(search) {
+            this.query.search = search;
+            this.makeQuery(this.query);
+        },
     },
     components: {
         SearchInput,
@@ -112,7 +125,7 @@ export default {
         />
 
         <div class="w-full mt-2 flex justify-between">
-            <SearchInput />
+            <SearchInput @search="makeSearch" />
             <div class="join gap-2">
                 <!-- <button class="btn join-item text-white">
                     <i class="bi bi-funnel"></i> Filter

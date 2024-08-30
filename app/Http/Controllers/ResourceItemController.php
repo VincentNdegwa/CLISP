@@ -47,7 +47,7 @@ class ResourceItemController extends Controller
         }
     }
 
-    public function read($business_id)
+    public function read($business_id, Request $request)
     {
         $business = Business::where('business_id', $business_id)->first();
 
@@ -58,9 +58,21 @@ class ResourceItemController extends Controller
             ]);
         }
 
-        $items = ResourceItem::where('business_id', $business_id)
-            ->with('category')
-            ->paginate(20);
+        $search_text = $request->query('search');
+        $category_id = $request->query('category');
+
+        $query = ResourceItem::where('business_id', $business_id)->with('category');
+
+        if ($search_text) {
+            $query->where('item_name', 'like', '%' . $search_text . '%')
+                ->orWhere('description', 'like', '%' . $search_text . '%');
+        }
+        if ($category_id) {
+            $query->where('category_id', $category_id);
+        }
+
+        $items = $query->paginate(20);
+
         return response()->json([
             'error' => false,
             'message' => 'Resource items fetched successfully.',
