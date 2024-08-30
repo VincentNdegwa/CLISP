@@ -18,17 +18,19 @@ class ResourceItemController extends Controller
                 "quantity" => 'required|min:0',
                 "unit" => 'required|string|max:50',
                 "price" => 'required|numeric|min:0',
+                "date_added" => 'required'
             ]);
 
             $data = $request->all();
             $data['business_id'] = $business_id;
 
             $resourceItem = ResourceItem::create($data);
+            $item = ResourceItem::where('id', $resourceItem->id)->with('category')->first();
 
             return response()->json([
                 'error' => false,
                 'message' => 'Resource item created successfully.',
-                'data' => $resourceItem
+                'data' => $item
             ], 201);
         } catch (ValidationException $e) {
             return response()->json([

@@ -12,8 +12,8 @@ class FileSystemController extends Controller
     {
 
         try {
-            $validate = $request->validate([
-                "file" => 'required',
+            $request->validate([
+                "file" => 'required|file|max:2048',
                 'folder' => 'required'
             ]);
 

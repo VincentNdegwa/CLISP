@@ -8,6 +8,7 @@ export default {
         './storage/framework/views/*.php',
         './resources/views/**/*.blade.php',
         './resources/js/**/*.vue',
+
     ],
 
     theme: {
@@ -20,14 +21,15 @@ export default {
 
     plugins: [
         forms,
-        require('daisyui')
+        require('daisyui'),
+
     ],
     daisyui: {
     themes: [
       {
         mytheme: {
           "primary": "#020617",
-          "secondary": "##f43f5e",
+          "secondary": "#f43f5e",
         },
       },
       "dark",

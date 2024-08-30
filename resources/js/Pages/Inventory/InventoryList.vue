@@ -4,42 +4,52 @@ import SearchInput from "@/Components/SearchInput.vue";
 import NewResource from "./NewResource.vue";
 import NewCategory from "./NewCategory.vue";
 import { useResourceCategoryStore } from "@/Store/ResourceCategory";
+import { useResourceStore } from "@/Store/Resource";
+import TableSkeleton from "@/Components/TableSkeleton.vue";
+import { ref } from "vue";
 
 export default {
     setup() {
+        const closeModal = () => {
+            modal.value.open = false;
+            modal.value.component = "";
+        };
         const category = useResourceCategoryStore();
         category.fetchResourceCategory();
 
+        const resources = useResourceStore();
+        resources.fetchResources();
+
+        const addResource = async (item) => {
+            await resources.addResource(item);
+            closeModal();
+        };
+
+        const modal = ref({
+            open: false,
+            component: "",
+        });
+        const openNewResorceForm = () => {
+            modal.value.open = true;
+            modal.value.component = "NewResource";
+        };
+        const openNewCategoryForm = () => {
+            modal.value.open = true;
+            modal.value.component = "NewCategory";
+        };
+
         return {
             category,
+            resources,
+            addResource,
+            modal,
+            openNewResorceForm,
+            openNewCategoryForm,
+            closeModal,
         };
     },
     data() {
         return {
-            inventoryItems: [
-                {
-                    item_id: 1,
-                    item_name: "Laptop",
-                    category: "Electronics",
-                    quantity: 10,
-                    unit: "Pieces",
-                    price: 1000.0,
-                    date_added: "2024-08-27",
-                },
-                {
-                    item_id: 2,
-                    item_name: "Office Chair",
-                    category: "Furniture",
-                    quantity: 5,
-                    unit: "Pieces",
-                    price: 150.0,
-                    date_added: "2024-08-25",
-                },
-            ],
-            modal: {
-                open: false,
-                component: "",
-            },
             notification: {
                 open: false,
                 message: "",
@@ -51,17 +61,7 @@ export default {
         formatDate(date) {
             return new Date(date).toLocaleDateString();
         },
-        openNewResorceForm() {
-            this.modal.open = true;
-            this.modal.component = "NewResource";
-        },
-        openNewCategoryForm() {
-            this.modal.open = true;
-            this.modal.component = "NewCategory";
-        },
-        closeModal() {
-            this.modal.open = false;
-        },
+
         async newCategory(data) {
             this.hideNotification();
             const categoryStore = useResourceCategoryStore();
@@ -69,14 +69,12 @@ export default {
                 await categoryStore.addItem(data);
 
                 if (categoryStore.error) {
-                    console.log(categoryStore.error);
                     this.displayNotification(categoryStore.error, "error");
                 } else {
                     this.displayNotification(categoryStore.success, "success");
                     this.closeModal();
                 }
             } catch (error) {
-                console.error("Failed to add category:", error);
                 this.displayNotification(categoryStore.error, "error");
             }
         },
@@ -95,6 +93,7 @@ export default {
         Modal,
         NewResource,
         NewCategory,
+        TableSkeleton,
     },
 };
 </script>
@@ -105,6 +104,11 @@ export default {
             :open="notification.open"
             :message="notification.message"
             :status="notification.status"
+        />
+        <AlertNotification
+            :open="resources.success || resources.error"
+            :message="resources.success || resources.error"
+            :status="resources.success ? 'success' : 'error'"
         />
 
         <div class="w-full mt-2 flex justify-between">
@@ -128,8 +132,9 @@ export default {
                 </button>
             </div>
         </div>
-        <div class="overflow-x-auto h-[75vh]">
-            <table class="table w-full">
+        <div class="overflow-x-auto h-[75vh] w-full">
+            <TableSkeleton v-if="resources.loading" />
+            <table v-else class="table w-full">
                 <thead>
                     <tr>
                         <th class="text-slate-900 font-medium">#</th>
@@ -144,46 +149,67 @@ export default {
                 </thead>
                 <tbody>
                     <tr
-                        v-for="(item, index) in inventoryItems"
+                        v-for="(item, index) in resources.items.data"
                         :key="item.item_id"
                     >
                         <td>{{ index + 1 }}</td>
                         <td>{{ item.item_name }}</td>
-                        <td>{{ item.category }}</td>
+                        <td>{{ item.category.name }}</td>
                         <td>{{ item.quantity }}</td>
                         <td>{{ item.unit }}</td>
                         <td>{{ item.price }}</td>
                         <td>{{ formatDate(item.date_added) }}</td>
                         <td>
-                            <button class="btn btn-sm btn-primary mr-2">
-                                Edit
-                            </button>
-                            <button class="btn btn-sm btn-error">Delete</button>
+                            <div class="dropdown dropdown-left">
+                                <div
+                                    tabindex="0"
+                                    class="btn btn-xs bg-blue-500 text-white"
+                                >
+                                    Action
+                                </div>
+                                <ul
+                                    tabindex="0"
+                                    class="dropdown-content menu bg-white rounded-box z-[1] w-52 p-2 shadow"
+                                >
+                                    <li><a>VIew</a></li>
+                                    <li><a>Edit</a></li>
+                                    <li><a>Delete</a></li>
+                                </ul>
+                            </div>
                         </td>
                     </tr>
                 </tbody>
             </table>
         </div>
-        <div class="join bg-gray-200 text-slate-800 mt-2">
+
+        <div class="flex justify-between items-center">
             <button
-                class="join-item bg-gray-200 text-slate-800 hover:text-white btn btn-sm"
+                :class="[
+                    'py-2 px-4 rounded',
+                    !resources.items.prev_page_url
+                        ? 'bg-gray-300 text-gray-700 cursor-not-allowed'
+                        : 'bg-slate-900 text-white',
+                ]"
+                :disabled="resources.items.prev_page_url == null"
+                @click="fetchCategories(resources.items.current_page - 1)"
             >
-                1
+                Previous
             </button>
-            <button
-                class="join-item bg-gray-200 text-slate-800 hover:text-white btn btn-sm"
+            <span
+                >Page {{ resources.items.current_page }} of
+                {{ resources.items.last_page }}</span
             >
-                2
-            </button>
             <button
-                class="join-item bg-gray-200 text-slate-800 hover:text-white btn btn-sm"
+                :class="[
+                    'py-2 px-4 rounded',
+                    !resources.items.prev_page_url
+                        ? 'bg-gray-300 text-gray-700 cursor-not-allowed'
+                        : 'bg-slate-900 text-white',
+                ]"
+                :disabled="resources.items.next_page_url == null"
+                @click="fetchCategories(resources.items.current_page + 1)"
             >
-                3
-            </button>
-            <button
-                class="join-item bg-gray-200 text-slate-800 hover:text-white btn btn-sm"
-            >
-                4
+                Next
             </button>
         </div>
     </div>
@@ -192,6 +218,7 @@ export default {
             v-if="modal.component === 'NewResource'"
             @close="closeModal"
             :category="category"
+            @addResource="addResource"
         />
 
         <NewCategory

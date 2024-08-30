@@ -7,7 +7,7 @@ use Inertia\Inertia;
 
 class InventoryController extends Controller
 {
-    public function create()
+    public function view()
     {
         return Inertia::render('Inventory/Main');
     }
