@@ -76,4 +76,5 @@ Route::middleware('auth')->prefix('/')->group(function () {
 
 
 
+
 require __DIR__ . '/auth.php';
