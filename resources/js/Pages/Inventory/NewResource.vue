@@ -1,27 +1,54 @@
 <script>
 import InputLabel from "@/Components/InputLabel.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
+import axios from "axios";
 
 export default {
     props: ["category"],
     data() {
+        const formData = new FormData();
         return {
             form: {
                 item_name: "",
                 description: "",
-                category: "",
+                category_id: "",
                 quantity: "",
                 unit: "",
                 price: "",
                 date_added: "",
-                photos: null,
+                item_image: null,
             },
+            formData,
         };
     },
     methods: {
-        submitForm() {
-            // Handle form submission logic here
-            console.log("Form submitted:", this.form);
+        async submitForm() {
+            if (this.formData.has("file") && this.formData.has("folder")) {
+                try {
+                    const response = await axios.post(
+                        "/api/file/upload",
+                        this.formData
+                    );
+
+                    if (response.data.error) {
+                        alert(response.data.message);
+                    } else {
+                        const link = response.data.path;
+                        this.form.item_image = link;
+                        this.$emit("addResource", this.form);
+                    }
+                } catch (error) {
+                    alert(error);
+                    console.log(error);
+                }
+            } else {
+                this.$emit("addResource", this.form);
+            }
+        },
+        addResourceImage(event) {
+            const file = event.target.files[0];
+            this.formData.append("file", file);
+            this.formData.append("folder", "resources");
         },
     },
     components: {
@@ -55,7 +82,7 @@ export default {
                 <div>
                     <InputLabel value="Category" required />
                     <select
-                        v-model="form.category"
+                        v-model="form.category_id"
                         id="category"
                         class="select select-bordered w-full bg-white ring-1 ring-slate-300"
                         required
@@ -139,10 +166,10 @@ export default {
             <div>
                 <InputLabel value="Photos" />
                 <input
+                    @change="addResourceImage"
                     type="file"
                     id="photos"
                     class="file-input file-input-bordered w-full bg-white ring-1 ring-slate-300"
-                    multiple
                 />
             </div>
 

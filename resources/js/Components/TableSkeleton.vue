@@ -4,19 +4,19 @@
             <div
                 v-for="i in columnCount"
                 :key="i"
-                class="skeleton h-6 w-24 rounded"
+                class="skeleton h-6 w-24 rounded flex-1"
             ></div>
         </div>
 
         <div
             v-for="i in rowCount"
             :key="i"
-            class="skeleton-row flex gap-4 mt-4"
+            class="skeleton-row flex gap-4 mt-6"
         >
             <div
                 v-for="j in columnCount"
                 :key="j"
-                class="skeleton h-4 w-24 rounded"
+                class="skeleton h-4 w-24 rounded flex-1"
             ></div>
         </div>
     </div>
@@ -27,11 +27,11 @@ export default {
     props: {
         rowCount: {
             type: Number,
-            default: 5, // Default number of skeleton rows
+            default: 6,
         },
         columnCount: {
             type: Number,
-            default: 3, // Default number of skeleton columns
+            default: 5,
         },
     },
 };
@@ -47,7 +47,7 @@ export default {
 }
 
 .skeleton {
-    background-color: #bcc1c7; 
+    background-color: #bcc1c7;
     animation: pulse 1.5s infinite ease-in-out;
 }
 
