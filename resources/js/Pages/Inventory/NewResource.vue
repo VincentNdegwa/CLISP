@@ -2,9 +2,11 @@
 import InputLabel from "@/Components/InputLabel.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import axios from "axios";
+import { VDateInput } from "vuetify/labs/VDateInput";
 
 export default {
-    props: ["category"],
+    props: ["category", "dataEdit", "newResource", "loading"],
+
     data() {
         const formData = new FormData();
         return {
@@ -15,8 +17,8 @@ export default {
                 quantity: "",
                 unit: "",
                 price: "",
-                date_added: "",
                 item_image: null,
+                date: null,
             },
             formData,
         };
@@ -35,14 +37,22 @@ export default {
                     } else {
                         const link = response.data.path;
                         this.form.item_image = link;
-                        this.$emit("addResource", this.form);
+                        if (this.newResource != "false") {
+                            this.$emit("addResource", this.form);
+                        } else {
+                            this.$emit("updateResource", this.form);
+                        }
                     }
                 } catch (error) {
                     alert(error);
                     console.log(error);
                 }
             } else {
-                this.$emit("addResource", this.form);
+                if (this.newResource != "false") {
+                    this.$emit("addResource", this.form);
+                } else {
+                    this.$emit("updateResource", this.form);
+                }
             }
         },
         addResourceImage(event) {
@@ -50,10 +60,48 @@ export default {
             this.formData.append("file", file);
             this.formData.append("folder", "resources");
         },
+        dateChange(event) {
+            console.log(event);
+        },
     },
     components: {
         InputLabel,
         PrimaryButton,
+        VDateInput,
+    },
+    watch: {
+        dataEdit: {
+            handler(newValue) {
+                if (newValue && typeof newValue === "object") {
+                    this.form = { ...this.form, ...newValue };
+                } else {
+                    this.form = {
+                        item_name: "",
+                        description: "",
+                        category_id: "",
+                        quantity: "",
+                        unit: "",
+                        price: "",
+                        date_added: new Date(),
+                        item_image: null,
+                        date: null,
+                    };
+                }
+            },
+            deep: true,
+            immediate: true,
+        },
+    },
+    unmounted() {
+        this.form = {
+            item_name: "",
+            description: "",
+            category_id: "",
+            quantity: "",
+            unit: "",
+            price: "",
+            item_image: null,
+        };
     },
 };
 </script>
@@ -62,7 +110,13 @@ export default {
 
 <template>
     <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-6">
-        <h2 class="text-2xl font-semibold mb-6">New Inventory Item</h2>
+        <h2 class="text-2xl font-semibold mb-6">
+            {{
+                newResource != "false"
+                    ? "New Inventory Item"
+                    : "Update Inventory Item"
+            }}
+        </h2>
 
         <form @submit.prevent="submitForm" class="space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -136,29 +190,16 @@ export default {
                         required
                     />
                 </div>
-
-                <!-- Date Added -->
-                <div>
-                    <InputLabel value="Date Added" required />
-                    <input
-                        v-model="form.date_added"
-                        type="date"
-                        id="date_added"
-                        class="input input-bordered w-full bg-white ring-1 ring-slate-300"
-                        required
-                    />
-                </div>
             </div>
 
             <!-- Description -->
             <div>
-                <InputLabel value="Description" required />
+                <InputLabel value="Description" />
                 <textarea
                     v-model="form.description"
                     id="description"
                     class="textarea textarea-bordered w-full bg-white ring-1 ring-slate-300"
                     rows="3"
-                    required
                 ></textarea>
             </div>
 
@@ -175,12 +216,17 @@ export default {
 
             <!-- Submit Button -->
             <div class="flex w-full text-white gap-2">
-                <PrimaryButton type="submit" class="btn bg-slate-900 flex-1">
-                    Save Item
+                <PrimaryButton
+                    type="submit"
+                    class="btn bg-slate-900 flex-1"
+                    :disabled="loading"
+                >
+                    {{ newResource != "false" ? "Save Item" : "Update Item" }}
                 </PrimaryButton>
                 <PrimaryButton
                     type="button"
                     @click="$emit('close')"
+                    :disabled="loading"
                     class="btn bg-rose-600 hover:bg-rose-500 text-white flex-1"
                 >
                     Cancel

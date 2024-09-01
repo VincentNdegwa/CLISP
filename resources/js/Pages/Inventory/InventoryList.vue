@@ -29,13 +29,22 @@ export default {
             open: false,
             component: "",
         });
-        const openNewResorceForm = () => {
+        const openResorceForm = (component) => {
             modal.value.open = true;
-            modal.value.component = "NewResource";
+            modal.value.component = component;
         };
         const openNewCategoryForm = () => {
             modal.value.open = true;
             modal.value.component = "NewCategory";
+        };
+
+        const makeQuery = async (query) => {
+            await resources.fetchResources(query);
+        };
+
+        const updateResource = async (resource) => {
+            await resources.updateResource(resource);
+            closeModal();
         };
 
         return {
@@ -43,9 +52,11 @@ export default {
             resources,
             addResource,
             modal,
-            openNewResorceForm,
+            openResorceForm,
             openNewCategoryForm,
             closeModal,
+            makeQuery,
+            updateResource,
         };
     },
     data() {
@@ -55,6 +66,11 @@ export default {
                 message: "",
                 status: "",
             },
+            query: {
+                search: null,
+                category: null,
+            },
+            edit_form: {},
         };
     },
     methods: {
@@ -87,6 +103,14 @@ export default {
             this.notification.open = false;
             this.notification.message = "";
         },
+        makeSearch(search) {
+            this.query.search = search;
+            this.makeQuery(this.query);
+        },
+        editResource(data) {
+            this.edit_form = { ...data };
+            this.openResorceForm("UpdateResource");
+        },
     },
     components: {
         SearchInput,
@@ -106,20 +130,23 @@ export default {
             :status="notification.status"
         />
         <AlertNotification
-            :open="resources.success || resources.error"
-            :message="resources.success || resources.error"
+            :open="resources.success != null || resources.error != null"
+            :message="
+                resources.success != null
+                    ? resources.success
+                    : '' || resources.error != null
+                    ? resources.error
+                    : ''
+            "
             :status="resources.success ? 'success' : 'error'"
         />
 
         <div class="w-full mt-2 flex justify-between">
-            <SearchInput />
+            <SearchInput @search="makeSearch" />
             <div class="join gap-2">
-                <!-- <button class="btn join-item text-white">
-                    <i class="bi bi-funnel"></i> Filter
-                </button> -->
                 <button
                     class="btn join-item text-white"
-                    @click="openNewResorceForm"
+                    @click="() => openResorceForm('NewResource')"
                 >
                     Add Resources
                 </button>
@@ -172,7 +199,9 @@ export default {
                                     class="dropdown-content menu bg-white rounded-box z-[1] w-52 p-2 shadow"
                                 >
                                     <li><a>VIew</a></li>
-                                    <li><a>Edit</a></li>
+                                    <li @click="() => editResource(item)">
+                                        <a>Edit</a>
+                                    </li>
                                     <li><a>Delete</a></li>
                                 </ul>
                             </div>
@@ -219,6 +248,19 @@ export default {
             @close="closeModal"
             :category="category"
             @addResource="addResource"
+            :loading="resources.loading"
+            newResource="true"
+            dataEdit="null"
+        />
+        <NewResource
+            v-if="modal.component === 'UpdateResource'"
+            @close="closeModal"
+            :category="category"
+            @addResource="addResource"
+            :dataEdit="edit_form"
+            newResource="false"
+            @updateResource="updateResource"
+            :loading="resources.loading"
         />
 
         <NewCategory

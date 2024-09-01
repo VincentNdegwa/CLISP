@@ -10,31 +10,42 @@ export const useResourceStore = defineStore("resource_store", {
         success: null,
     }),
     actions: {
-        async fetchResources() {
+        async fetchResources(queries) {
             const store = useUserStore();
             const businessId = store.business;
 
+            let link = `/api/item/${businessId}/list`;
+            if (queries) {
+                if (queries.search) {
+                    link += `?search=${queries.search}`;
+                }
+                if (queries.category) {
+                    link += `?category=${queries.category}`;
+                }
+            }
             if (!businessId) {
                 this.error = "Business ID not found.";
                 return;
             }
-            this.loading = true
-            this.error = null
+            this.loading = true;
+            this.error = null;
+
             try {
-                const response = await axios.get(`/api/item/${businessId}/list`)
+                const response = await axios.get(link);
                 if (response.data.error) {
-                    this.error = response.data.error
+                    this.error = response.data.error;
                 } else {
-                    this.items = response.data.data
-                    this.success = response.data.success
+                    this.items = response.data.data;
+                    this.success = response.data.success;
                 }
             } catch (error) {
-                this.error = error.response ? error.response.data.message : error.message;
-
+                this.error = error.response
+                    ? error.response.data.message
+                    : error.message;
             } finally {
-                this.loading =false
+                this.loading = false;
             }
-         },
+        },
         async addResource(item) {
             const store = useUserStore();
             const businessId = store.business;
@@ -43,26 +54,68 @@ export const useResourceStore = defineStore("resource_store", {
                 this.error = "Business ID not found.";
                 return;
             }
-            this.loading = true
-            this.error = null
+            this.loading = true;
+            this.error = null;
 
             try {
-                const response = await axios.post(`/api/item/${businessId}/create`, item)
+                const response = await axios.post(
+                    `/api/item/${businessId}/create`,
+                    item
+                );
                 if (response.data.error) {
-                    this.error = response.data.error
+                    this.error = response.data.error;
                     if (response.data.errors) {
-                        this.error = response.data.errors
+                        this.error = response.data.errors;
                     }
                 } else {
-                    this.items.data.push(response.data.data)
-                    this.success = response.data.message
-
+                    this.items.data.push(response.data.data);
+                    this.success = response.data.message;
                 }
             } catch (error) {
-                this.error = error.response ? error.response.data.message : error.message;
-            }finally {
+                this.error = error.response
+                    ? error.response.data.message
+                    : error.message;
+            } finally {
                 this.loading = false;
             }
-        }
+        },
+        async updateResource(data) {
+            const store = useUserStore();
+            const businessId = store.business;
+
+            if (!businessId) {
+                this.error = "Business ID not found.";
+                return;
+            }
+            this.loading = true;
+            this.error = null;
+
+            try {
+                const response = await axios.post(
+                    `/api/item/${businessId}/update`,
+                    data
+                );
+                if (response.data.error) {
+                    this.error = response.data.error;
+                    if (response.data.errors) {
+                        this.error = response.data.errors;
+                    }
+                } else {
+                    this.success = response.data.message;
+                    this.items.data = this.items.data.map((resource) => {
+                        if (resource.id === data.id) {
+                            return data;
+                        }
+                        return resource;
+                    });
+                }
+            } catch (error) {
+                this.error = error.response
+                    ? error.response.data.message
+                    : error.message;
+            } finally {
+                this.loading = false;
+            }
+        },
     },
 });
