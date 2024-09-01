@@ -29,9 +29,9 @@ export default {
             open: false,
             component: "",
         });
-        const openNewResorceForm = () => {
+        const openResorceForm = (component) => {
             modal.value.open = true;
-            modal.value.component = "NewResource";
+            modal.value.component = component;
         };
         const openNewCategoryForm = () => {
             modal.value.open = true;
@@ -39,7 +39,13 @@ export default {
         };
 
         const makeQuery = async (query) => {
-            resources.fetchResources(query);
+            await resources.fetchResources(query);
+        };
+
+        const updateResource = async (resource) => {
+            console.log("trying to call the store");
+
+            await resources.updateResource(resource);
         };
 
         return {
@@ -47,10 +53,11 @@ export default {
             resources,
             addResource,
             modal,
-            openNewResorceForm,
+            openResorceForm,
             openNewCategoryForm,
             closeModal,
             makeQuery,
+            updateResource,
         };
     },
     data() {
@@ -64,6 +71,7 @@ export default {
                 search: null,
                 category: null,
             },
+            edit_form: {},
         };
     },
     methods: {
@@ -100,6 +108,10 @@ export default {
             this.query.search = search;
             this.makeQuery(this.query);
         },
+        editResource(data) {
+            this.edit_form = { ...data };
+            this.openResorceForm("UpdateResource");
+        },
     },
     components: {
         SearchInput,
@@ -127,12 +139,9 @@ export default {
         <div class="w-full mt-2 flex justify-between">
             <SearchInput @search="makeSearch" />
             <div class="join gap-2">
-                <!-- <button class="btn join-item text-white">
-                    <i class="bi bi-funnel"></i> Filter
-                </button> -->
                 <button
                     class="btn join-item text-white"
-                    @click="openNewResorceForm"
+                    @click="() => openResorceForm('NewResource')"
                 >
                     Add Resources
                 </button>
@@ -185,7 +194,9 @@ export default {
                                     class="dropdown-content menu bg-white rounded-box z-[1] w-52 p-2 shadow"
                                 >
                                     <li><a>VIew</a></li>
-                                    <li><a>Edit</a></li>
+                                    <li @click="() => editResource(item)">
+                                        <a>Edit</a>
+                                    </li>
                                     <li><a>Delete</a></li>
                                 </ul>
                             </div>
@@ -232,6 +243,17 @@ export default {
             @close="closeModal"
             :category="category"
             @addResource="addResource"
+            newResource="true"
+            dataEdit="null"
+        />
+        <NewResource
+            v-if="modal.component === 'UpdateResource'"
+            @close="closeModal"
+            :category="category"
+            @addResource="addResource"
+            :dataEdit="edit_form"
+            newResource="false"
+            @updateResource="updateResource"
         />
 
         <NewCategory

@@ -4,7 +4,8 @@ import PrimaryButton from "@/Components/PrimaryButton.vue";
 import axios from "axios";
 
 export default {
-    props: ["category"],
+    props: ["category", "dataEdit", "newResource"],
+
     data() {
         const formData = new FormData();
         return {
@@ -42,7 +43,11 @@ export default {
                     console.log(error);
                 }
             } else {
-                this.$emit("addResource", this.form);
+                if (this.newResource != "false") {
+                    this.$emit("addResource", this.form);
+                } else {
+                    this.$emit("updateResource", this.form);
+                }
             }
         },
         addResourceImage(event) {
@@ -55,6 +60,30 @@ export default {
         InputLabel,
         PrimaryButton,
     },
+    watch: {
+        dataEdit: {
+            handler(newValue) {
+                if (newValue && newValue != null) {
+                    this.form = newValue;
+                }
+            },
+            deep: true,
+            immediate: true,
+        },
+    },
+    unmounted() {
+        console.log("unmounted the interface");
+        this.form = {
+            item_name: "",
+            description: "",
+            category_id: "",
+            quantity: "",
+            unit: "",
+            price: "",
+            date_added: "",
+            item_image: null,
+        };
+    },
 };
 </script>
 
@@ -62,7 +91,13 @@ export default {
 
 <template>
     <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-6">
-        <h2 class="text-2xl font-semibold mb-6">New Inventory Item</h2>
+        <h2 class="text-2xl font-semibold mb-6">
+            {{
+                newResource != "false"
+                    ? "New Inventory Item"
+                    : "Update Inventory Item"
+            }}
+        </h2>
 
         <form @submit.prevent="submitForm" class="space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -175,7 +210,7 @@ export default {
             <!-- Submit Button -->
             <div class="flex w-full text-white gap-2">
                 <PrimaryButton type="submit" class="btn bg-slate-900 flex-1">
-                    Save Item
+                    {{ newResource != "false" ? "Save Item" : "Update Item" }}
                 </PrimaryButton>
                 <PrimaryButton
                     type="button"
