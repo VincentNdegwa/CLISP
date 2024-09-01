@@ -119,4 +119,33 @@ class ResourceItemController extends Controller
             ]);
         }
     }
+
+    public function delete($id)
+    {
+        try {
+            // Validate if the item exists
+            $item = ResourceItem::find($id);
+
+            if (!$item) {
+                return response()->json([
+                    'error' => true,
+                    'message' => 'Resource item not found.',
+                ]);
+            }
+
+            $item->delete();
+
+            return response()->json([
+                'error' => false,
+                'message' => 'Resource item deleted successfully.',
+                'data' => $item
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => true,
+                'message' => 'An error occurred while deleting the resource item.',
+                'details' => $e->getMessage()
+            ]);
+        }
+    }
 }

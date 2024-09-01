@@ -5,6 +5,7 @@ use App\Http\Controllers\FileSystemController;
 use App\Http\Controllers\ResourceCategoryController;
 use App\Http\Controllers\ResourceItemController;
 use App\Http\Controllers\SubscriptionController;
+use App\Models\ResourceItem;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('business')->group(function () {
@@ -25,6 +26,7 @@ Route::prefix("item/{business_id}")->group(function () {
     Route::get("/list", [ResourceItemController::class, 'read']);
     Route::post("/update", [ResourceItemController::class, 'update']);
 });
+Route::delete("item/delete/{id}", [ResourceItemController::class, 'delete']);
 Route::prefix("category/{business_id}")->group(function () {
     Route::post("/create", [ResourceCategoryController::class, "create"]);
     Route::get("/list", [ResourceCategoryController::class, "read"]);

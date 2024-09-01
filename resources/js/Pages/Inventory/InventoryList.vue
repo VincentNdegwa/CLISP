@@ -7,6 +7,7 @@ import { useResourceCategoryStore } from "@/Store/ResourceCategory";
 import { useResourceStore } from "@/Store/Resource";
 import TableSkeleton from "@/Components/TableSkeleton.vue";
 import { ref } from "vue";
+import ConfirmationModal from "@/Components/ConfirmationModal.vue";
 
 export default {
     setup() {
@@ -47,6 +48,10 @@ export default {
             closeModal();
         };
 
+        const deleteResource = async (id) => {
+            await resources.deleteResource(id);
+        };
+
         return {
             category,
             resources,
@@ -57,6 +62,7 @@ export default {
             closeModal,
             makeQuery,
             updateResource,
+            deleteResource,
         };
     },
     data() {
@@ -71,9 +77,28 @@ export default {
                 category: null,
             },
             edit_form: {},
+            confirmBox: {
+                open: false,
+                message: "Are you sure you want to proceed?",
+                title: "Confirm Action",
+            },
+            item_to_delete: {},
         };
     },
     methods: {
+        openConfirm(message, title) {
+            this.confirmBox.open = true;
+            this.confirmBox.title = title;
+            this.confirmBox.message = message;
+        },
+        closeConfirm() {
+            this.confirmBox.open = false;
+            this.confirmBox.message = "Are you sure you want to proceed?";
+            this.confirmBox.title = "Confirm Action";
+        },
+        handleCofirm() {
+            this.deleteResource(this.item_to_delete.id);
+        },
         formatDate(date) {
             return new Date(date).toLocaleDateString();
         },
@@ -111,6 +136,13 @@ export default {
             this.edit_form = { ...data };
             this.openResorceForm("UpdateResource");
         },
+        handleResourceDelete(data) {
+            this.openConfirm(
+                `Are you sure you want to delete item ${data.item_name}? This process cannot be undone`,
+                "Confirm Item Delete"
+            );
+            this.item_to_delete = data;
+        },
     },
     components: {
         SearchInput,
@@ -118,6 +150,7 @@ export default {
         NewResource,
         NewCategory,
         TableSkeleton,
+        ConfirmationModal,
     },
 };
 </script>
@@ -139,6 +172,13 @@ export default {
                     : ''
             "
             :status="resources.success ? 'success' : 'error'"
+        />
+        <ConfirmationModal
+            :isOpen="confirmBox.open"
+            :message="confirmBox.message"
+            :title="confirmBox.title"
+            @confirm="handleCofirm"
+            @close="closeConfirm"
         />
 
         <div class="w-full mt-2 flex justify-between">
@@ -202,7 +242,13 @@ export default {
                                     <li @click="() => editResource(item)">
                                         <a>Edit</a>
                                     </li>
-                                    <li><a>Delete</a></li>
+                                    <li
+                                        @click="
+                                            () => handleResourceDelete(item)
+                                        "
+                                    >
+                                        <a>Delete</a>
+                                    </li>
                                 </ul>
                             </div>
                         </td>
