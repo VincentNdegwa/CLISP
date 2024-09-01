@@ -90,7 +90,6 @@ class ResourceItemController extends Controller
                 "quantity" => 'required|min:0',
                 "unit" => 'required|string|max:50',
                 "price" => 'required|numeric|min:0',
-                "date_added" => 'required'
             ]);
             $item = ResourceItem::where('id', $request->input('id'))->update([
                 'item_name' => $request->input('item_name'),
@@ -99,12 +98,11 @@ class ResourceItemController extends Controller
                 'quantity' => $request->input('quantity'),
                 'unit' => $request->input('unit'),
                 'price' => $request->input('price'),
-                'date_added' => $request->input('date_added'),
                 'item_image' => $request->input('item_image'),
             ]);
             return response()->json([
                 'error' => false,
-                'message' => 'Resource item created successfully.',
+                'message' => 'Resource item updated successfully.',
                 'data' => $item
             ]);
         } catch (ValidationException $e) {

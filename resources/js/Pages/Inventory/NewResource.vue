@@ -2,6 +2,7 @@
 import InputLabel from "@/Components/InputLabel.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import axios from "axios";
+import { VDateInput } from "vuetify/labs/VDateInput";
 
 export default {
     props: ["category", "dataEdit", "newResource", "loading"],
@@ -16,8 +17,8 @@ export default {
                 quantity: "",
                 unit: "",
                 price: "",
-                date_added: "",
                 item_image: null,
+                date: null,
             },
             formData,
         };
@@ -36,7 +37,11 @@ export default {
                     } else {
                         const link = response.data.path;
                         this.form.item_image = link;
-                        this.$emit("addResource", this.form);
+                        if (this.newResource != "false") {
+                            this.$emit("addResource", this.form);
+                        } else {
+                            this.$emit("updateResource", this.form);
+                        }
                     }
                 } catch (error) {
                     alert(error);
@@ -55,16 +60,32 @@ export default {
             this.formData.append("file", file);
             this.formData.append("folder", "resources");
         },
+        dateChange(event) {
+            console.log(event);
+        },
     },
     components: {
         InputLabel,
         PrimaryButton,
+        VDateInput,
     },
     watch: {
         dataEdit: {
             handler(newValue) {
-                if (newValue && newValue != null) {
-                    this.form = newValue;
+                if (newValue && typeof newValue === "object") {
+                    this.form = { ...this.form, ...newValue };
+                } else {
+                    this.form = {
+                        item_name: "",
+                        description: "",
+                        category_id: "",
+                        quantity: "",
+                        unit: "",
+                        price: "",
+                        date_added: new Date(),
+                        item_image: null,
+                        date: null,
+                    };
                 }
             },
             deep: true,
@@ -79,7 +100,6 @@ export default {
             quantity: "",
             unit: "",
             price: "",
-            date_added: "",
             item_image: null,
         };
     },
@@ -167,18 +187,6 @@ export default {
                         class="input input-bordered w-full bg-white ring-1 ring-slate-300"
                         min="0"
                         step="0.01"
-                        required
-                    />
-                </div>
-
-                <!-- Date Added -->
-                <div>
-                    <InputLabel value="Date Added" required />
-                    <input
-                        v-model="form.date_added"
-                        type="date"
-                        id="date_added"
-                        class="input input-bordered w-full bg-white ring-1 ring-slate-300"
                         required
                     />
                 </div>

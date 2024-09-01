@@ -17,7 +17,6 @@ class ResourceItem extends Model
         'quantity',
         'unit',
         'price',
-        'date_added',
         'item_image',
     ];
 

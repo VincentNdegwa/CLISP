@@ -130,8 +130,14 @@ export default {
             :status="notification.status"
         />
         <AlertNotification
-            :open="resources.success || resources.error"
-            :message="resources.success || resources.error"
+            :open="resources.success != null || resources.error != null"
+            :message="
+                resources.success != null
+                    ? resources.success
+                    : '' || resources.error != null
+                    ? resources.error
+                    : ''
+            "
             :status="resources.success ? 'success' : 'error'"
         />
 
