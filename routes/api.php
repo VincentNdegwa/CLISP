@@ -23,6 +23,7 @@ Route::prefix('file')->group(function () {
 Route::prefix("item/{business_id}")->group(function () {
     Route::post("/create", [ResourceItemController::class, "create"]);
     Route::get("/list", [ResourceItemController::class, 'read']);
+    Route::post("/update", [ResourceItemController::class, 'update']);
 });
 Route::prefix("category/{business_id}")->group(function () {
     Route::post("/create", [ResourceCategoryController::class, "create"]);

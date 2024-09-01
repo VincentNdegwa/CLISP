@@ -11,8 +11,6 @@ export const useResourceStore = defineStore("resource_store", {
     }),
     actions: {
         async fetchResources(queries) {
-            console.log('loadibg the queries');
-
             const store = useUserStore();
             const businessId = store.business;
 
@@ -89,11 +87,28 @@ export const useResourceStore = defineStore("resource_store", {
                 this.error = "Business ID not found.";
                 return;
             }
-            console.log('in the store');
             this.loading = true;
             this.error = null;
 
             try {
+                const response = await axios.post(
+                    `/api/item/${businessId}/update`,
+                    data
+                );
+                if (response.data.error) {
+                    this.error = response.data.error;
+                    if (response.data.errors) {
+                        this.error = response.data.errors;
+                    }
+                } else {
+                    this.success = response.data.message;
+                    this.items.data = this.items.data.map((resource) => {
+                        if (resource.id === data.id) {
+                            return data;
+                        }
+                        return resource;
+                    });
+                }
             } catch (error) {
                 this.error = error.response
                     ? error.response.data.message

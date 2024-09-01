@@ -4,7 +4,7 @@ import PrimaryButton from "@/Components/PrimaryButton.vue";
 import axios from "axios";
 
 export default {
-    props: ["category", "dataEdit", "newResource"],
+    props: ["category", "dataEdit", "newResource", "loading"],
 
     data() {
         const formData = new FormData();
@@ -72,7 +72,6 @@ export default {
         },
     },
     unmounted() {
-        console.log("unmounted the interface");
         this.form = {
             item_name: "",
             description: "",
@@ -209,12 +208,17 @@ export default {
 
             <!-- Submit Button -->
             <div class="flex w-full text-white gap-2">
-                <PrimaryButton type="submit" class="btn bg-slate-900 flex-1">
+                <PrimaryButton
+                    type="submit"
+                    class="btn bg-slate-900 flex-1"
+                    :disabled="loading"
+                >
                     {{ newResource != "false" ? "Save Item" : "Update Item" }}
                 </PrimaryButton>
                 <PrimaryButton
                     type="button"
                     @click="$emit('close')"
+                    :disabled="loading"
                     class="btn bg-rose-600 hover:bg-rose-500 text-white flex-1"
                 >
                     Cancel

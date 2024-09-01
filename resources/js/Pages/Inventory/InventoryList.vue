@@ -43,9 +43,8 @@ export default {
         };
 
         const updateResource = async (resource) => {
-            console.log("trying to call the store");
-
             await resources.updateResource(resource);
+            closeModal();
         };
 
         return {
@@ -243,6 +242,7 @@ export default {
             @close="closeModal"
             :category="category"
             @addResource="addResource"
+            :loading="resources.loading"
             newResource="true"
             dataEdit="null"
         />
@@ -254,6 +254,7 @@ export default {
             :dataEdit="edit_form"
             newResource="false"
             @updateResource="updateResource"
+            :loading="resources.loading"
         />
 
         <NewCategory

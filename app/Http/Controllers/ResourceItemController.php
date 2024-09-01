@@ -79,4 +79,46 @@ class ResourceItemController extends Controller
             'data' => $items
         ]);
     }
+
+    public function update(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'id' => 'required|exists:resource_item,id',
+                "item_name" => 'required|string|max:255',
+                "category_id" => 'required|exists:resource_category,id',
+                "quantity" => 'required|min:0',
+                "unit" => 'required|string|max:50',
+                "price" => 'required|numeric|min:0',
+                "date_added" => 'required'
+            ]);
+            $item = ResourceItem::where('id', $request->input('id'))->update([
+                'item_name' => $request->input('item_name'),
+                'description' => $request->input('description'),
+                'category_id' => $request->input('category_id'),
+                'quantity' => $request->input('quantity'),
+                'unit' => $request->input('unit'),
+                'price' => $request->input('price'),
+                'date_added' => $request->input('date_added'),
+                'item_image' => $request->input('item_image'),
+            ]);
+            return response()->json([
+                'error' => false,
+                'message' => 'Resource item created successfully.',
+                'data' => $item
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'error' => true,
+                'message' => 'Validation error.',
+                'errors' => $e->errors()
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => true,
+                'message' => 'An unexpected error occurred.',
+                'errors' => $e->getMessage()
+            ]);
+        }
+    }
 }
