@@ -12,6 +12,7 @@ Route::prefix('business')->group(function () {
     Route::post('/create', [BusinessController::class, 'Create'])->name('business.create');
     Route::post('/update', [BusinessController::class, 'Update'])->name('business.update');
     Route::post('/delete', [BusinessController::class, 'Delete'])->name('business.delete');
+    Route::get('/details', [BusinessController::class, 'getDetails'])->name('business.details');
 });
 
 Route::prefix('subscription')->group(function () {
@@ -26,8 +27,12 @@ Route::prefix("item/{business_id}")->group(function () {
     Route::get("/list", [ResourceItemController::class, 'read']);
     Route::post("/update", [ResourceItemController::class, 'update']);
 });
+
 Route::delete("item/delete/{id}", [ResourceItemController::class, 'delete']);
+Route::delete("category/delete/{id}", [ResourceCategoryController::class, 'delete']);
+
 Route::prefix("category/{business_id}")->group(function () {
     Route::post("/create", [ResourceCategoryController::class, "create"]);
     Route::get("/list", [ResourceCategoryController::class, "read"]);
+    Route::post("/update", [ResourceCategoryController::class, "update"]);
 });

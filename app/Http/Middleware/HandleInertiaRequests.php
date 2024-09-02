@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\BusinessUser;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -34,6 +35,7 @@ class HandleInertiaRequests extends Middleware
         // Check if the user is authenticated
         $user = Auth::user();
         $user_businesses = null;
+        $role = null;
 
         if ($user) {
             $user_id = $user->id;
@@ -45,7 +47,12 @@ class HandleInertiaRequests extends Middleware
 
             $default_business = $user_businesses->business_user->first()->business ?? null;
             $user_businesses->default_business = $default_business;
+
+            $role = BusinessUser::where('user_id', $user->id)
+                ->where('business_id', $default_business->business_id)
+                ->first();
         }
+
 
         return [
             ...parent::share($request),
@@ -53,6 +60,7 @@ class HandleInertiaRequests extends Middleware
                 'user' => $request->user(),
             ],
             "user_businesses" => $user_businesses,
+            "role" => $role
         ];
     }
 }

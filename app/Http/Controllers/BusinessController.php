@@ -6,6 +6,7 @@ use App\Models\Business;
 use App\Models\BusinessUser;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class BusinessController extends Controller
@@ -134,5 +135,16 @@ class BusinessController extends Controller
                 'errors' => $e->getMessage()
             ], 500); // HTTP 500 Internal Server Error
         }
+    }
+
+    public function getDetails()
+    {
+        $businessTypes = DB::table("business_types")->get(["id", "name"]);
+        $industries = DB::table("industries")->get(['id', 'name']);
+
+        return response()->json([
+            'businessTypes' => $businessTypes,
+            'industries' => $industries,
+        ]);
     }
 }

@@ -295,7 +295,9 @@ export default {
                     >
                         <td>{{ index + 1 }}</td>
                         <td>{{ item.item_name }}</td>
-                        <td>{{ item.category.name }}</td>
+                        <td>
+                            {{ item.category ? item.category?.name : "--" }}
+                        </td>
                         <td>{{ item.quantity }}</td>
                         <td>{{ item.unit }}</td>
                         <td>{{ item.price }}</td>

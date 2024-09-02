@@ -81,4 +81,60 @@ class ResourceCategoryController extends Controller
             ], 404);
         }
     }
+    public function update(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'id' => 'required|exists:resource_category,id',
+                "name" => 'required|string|max:255',
+
+            ]);
+            $item = ResourceCategory::where('id', $request->input('id'))->update([
+                'name' => $request->input('name'),
+                'description' => $request->input('description'),
+            ]);
+            return response()->json([
+                'error' => false,
+                'message' => 'Resource category updated successfully.',
+                'data' => $item
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'error' => true,
+                'message' => 'Validation error.',
+                'errors' => $e->errors()
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => true,
+                'message' => 'An unexpected error occurred.',
+                'errors' => $e->getMessage()
+            ]);
+        }
+    }
+
+    public function delete($id)
+    {
+        try {
+            $item = ResourceCategory::find($id);
+            if ($item) {
+                $item->delete();
+                return response()->json([
+                    'error' => false,
+                    'message' => 'Resource category deleted successfully.'
+                ]);
+            } else {
+                return response()->json([
+                    'error' => true,
+                    'message' => 'Resource category not found.'
+                ], 404);
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => true,
+                'message' => 'An unexpected error occurred.',
+                'errors' => $e->getMessage()
+            ]);
+        }
+    }
 }

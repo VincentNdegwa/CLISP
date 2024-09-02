@@ -123,7 +123,6 @@ class ResourceItemController extends Controller
     public function delete($id)
     {
         try {
-            // Validate if the item exists
             $item = ResourceItem::find($id);
 
             if (!$item) {

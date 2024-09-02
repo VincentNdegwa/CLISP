@@ -6,6 +6,7 @@ import { Head } from "@inertiajs/vue3";
 import NewCategory from "./NewCategory.vue";
 import { ref } from "vue";
 import TableSkeleton from "@/Components/TableSkeleton.vue";
+import ConfirmationModal from "@/Components/ConfirmationModal.vue";
 
 export default {
     components: {
@@ -14,6 +15,7 @@ export default {
         Modal,
         NewCategory,
         TableSkeleton,
+        ConfirmationModal,
     },
     setup() {
         const categories = useResourceCategoryStore();
@@ -26,6 +28,12 @@ export default {
         };
         const categoryUpdate = async (category) => {
             await categories.updateCategory(category);
+            if (categories.success) {
+                closeModal();
+            }
+        };
+        const categoryDelete = async (id) => {
+            await categories.deleteCategory(id);
             if (categories.success) {
                 closeModal();
             }
@@ -51,11 +59,18 @@ export default {
             closeModal,
             categoryAdd,
             categoryUpdate,
+            categoryDelete,
         };
     },
     data() {
         return {
             category_data: {},
+            confirmBox: {
+                open: false,
+                message: "Are you sure you want to proceed?",
+                title: "Confirm Action",
+            },
+            category_to_delete: {},
         };
     },
     methods: {
@@ -68,12 +83,33 @@ export default {
         updateCategory(data) {
             this.categoryUpdate(data);
         },
+        openConfirm(message, title, data) {
+            this.confirmBox.open = true;
+            this.confirmBox.title = title;
+            this.confirmBox.message = message;
+            this.category_to_delete = data;
+        },
+        closeConfirm() {
+            this.confirmBox.open = false;
+            this.confirmBox.message = "Are you sure you want to proceed?";
+            this.confirmBox.title = "Confirm Action";
+        },
+        handleCofirm() {
+            this.categoryDelete(this.category_to_delete.id);
+        },
     },
 };
 </script>
 <template>
     <Head title="Resource Categories" />
     <AuthenticatedLayout>
+        <ConfirmationModal
+            :isOpen="confirmBox.open"
+            :message="confirmBox.message"
+            :title="confirmBox.title"
+            @confirm="handleCofirm"
+            @close="closeConfirm"
+        />
         <AlertNotification
             :open="categories.error != null"
             :message="categories.error ? categories.error : ''"
@@ -137,7 +173,18 @@ export default {
                                         <li @click="openEditCategory(item)">
                                             <a>Edit</a>
                                         </li>
-                                        <li><a>Delete</a></li>
+                                        <li
+                                            @click="
+                                                () =>
+                                                    openConfirm(
+                                                        `Are you sure you want to delete category ${item.name}? This process cannot be undone`,
+                                                        'Confirm Item Delete',
+                                                        item
+                                                    )
+                                            "
+                                        >
+                                            <a>Delete</a>
+                                        </li>
                                     </ul>
                                 </div>
                             </td>
