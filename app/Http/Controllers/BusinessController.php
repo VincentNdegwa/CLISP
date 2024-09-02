@@ -24,7 +24,7 @@ class BusinessController extends Controller
             $validatedData = $request->validate([
                 'business_name' => 'required|string|max:255',
                 'phone_number' => 'required|string|max:20',
-                'email' => 'required|email|max:255|unique:business,email',
+                'email' => 'required|email|max:255',
                 'registration_number' => 'required|string|max:50|unique:business,registration_number',
                 'date_registered' => 'required|date',
                 'business_type_id' => 'required|exists:business_types,id',

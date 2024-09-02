@@ -16,7 +16,7 @@ export default {
             business_type_id: "",
             location: "",
             phone_number: "",
-            email: this.$page.props.auth.user.email,
+            email: "",
             website: "",
             industry_id: "",
             registration_number: "",
@@ -28,6 +28,11 @@ export default {
             form,
             businessTypes: [],
             industries: [],
+            notification: {
+                open: false,
+                message: "",
+                status: "error",
+            },
         };
     },
     components: {
@@ -37,7 +42,7 @@ export default {
         PrimaryButton,
     },
     mounted() {
-        const response = axios
+        axios
             .get("/api/business/details")
             .then((response) => {
                 this.businessTypes = response.data.businessTypes;
@@ -49,23 +54,40 @@ export default {
     },
     methods: {
         submit() {
-            axios.post("api/business/create", this.form).then((res) => {
-                console.log(res);
+            axios
+                .post("/api/business/create", this.form)
+                .then((res) => {
+                    if (!res.data.error) {
+                        this.$emit("close", res.data.data);
+                        this.notification.open = true;
+                        this.notification.message = res.data.message;
+                        this.notification.status = "success";
+                    }
 
-                if (!res.data.error) {
-                    this.$emit("close", res.data.data);
-                }
-
-                if (res.data.error) {
-                    this.form.hasErrors = true;
-                    this.form.errors = res.data.errors;
-                }
-            });
+                    if (res.data.error) {
+                        this.form.hasErrors = true;
+                        this.form.errors = res.data.errors;
+                        this.notification.open = true;
+                        this.notification.message = res.data.message;
+                        this.notification.status = "error";
+                    }
+                })
+                .catch((errorMessages) => {
+                    console.log(errorMessages);
+                    this.notification.open = true;
+                    this.notification.message = errorMessages.message;
+                    this.notification.status = "error";
+                });
         },
     },
 };
 </script>
 <template>
+    <AlertNotification
+        :open="notification.open"
+        :message="notification.message"
+        :status="notification.status"
+    />
     <div class="w-fit h-fit overflow-y-scroll bg-white grid text-slate-950 p-3">
         <div class="flex flex-col w-full p-2 sm:p-0 sm:w-fit">
             <div class="text-xl text-center">Create new business!</div>
@@ -88,6 +110,27 @@ export default {
                         required
                         autofocus
                         autocomplete="business_name"
+                    />
+
+                    <InputError
+                        class="mt-2"
+                        :message="form.errors.business_name"
+                    />
+                </div>
+                <div class="mt-4">
+                    <InputLabel
+                        for="email"
+                        value="Business Email"
+                        required="true"
+                    />
+
+                    <TextInput
+                        id="email"
+                        type="email"
+                        class="mt-1 block w-full border"
+                        v-model="form.email"
+                        required
+                        autocomplete="email"
                     />
 
                     <InputError

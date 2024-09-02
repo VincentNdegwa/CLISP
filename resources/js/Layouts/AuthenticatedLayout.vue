@@ -56,7 +56,7 @@ export default {
             }
         },
         fetchBusinessData() {
-            console.log(this.default_business);
+            location.reload();
         },
         createNewBusiness() {
             this.modal.open = true;
@@ -74,9 +74,7 @@ export default {
         <NewBusiness @close="closeModal" />
     </Modal>
     <div>
-        <div
-            class="min-h-screen overflow-scroll bg-gray-100 text-slate-950 relative"
-        >
+        <div class="min-h-screen bg-gray-100 text-slate-950 relative">
             <nav
                 :class="[
                     'bg-white border-b w-[230px] fixed top-0 left-0 h-[100vh] border-gray-100 z-20 transition-all duration-200 ease-linear',
@@ -212,14 +210,14 @@ export default {
             <!-- Page Content -->
             <main
                 :class="[
-                    'pt-[6vh] h-[100vh] overflow-y-scroll hide-overflow transition-all duration-200 ease-linear',
+                    'pt-[6vh] h-[100vh] transition-all duration-200 ease-linear',
                     !menuOpen ? 'ps-0' : 'ps-[230px]',
                 ]"
             >
-                <div class="py-5">
+                <div class="py-0">
                     <div class="w-full mx-auto sm:px-4 lg:px-6">
                         <div
-                            class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-2"
+                            class="bg-white overflow-y-scroll hide-overflow shadow-sm sm:rounded-lg p-2"
                         >
                             <slot />
                         </div>
