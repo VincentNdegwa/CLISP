@@ -18,8 +18,7 @@ export default {
 <template>
     <Head title="Inventory" />
     <AuthenticatedLayout>
-        <div class="h-[88vh] w-full">
-            <div class="w-full">Navigations</div>
+        <div class="h-[88vh] w-full hide-overflow">
             <InventoryList />
         </div>
     </AuthenticatedLayout>

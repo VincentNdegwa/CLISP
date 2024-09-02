@@ -13,7 +13,7 @@ export default {
 };
 </script>
 <template>
-    <Head title="Item" />
+    <Head :title="item.item_name" />
     <AuthenticatedLayout>
         <div class="mx-auto p-4">
             <!-- Header Section -->
@@ -30,9 +30,7 @@ export default {
                 </h1>
                 <button
                     class="px-4 py-2 bg-rose-500 text-white font-semibold rounded-lg hover:bg-rose-600 transition duration-200"
-                >
-                    <!-- Edit Item -->
-                </button>
+                ></button>
             </div>
 
             <!-- Item Image and Info Section -->
@@ -86,10 +84,15 @@ export default {
 
             <!-- Transaction History Section -->
             <div class="mt-10">
-                <h3 class="text-xl font-bold text-slate-900 border-b-2 pb-2">
-                    Transaction History
-                </h3>
-                <div class="overflow-x-auto mt-4">
+                <div class="w-full flex justify-between">
+                    <h3
+                        class="text-xl font-bold text-slate-900 border-b-2 pb-2"
+                    >
+                        Transaction History
+                    </h3>
+                    <PrimaryButton> View All </PrimaryButton>
+                </div>
+                <div class="overflow-x-auto mt-4 h-fit">
                     <table
                         class="table w-full bg-slate-50 rounded-lg shadow-sm"
                     >
