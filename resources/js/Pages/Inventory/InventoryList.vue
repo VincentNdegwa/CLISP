@@ -157,6 +157,10 @@ export default {
         clearFilters() {
             this.query.category = "";
             this.isDropdownOpen = false;
+            this.makeQuery(this.query);
+        },
+        viewItem(id) {
+            return `/inventory/resources/${id}`;
         },
     },
     components: {
@@ -242,7 +246,7 @@ export default {
                             </div>
                         </li>
                         <li
-                            class="mt-3 p-2 bg-slate-500 text-white rounded-sm text-center hover:bg-slate-900 transition-all ease-linear duration-700"
+                            class="mt-3 p-2 bg-slate-900 text-white rounded-md text-center hover:bg-slate-800 transition-all ease-linear duration-700"
                         >
                             <button @click="clearFilters">
                                 Clear Filters <i class="bi bi-trash"></i>
@@ -308,7 +312,9 @@ export default {
                                     tabindex="0"
                                     class="dropdown-content menu bg-white rounded-box z-[1] w-52 p-2 shadow"
                                 >
-                                    <li><a>VIew</a></li>
+                                    <li>
+                                        <a :href="viewItem(item.id)">View</a>
+                                    </li>
                                     <li @click="() => editResource(item)">
                                         <a>Edit</a>
                                     </li>

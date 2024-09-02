@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Business;
 use App\Models\ResourceCategory;
+use App\Models\ResourceItem;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -64,5 +65,20 @@ class ResourceCategoryController extends Controller
             'message' => 'Resource category fetched successfully.',
             'data' => $items
         ]);
+    }
+
+    public function openItem($id)
+    {
+        $item = ResourceItem::where('id', $id)->with('category', 'business')->first();
+        if ($item) {
+            return Inertia::render('Inventory/ViewResource', [
+                "item" => $item
+            ]);
+        } else {
+            return response()->json([
+                'error' => true,
+                'message' => 'Item not found.'
+            ], 404);
+        }
     }
 }
