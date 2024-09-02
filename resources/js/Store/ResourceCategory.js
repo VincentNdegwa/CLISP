@@ -69,5 +69,9 @@ export const useResourceCategoryStore = defineStore("resource_category", {
         removeItem(itemId) {
             this.items = this.items.data.filter((item) => item.id !== itemId);
         },
+
+        async updateCategory(category) {
+            
+        }
     },
 });
