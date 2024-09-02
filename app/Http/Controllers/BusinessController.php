@@ -6,6 +6,7 @@ use App\Models\Business;
 use App\Models\BusinessUser;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class BusinessController extends Controller
@@ -23,7 +24,7 @@ class BusinessController extends Controller
             $validatedData = $request->validate([
                 'business_name' => 'required|string|max:255',
                 'phone_number' => 'required|string|max:20',
-                'email' => 'required|email|max:255|unique:business,email',
+                'email' => 'required|email|max:255',
                 'registration_number' => 'required|string|max:50|unique:business,registration_number',
                 'date_registered' => 'required|date',
                 'business_type_id' => 'required|exists:business_types,id',
@@ -134,5 +135,16 @@ class BusinessController extends Controller
                 'errors' => $e->getMessage()
             ], 500); // HTTP 500 Internal Server Error
         }
+    }
+
+    public function getDetails()
+    {
+        $businessTypes = DB::table("business_types")->get(["id", "name"]);
+        $industries = DB::table("industries")->get(['id', 'name']);
+
+        return response()->json([
+            'businessTypes' => $businessTypes,
+            'industries' => $industries,
+        ]);
     }
 }

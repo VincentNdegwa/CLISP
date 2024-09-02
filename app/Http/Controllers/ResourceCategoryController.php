@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Business;
 use App\Models\ResourceCategory;
+use App\Models\ResourceItem;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -64,5 +65,76 @@ class ResourceCategoryController extends Controller
             'message' => 'Resource category fetched successfully.',
             'data' => $items
         ]);
+    }
+
+    public function openItem($id)
+    {
+        $item = ResourceItem::where('id', $id)->with('category', 'business')->first();
+        if ($item) {
+            return Inertia::render('Inventory/ViewResource', [
+                "item" => $item
+            ]);
+        } else {
+            return response()->json([
+                'error' => true,
+                'message' => 'Item not found.'
+            ], 404);
+        }
+    }
+    public function update(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'id' => 'required|exists:resource_category,id',
+                "name" => 'required|string|max:255',
+
+            ]);
+            $item = ResourceCategory::where('id', $request->input('id'))->update([
+                'name' => $request->input('name'),
+                'description' => $request->input('description'),
+            ]);
+            return response()->json([
+                'error' => false,
+                'message' => 'Resource category updated successfully.',
+                'data' => $item
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'error' => true,
+                'message' => 'Validation error.',
+                'errors' => $e->errors()
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => true,
+                'message' => 'An unexpected error occurred.',
+                'errors' => $e->getMessage()
+            ]);
+        }
+    }
+
+    public function delete($id)
+    {
+        try {
+            $item = ResourceCategory::find($id);
+            if ($item) {
+                $item->delete();
+                return response()->json([
+                    'error' => false,
+                    'message' => 'Resource category deleted successfully.'
+                ]);
+            } else {
+                return response()->json([
+                    'error' => true,
+                    'message' => 'Resource category not found.'
+                ], 404);
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => true,
+                'message' => 'An unexpected error occurred.',
+                'errors' => $e->getMessage()
+            ]);
+        }
     }
 }

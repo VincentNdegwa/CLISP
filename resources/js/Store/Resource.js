@@ -117,5 +117,27 @@ export const useResourceStore = defineStore("resource_store", {
                 this.loading = false;
             }
         },
+        async deleteResource(id) {
+            try {
+                const response = await axios.delete(`/api/item/delete/${id}`);
+                if (response.data.error) {
+                    this.error = response.data.error;
+                    if (response.data.errors) {
+                        this.error = response.data.errors;
+                    }
+                } else {
+                    this.success = response.data.message;
+                    this.items.data = this.items.data.filter(
+                        (item) => item.id !== id
+                    );
+                }
+            } catch (error) {
+                this.error = error.response
+                    ? error.response.data.message
+                    : error.message;
+            } finally {
+                this.loading = false;
+            }
+        },
     },
 });

@@ -1,6 +1,8 @@
 <script>
 import Dropdown from "@/Components/Dropdown.vue";
 import DropdownLink from "@/Components/DropdownLink.vue";
+import Modal from "@/Components/Modal.vue";
+import NewBusiness from "@/Components/NewBusiness.vue";
 import SideNavigations from "@/Components/SideNavigations.vue";
 
 export default {
@@ -8,12 +10,17 @@ export default {
         return {
             menuOpen: true,
             default_business: null,
+            modal: {
+                open: false,
+            },
         };
     },
     components: {
         Dropdown,
         DropdownLink,
         SideNavigations,
+        Modal,
+        NewBusiness,
     },
     mounted() {
         const def_business = JSON.parse(
@@ -49,13 +56,23 @@ export default {
             }
         },
         fetchBusinessData() {
-            console.log(this.default_business);
+            location.reload();
+        },
+        createNewBusiness() {
+            this.modal.open = true;
+            console.log("creating business");
+        },
+        closeModal() {
+            this.modal.open = false;
         },
     },
 };
 </script>
 
 <template>
+    <Modal :show="modal.open" @close="closeModal">
+        <NewBusiness @close="closeModal" />
+    </Modal>
     <div>
         <div class="min-h-screen bg-gray-100 text-slate-950 relative">
             <nav
@@ -89,7 +106,14 @@ export default {
                                 >
                                     <a> {{ item.business.business_name }} </a>
                                 </li>
-                                <li class="mt-2">
+                                <li
+                                    v-if="
+                                        $page.props.role.role === 'Owner' ||
+                                        $page.props.role.role === 'Admin'
+                                    "
+                                    @click="createNewBusiness"
+                                    class="mt-2"
+                                >
                                     <a>
                                         <i class="bi bi-plus-circle"></i> Add
                                         Business</a
@@ -186,14 +210,14 @@ export default {
             <!-- Page Content -->
             <main
                 :class="[
-                    'pt-[6vh] h-[100vh] overflow-y-scroll hide-overflow transition-all duration-200 ease-linear',
+                    'pt-[6vh] h-[100vh] transition-all duration-200 ease-linear',
                     !menuOpen ? 'ps-0' : 'ps-[230px]',
                 ]"
             >
-                <div class="py-5">
+                <div class="py-0">
                     <div class="w-full mx-auto sm:px-4 lg:px-6">
                         <div
-                            class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-2"
+                            class="bg-white overflow-y-scroll hide-overflow shadow-sm sm:rounded-lg p-2"
                         >
                             <slot />
                         </div>

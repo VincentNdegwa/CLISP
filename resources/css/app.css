@@ -14,5 +14,5 @@
 }
 .hide-overflow::-webkit-scrollbar
 {
-    display: none;
+    display: none !important;
 }

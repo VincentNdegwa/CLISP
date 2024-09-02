@@ -7,6 +7,7 @@ import { useResourceCategoryStore } from "@/Store/ResourceCategory";
 import { useResourceStore } from "@/Store/Resource";
 import TableSkeleton from "@/Components/TableSkeleton.vue";
 import { ref } from "vue";
+import ConfirmationModal from "@/Components/ConfirmationModal.vue";
 
 export default {
     setup() {
@@ -47,6 +48,10 @@ export default {
             closeModal();
         };
 
+        const deleteResource = async (id) => {
+            await resources.deleteResource(id);
+        };
+
         return {
             category,
             resources,
@@ -57,6 +62,7 @@ export default {
             closeModal,
             makeQuery,
             updateResource,
+            deleteResource,
         };
     },
     data() {
@@ -71,9 +77,29 @@ export default {
                 category: null,
             },
             edit_form: {},
+            confirmBox: {
+                open: false,
+                message: "Are you sure you want to proceed?",
+                title: "Confirm Action",
+            },
+            item_to_delete: {},
+            isDropdownOpen: false,
         };
     },
     methods: {
+        openConfirm(message, title) {
+            this.confirmBox.open = true;
+            this.confirmBox.title = title;
+            this.confirmBox.message = message;
+        },
+        closeConfirm() {
+            this.confirmBox.open = false;
+            this.confirmBox.message = "Are you sure you want to proceed?";
+            this.confirmBox.title = "Confirm Action";
+        },
+        handleCofirm() {
+            this.deleteResource(this.item_to_delete.id);
+        },
         formatDate(date) {
             return new Date(date).toLocaleDateString();
         },
@@ -111,6 +137,31 @@ export default {
             this.edit_form = { ...data };
             this.openResorceForm("UpdateResource");
         },
+        handleResourceDelete(data) {
+            this.openConfirm(
+                `Are you sure you want to delete item ${data.item_name}? This process cannot be undone`,
+                "Confirm Item Delete"
+            );
+            this.item_to_delete = data;
+        },
+        filterByCategory() {
+            this.makeQuery(this.query);
+            this.isDropdownOpen = false;
+        },
+        toggleDropdown() {
+            this.isDropdownOpen = !this.isDropdownOpen;
+        },
+        closeDropdown() {
+            this.isDropdownOpen = false;
+        },
+        clearFilters() {
+            this.query.category = "";
+            this.isDropdownOpen = false;
+            this.makeQuery(this.query);
+        },
+        viewItem(id) {
+            return `/inventory/resources/${id}`;
+        },
     },
     components: {
         SearchInput,
@@ -118,6 +169,7 @@ export default {
         NewResource,
         NewCategory,
         TableSkeleton,
+        ConfirmationModal,
     },
 };
 </script>
@@ -140,9 +192,70 @@ export default {
             "
             :status="resources.success ? 'success' : 'error'"
         />
+        <ConfirmationModal
+            :isOpen="confirmBox.open"
+            :message="confirmBox.message"
+            :title="confirmBox.title"
+            @confirm="handleCofirm"
+            @close="closeConfirm"
+        />
 
-        <div class="w-full mt-2 flex justify-between">
-            <SearchInput @search="makeSearch" />
+        <div class="w-full mt-2 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <SearchInput @search="makeSearch" />
+
+                <div class="dropdown">
+                    <div
+                        tabindex="0"
+                        role="button"
+                        class="btn m-1 bg-slate-900 text-white"
+                        @click="toggleDropdown"
+                    >
+                        Filters <i class="bi bi-funnel"></i>
+                    </div>
+                    <ul
+                        tabindex="0"
+                        v-if="isDropdownOpen"
+                        class="dropdown-content flex flex-col gap-2 bg-white text-slate-900 rounded-box z-[1] w-52 p-2 shadow"
+                    >
+                        <li>
+                            <div class="flex flex-col gap-1">
+                                <div class="inline-block">
+                                    Filter By Category
+                                </div>
+                                <select
+                                    v-model="query.category"
+                                    @change="filterByCategory"
+                                    class="select select-bordered bg-white text-slate-950 ring-1 ring-slate-800"
+                                >
+                                    <option
+                                        value="Filter By Category"
+                                        selected
+                                        disabled
+                                    >
+                                        Filter By Category
+                                    </option>
+                                    <option
+                                        v-for="cat in category.items.data"
+                                        :key="cat.id"
+                                        :value="cat.id"
+                                    >
+                                        {{ cat.name }}
+                                    </option>
+                                </select>
+                            </div>
+                        </li>
+                        <li
+                            class="mt-3 p-2 bg-slate-900 text-white rounded-md text-center hover:bg-slate-800 transition-all ease-linear duration-700"
+                        >
+                            <button @click="clearFilters">
+                                Clear Filters <i class="bi bi-trash"></i>
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
             <div class="join gap-2">
                 <button
                     class="btn join-item text-white"
@@ -159,6 +272,7 @@ export default {
                 </button>
             </div>
         </div>
+
         <div class="overflow-x-auto h-[75vh] w-full">
             <TableSkeleton v-if="resources.loading" />
             <table v-else class="table w-full">
@@ -181,7 +295,9 @@ export default {
                     >
                         <td>{{ index + 1 }}</td>
                         <td>{{ item.item_name }}</td>
-                        <td>{{ item.category.name }}</td>
+                        <td>
+                            {{ item.category ? item.category?.name : "--" }}
+                        </td>
                         <td>{{ item.quantity }}</td>
                         <td>{{ item.unit }}</td>
                         <td>{{ item.price }}</td>
@@ -198,11 +314,19 @@ export default {
                                     tabindex="0"
                                     class="dropdown-content menu bg-white rounded-box z-[1] w-52 p-2 shadow"
                                 >
-                                    <li><a>VIew</a></li>
+                                    <li>
+                                        <a :href="viewItem(item.id)">View</a>
+                                    </li>
                                     <li @click="() => editResource(item)">
                                         <a>Edit</a>
                                     </li>
-                                    <li><a>Delete</a></li>
+                                    <li
+                                        @click="
+                                            () => handleResourceDelete(item)
+                                        "
+                                    >
+                                        <a>Delete</a>
+                                    </li>
                                 </ul>
                             </div>
                         </td>

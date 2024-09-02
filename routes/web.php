@@ -70,6 +70,7 @@ Route::prefix('/dash')->group(function () {
 Route::middleware('auth')->prefix('/')->group(function () {
     Route::prefix("inventory")->group(function () {
         Route::get('/resources', [InventoryController::class, 'view'])->name('inventory.resources');
+        Route::get('/resources/{id}', [ResourceCategoryController::class, 'openItem'])->name('inventory.item.view');
         Route::get('/categories', [ResourceCategoryController::class, 'view'])->name('inventory.categories');
     });
 });

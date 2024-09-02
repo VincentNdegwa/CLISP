@@ -25,4 +25,8 @@ class ResourceItem extends Model
     {
         return $this->belongsTo(ResourceCategory::class, 'category_id');
     }
+    public function business()
+    {
+        return $this->belongsTo(Business::class, 'business_id', 'business_id');
+    }
 }
