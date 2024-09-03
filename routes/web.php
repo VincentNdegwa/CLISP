@@ -26,7 +26,7 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
-    $user = Auth()->user();
+    $user = Auth::user();
     $business_users = BusinessUser::where('user_id', $user->id)->with(['business', 'user'])->get();
 
     // If the user is not associated with any business or the business is missing
@@ -72,6 +72,18 @@ Route::middleware('auth')->prefix('/')->group(function () {
         Route::get('/resources', [InventoryController::class, 'view'])->name('inventory.resources');
         Route::get('/resources/{id}', [ResourceCategoryController::class, 'openItem'])->name('inventory.item.view');
         Route::get('/categories', [ResourceCategoryController::class, 'view'])->name('inventory.categories');
+    });
+
+    Route::prefix("business")->group(function () {
+        Route::get('/my-business', function () {
+            $user = Auth::user();
+            $user_business = BusinessUser::where("user_id", $user->id)->with('business')->get();
+            return Inertia::render('Business/MyBusiness', [
+                'UserBusiness' => $user_business
+            ]);
+        })->name('business.my-business');
+        // Route::get('/my-business/{id}', [ResourceCategoryController::class, 'viewSingleBusiness'])->name('business.item.view');
+        Route::get('/connections', [ResourceCategoryController::class, 'businessConnection'])->name('business.connection');
     });
 });
 

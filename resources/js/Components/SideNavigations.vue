@@ -15,23 +15,47 @@ export default {
                     name: "Dashboard",
                     route: "dashboard",
                     open: false,
-                    icon: "bi bi-menu-up",
+                    icon: "bi bi-speedometer2", // Icon choice: Speedometer (bi-speedometer2)
+                    // Explanation: A speedometer icon represents performance and an overview, fitting for a dashboard where users get an overview of their data.
                     subItems: null,
                 },
                 {
                     name: "Inventory",
-                    icon: "bi bi-box-seam-fill",
+                    icon: "bi bi-boxes", // Icon choice: Boxes (bi-boxes)
+                    // Explanation: The boxes icon represents storage and inventory, making it an intuitive choice for an inventory section.
                     open: false,
                     subItems: [
                         {
                             name: "Resources",
                             route: "inventory.resources",
-                            icon: "bi bi-archive-fill",
+                            icon: "bi bi-box-arrow-in-down", // Icon choice: Box arrow in down (bi-box-arrow-in-down)
+                            // Explanation: This icon represents adding or managing resources, appropriate for resource management.
                         },
                         {
                             name: "Categories",
                             route: "inventory.categories",
-                            icon: "bi bi-menu-up",
+                            icon: "bi bi-tags-fill", // Icon choice: Tags (bi-tags-fill)
+                            // Explanation: Tags represent categorization, making this icon suitable for managing inventory categories.
+                        },
+                    ],
+                },
+                {
+                    name: "Business",
+                    icon: "bi bi-briefcase-fill", // Icon choice: Briefcase (bi-briefcase-fill)
+                    // Explanation: The briefcase icon symbolizes business and professionalism, making it a fitting choice for the business section.
+                    open: false,
+                    subItems: [
+                        {
+                            name: "My business",
+                            route: "business.my-business",
+                            icon: "bi bi-building", // Icon choice: Building (bi-building)
+                            // Explanation: A building icon represents the physical aspect of a business, making it relevant for "My business".
+                        },
+                        {
+                            name: "Connections",
+                            route: "business.connection",
+                            icon: "bi bi-people-fill", // Icon choice: People (bi-people-fill)
+                            // Explanation: The people icon represents connections and networking, suitable for the connections section.
                         },
                     ],
                 },
