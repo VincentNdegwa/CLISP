@@ -147,4 +147,31 @@ class BusinessController extends Controller
             'industries' => $industries,
         ]);
     }
+    public function fetchMyBusiness(Request $request)
+    {
+
+        try {
+            $validate = $request->validate([
+                "userId" => 'required|exists:users,id'
+            ]);
+            $user_business = BusinessUser::where("user_id", $validate['userId'])->with('business')->get();
+            return response()->json([
+                'error' => false,
+                'message' => 'Business fetched',
+                'data' => $user_business
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'error' => true,
+                'message' => 'Validation error.',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => true,
+                'message' => 'An unexpected error occurred.',
+                'errors' => $e->getMessage()
+            ], 500); // HTTP 500 Internal Server Error
+        }
+    }
 }

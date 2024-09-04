@@ -1,12 +1,23 @@
 <script>
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
-import { Head } from "@inertiajs/vue3";
+import { useMyBusiness } from "@/Store/MyBusiness";
+import { Head, usePage } from "@inertiajs/vue3";
 
 export default {
-    props: ["UserBusiness"],
     components: {
         AuthenticatedLayout,
         Head,
+    },
+    setup() {
+        const { props } = usePage();
+        const myBusiness = useMyBusiness();
+
+        // Fetch the user's businesses
+        myBusiness.fetchMyBusiness(props.auth.user.id);
+
+        return {
+            myBusiness,
+        };
     },
 };
 </script>
@@ -17,12 +28,32 @@ export default {
         <h1 class="text-3xl font-extrabold mb-6 text-gray-900">
             My Businesses
         </h1>
+
         <div
-            v-if="UserBusiness.length"
+            v-if="myBusiness.loading"
             class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         >
+            <!-- Skeleton Loader -->
             <div
-                v-for="business in UserBusiness"
+                v-for="n in 3"
+                :key="n"
+                class="bg-gray-200 animate-pulse rounded-lg shadow-lg p-6"
+            >
+                <div class="h-6 bg-gray-300 mb-2 rounded"></div>
+                <div class="h-4 bg-gray-300 mb-4 rounded"></div>
+                <div class="h-4 bg-gray-300 mb-2 rounded"></div>
+                <div class="h-4 bg-gray-300 mb-2 rounded"></div>
+                <div class="h-4 bg-gray-300 rounded"></div>
+            </div>
+        </div>
+
+        <div
+            v-else-if="myBusiness.data && myBusiness.data.length > 0"
+            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        >
+            <!-- Business Cards -->
+            <div
+                v-for="business in myBusiness.data"
                 :key="business.id"
                 class="bg-gray-100 text-slate-900 rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-all scale-95 hover:scale-100 duration-300 ease-in-out"
             >

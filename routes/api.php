@@ -36,7 +36,7 @@ Route::prefix("category/{business_id}")->group(function () {
     Route::get("/list", [ResourceCategoryController::class, "read"]);
     Route::post("/update", [ResourceCategoryController::class, "update"]);
 });
-Route::prefix("business}")->group(function () {
-    Route::post("/my-business", [BusinessController::class, "create"]);
+Route::prefix("business")->group(function () {
+    Route::post("/my-business", [BusinessController::class, "fetchMyBusiness"]);
     Route::get("/connection", [BusinessController::class, "read"]);
 });

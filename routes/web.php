@@ -76,14 +76,12 @@ Route::middleware('auth')->prefix('/')->group(function () {
 
     Route::prefix("business")->group(function () {
         Route::get('/my-business', function () {
-            $user = Auth::user();
-            $user_business = BusinessUser::where("user_id", $user->id)->with('business')->get();
-            return Inertia::render('Business/MyBusiness', [
-                'UserBusiness' => $user_business
-            ]);
+            return Inertia::render('Business/MyBusiness');
         })->name('business.my-business');
         // Route::get('/my-business/{id}', [ResourceCategoryController::class, 'viewSingleBusiness'])->name('business.item.view');
-        Route::get('/connections', [ResourceCategoryController::class, 'businessConnection'])->name('business.connection');
+        Route::get('/connections', function () {
+            return Inertia::render('Business/BusinessConnection');
+        })->name('business.connection');
     });
 });
 
