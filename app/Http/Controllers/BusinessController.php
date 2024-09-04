@@ -174,4 +174,19 @@ class BusinessController extends Controller
             ], 500); // HTTP 500 Internal Server Error
         }
     }
+
+    public function getBusinessSearch(Request $request)
+    {
+        $search = $request->query('term');
+        $businesses = Business::where("status", 'active')
+            ->where('business_name', 'LIKE', "%{$search}%")
+            ->orWhere("registration_number", 'LIKE', "%{$search}%")
+            ->orWhere("email", 'LIKE', "%{$search}%")
+            ->get();
+        return response()->json([
+            'error' => false,
+            'businesses' => $businesses,
+            'business_count' => count($businesses),
+        ]);
+    }
 }

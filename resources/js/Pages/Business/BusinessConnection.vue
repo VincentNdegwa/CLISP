@@ -4,6 +4,7 @@ import PrimaryButton from "@/Components/PrimaryButton.vue";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import { Head } from "@inertiajs/vue3";
 import ConnectionRequestForm from "./ConnectionRequestForm.vue";
+import { useUserStore } from "@/Store/UserStore";
 
 export default {
     components: {
@@ -22,28 +23,38 @@ export default {
                 open: false,
                 component: "",
             },
+            loading: false,
         };
     },
-    mounted() {
-        // this.fetchRequests();
+    async mounted() {
+        const userStore = useUserStore();
+
+        const businessId = userStore.business;
+        if (businessId) {
+            this.loading = true;
+            await this.fetchRequests(businessId);
+        }
     },
     methods: {
-        fetchRequests() {
-            axios.get("/api/my-connection-requests").then((response) => {
-                this.sentRequests = response.data.sent;
-                this.incomingRequests = response.data.incoming;
-            });
+        async fetchRequests(businessId) {
+            await axios
+                .get(`/api/business/connection-requests/${businessId}`)
+                .then((response) => {
+                    this.loading = false;
+                    this.sentRequests = response.data.sent;
+                    this.incomingRequests = response.data.incoming;
+                });
         },
         acceptRequest(request) {
             axios
-                .post(`/api/accept-connection-request/${request.id}`)
+                .post(`/api/business/accept-connection-request/${request.id}`)
                 .then((response) => {
                     request.status = "accepted";
                 });
         },
         rejectRequest(request) {
             axios
-                .post(`/api/reject-connection-request/${request.id}`)
+                .post(`/api/business/reject-connection-request/${request.id}`)
                 .then((response) => {
                     request.status = "rejected";
                 });

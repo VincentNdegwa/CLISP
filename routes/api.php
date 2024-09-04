@@ -1,10 +1,12 @@
 <?php
 
+use App\Http\Controllers\BusinessConnectionController;
 use App\Http\Controllers\BusinessController;
 use App\Http\Controllers\FileSystemController;
 use App\Http\Controllers\ResourceCategoryController;
 use App\Http\Controllers\ResourceItemController;
 use App\Http\Controllers\SubscriptionController;
+use App\Models\BusinessConnection;
 use App\Models\ResourceItem;
 use Illuminate\Support\Facades\Route;
 
@@ -38,5 +40,6 @@ Route::prefix("category/{business_id}")->group(function () {
 });
 Route::prefix("business")->group(function () {
     Route::post("/my-business", [BusinessController::class, "fetchMyBusiness"]);
-    Route::get("/connection", [BusinessController::class, "read"]);
+    Route::get("/connection-requests/{business_id}", [BusinessConnectionController::class, "getBusinessConnection"]);
+    Route::get("/search-business", [BusinessController::class, "getBusinessSearch"]);
 });

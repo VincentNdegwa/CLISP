@@ -1,6 +1,7 @@
 <script>
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import PrimaryRoseButton from "@/Components/PrimaryRoseButton.vue";
+import axios from "axios";
 
 export default {
     data() {
@@ -8,15 +9,24 @@ export default {
             searchTerm: "",
             searchResults: [],
             selectedBusiness: null,
+            debounceTimeout: null, // To store the debounce timer
         };
     },
     methods: {
         searchBusiness() {
-            axios
-                .get(`/api/search-business?term=${this.searchTerm}`)
-                .then((response) => {
-                    this.searchResults = response.data;
-                });
+            clearTimeout(this.debounceTimeout);
+
+            if (this.searchTerm.trim()) {
+                this.debounceTimeout = setTimeout(() => {
+                    axios
+                        .get(
+                            `/api/business/search-business?term=${this.searchTerm}`
+                        )
+                        .then((response) => {
+                            this.searchResults = response.data.businesses;
+                        });
+                }, 2000);
+            }
         },
         selectBusiness(business) {
             this.selectedBusiness = business;
@@ -26,10 +36,10 @@ export default {
         sendConnectionRequest() {
             if (this.selectedBusiness) {
                 axios
-                    .post("/api/send-connection-request", {
-                        business_id: this.selectedBusiness.id,
+                    .post("/api/business/send-connection-request", {
+                        business_id: this.selectedBusiness.business_id,
                     })
-                    .then((response) => {
+                    .then(() => {
                         alert("Connection request sent successfully!");
                     });
             } else {
