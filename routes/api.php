@@ -42,4 +42,5 @@ Route::prefix("business")->group(function () {
     Route::post("/my-business", [BusinessController::class, "fetchMyBusiness"]);
     Route::get("/connection-requests/{business_id}", [BusinessConnectionController::class, "getBusinessConnection"]);
     Route::get("/search-business", [BusinessController::class, "getBusinessSearch"]);
+    Route::post('/send-connection-request', [BusinessConnectionController::class, "sendConnectionRequest"]);
 });

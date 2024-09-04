@@ -5,7 +5,6 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import { Head } from "@inertiajs/vue3";
 import ConnectionRequestForm from "./ConnectionRequestForm.vue";
 import { useUserStore } from "@/Store/UserStore";
-
 export default {
     components: {
         AuthenticatedLayout,
@@ -24,6 +23,11 @@ export default {
                 component: "",
             },
             loading: false,
+            notification: {
+                open: false,
+                message: "",
+                status: "error",
+            },
         };
     },
     async mounted() {
@@ -37,26 +41,32 @@ export default {
     },
     methods: {
         async fetchRequests(businessId) {
-            await axios
-                .get(`/api/business/connection-requests/${businessId}`)
-                .then((response) => {
-                    this.loading = false;
-                    this.sentRequests = response.data.sent;
-                    this.incomingRequests = response.data.incoming;
-                });
+            try {
+                const response = await axios.get(
+                    `/api/business/connection-requests/${businessId}`
+                );
+                this.loading = false;
+                this.sentRequests = response.data.sent;
+                this.incomingRequests = response.data.incoming;
+            } catch (error) {
+                this.loading = false;
+                this.notification.open = true;
+                this.notification.message = "Failed to fetch requests";
+                this.notification.status = "error";
+            }
         },
         acceptRequest(request) {
             axios
                 .post(`/api/business/accept-connection-request/${request.id}`)
                 .then((response) => {
-                    request.status = "accepted";
+                    request.connection_status = "accepted";
                 });
         },
         rejectRequest(request) {
             axios
                 .post(`/api/business/reject-connection-request/${request.id}`)
                 .then((response) => {
-                    request.status = "rejected";
+                    request.connection_status = "rejected";
                 });
         },
         closeModal() {
@@ -67,6 +77,14 @@ export default {
             this.modal.open = true;
             this.modal.component = "ConnectionRequestForm";
         },
+        addRequest(data) {
+            if (!data.error) {
+                this.notification.open = true;
+                this.notification.message = data.message;
+                this.notification.status = "success";
+                this.sentRequests.push(data.business_request);
+            }
+        },
     },
 };
 </script>
@@ -76,9 +94,15 @@ export default {
     <Modal :show="modal.open" @close="closeModal">
         <ConnectionRequestForm
             @close="closeModal"
+            @addRequest="addRequest"
             v-if="modal.component == 'ConnectionRequestForm'"
         />
     </Modal>
+    <AlertNotification
+        :open="notification.open"
+        :message="notification.message"
+        :status="notification.status"
+    />
     <AuthenticatedLayout>
         <div class="flex items-center justify-between">
             <h1 class="text-2xl font-bold mb-6">Business Connections</h1>
@@ -125,9 +149,27 @@ export default {
                     >
                         <p>
                             <strong>To:</strong>
-                            {{ request.connected_business.business_name }} ({{
-                                request.status
+                            {{ request.business_receiver.business_name }} ({{
+                                request.connection_status
                             }})
+                        </p>
+                        <p>
+                            <strong>Requested By:</strong>
+                            {{ request.user_requester.name }} ({{
+                                request.user_requester.email
+                            }})
+                        </p>
+                        <p>
+                            <strong>Request Date:</strong>
+                            {{ new Date(request.created_at).toLocaleString() }}
+                        </p>
+                        <p>
+                            <strong>Receiver Email:</strong>
+                            {{ request.business_receiver.email }}
+                        </p>
+                        <p>
+                            <strong>Receiver Phone:</strong>
+                            {{ request.business_receiver.phone_number }}
                         </p>
                     </li>
                 </ul>
@@ -147,9 +189,27 @@ export default {
                     >
                         <p>
                             <strong>From:</strong>
-                            {{ request.business.business_name }} ({{
-                                request.status
+                            {{ request.business_requester.business_name }} ({{
+                                request.connection_status
                             }})
+                        </p>
+                        <p>
+                            <strong>Requested By:</strong>
+                            {{ request.user_requester.name }} ({{
+                                request.user_requester.email
+                            }})
+                        </p>
+                        <p>
+                            <strong>Request Date:</strong>
+                            {{ new Date(request.created_at).toLocaleString() }}
+                        </p>
+                        <p>
+                            <strong>Requester Email:</strong>
+                            {{ request.business_requester.email }}
+                        </p>
+                        <p>
+                            <strong>Requester Phone:</strong>
+                            {{ request.business_requester.phone_number }}
                         </p>
                         <div class="mt-2">
                             <button

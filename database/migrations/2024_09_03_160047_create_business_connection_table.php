@@ -14,7 +14,9 @@ return new class extends Migration
         Schema::create('business_connection', function (Blueprint $table) {
             $table->id();
             $table->string('requesting_business_id');
+            $table->string('requesting_user_id')->nullable();
             $table->string('receiving_business_id');
+            $table->string('receiving_user_id')->nullable();
             $table->enum("connection_status", ["approved", "pending", "rejected"])->default('pending');
             $table->timestamps();
         });

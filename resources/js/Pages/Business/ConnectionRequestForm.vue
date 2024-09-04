@@ -1,6 +1,7 @@
 <script>
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import PrimaryRoseButton from "@/Components/PrimaryRoseButton.vue";
+import { useUserStore } from "@/Store/UserStore";
 import axios from "axios";
 
 export default {
@@ -9,7 +10,14 @@ export default {
             searchTerm: "",
             searchResults: [],
             selectedBusiness: null,
-            debounceTimeout: null, // To store the debounce timer
+            debounceTimeout: null,
+            my_business_id: null,
+            notification: {
+                open: false,
+                message: "",
+                status: "error",
+            },
+            loading: false,
         };
     },
     methods: {
@@ -18,12 +26,27 @@ export default {
 
             if (this.searchTerm.trim()) {
                 this.debounceTimeout = setTimeout(() => {
+                    this.loading = true;
                     axios
                         .get(
                             `/api/business/search-business?term=${this.searchTerm}`
                         )
                         .then((response) => {
-                            this.searchResults = response.data.businesses;
+                            this.searchResults =
+                                response.data.businesses.filter(
+                                    (item) =>
+                                        item.business_id !== this.my_business_id
+                                );
+                        })
+                        .catch((error) => {
+                            console.error(error);
+                            this.notification.open = true;
+                            this.notification.message =
+                                "An error occurred while searching for businesses.";
+                            this.notification.status = "error";
+                        })
+                        .finally(() => {
+                            this.loading = false;
                         });
                 }, 2000);
             }
@@ -34,13 +57,35 @@ export default {
             this.searchResults = [];
         },
         sendConnectionRequest() {
-            if (this.selectedBusiness) {
+            if (this.selectedBusiness && this.my_business_id) {
+                this.loading = true;
                 axios
                     .post("/api/business/send-connection-request", {
-                        business_id: this.selectedBusiness.business_id,
+                        receiving_business_id:
+                            this.selectedBusiness.business_id,
+                        requesting_business_id: this.my_business_id,
+                        requesting_user_id: this.$page.props.auth.user.id,
                     })
-                    .then(() => {
-                        alert("Connection request sent successfully!");
+                    .then((res) => {
+                        if (res.data.error) {
+                            this.notification.open = true;
+                            this.notification.message = res.data.message;
+                            this.notification.status = "error";
+                        } else {
+                            this.$emit("addRequest", res.data);
+                        }
+                    })
+                    .catch((error) => {
+                        const error_msg = error.response
+                            ? error.response.data.message
+                            : error.message;
+                        console.error(error);
+                        this.notification.open = true;
+                        this.notification.message = error_msg;
+                        this.notification.status = "error";
+                    })
+                    .finally(() => {
+                        this.loading = false;
                     });
             } else {
                 alert("Please select a business to connect with.");
@@ -51,10 +96,24 @@ export default {
         PrimaryButton,
         PrimaryRoseButton,
     },
+    async mounted() {
+        const userStore = useUserStore();
+
+        const businessId = userStore.business;
+        if (businessId) {
+            this.my_business_id = businessId;
+        }
+    },
 };
 </script>
 
 <template>
+    <AlertNotification
+        :open="notification.open"
+        :message="notification.message"
+        :status="notification.status"
+        position="top"
+    />
     <div class="max-w-lg mx-auto mt-10 p-0">
         <h1 class="text-2xl font-bold mb-6">Connect with Another Business</h1>
         <form @submit.prevent="sendConnectionRequest">
@@ -89,12 +148,14 @@ export default {
                 <PrimaryButton
                     type="submit"
                     class="text-white p-2 rounded flex-1"
+                    :disabled="loading"
                 >
                     Send Connection Request
                 </PrimaryButton>
                 <PrimaryRoseButton
                     type="button"
                     @click="$emit('close')"
+                    :disabled="loading"
                     class="text-white bg-rose-500 hover:bg-rose-700 p-2 rounded flex-1"
                 >
                     Cancel

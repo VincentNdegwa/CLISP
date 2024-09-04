@@ -1,7 +1,7 @@
 <template>
     <div
         v-if="isVisible"
-        :class="`alert ${statusClass} absolute bottom-1 right-1 min-w-[200px] max-w-fit z-[1000]`"
+        :class="`alert ${statusClass} absolute ${position}-1 right-1 min-w-[200px] max-w-fit z-[1000]`"
         role="alert"
     >
         <svg
@@ -36,6 +36,10 @@ export default {
             type: Boolean,
             default: false,
         },
+        position: {
+            type: String,
+            default: "bottom",
+        },
     },
     data() {
         return {
@@ -61,6 +65,12 @@ export default {
                     this.statusClass = newVal;
                     this.setStatusClass();
                 }
+            },
+            deep: true,
+        },
+        message: {
+            handler(newValue) {
+                this.showAlert();
             },
             deep: true,
         },
