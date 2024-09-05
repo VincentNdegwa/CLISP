@@ -83,6 +83,24 @@ Route::middleware('auth')->prefix('/')->group(function () {
             return Inertia::render('Business/BusinessConnection');
         })->name('business.connection');
     });
+
+    Route::prefix('trade-business')->name('b2b.')->group(function () {
+        Route::get('/purchase', function () {
+            return Inertia::render('B2B-Trade/Purchases');
+        })->name('purchase');
+    });
+
+    Route::prefix('trade-customer')->name('b2c.')->group(function () {
+        Route::get('/sale', function () {
+            return Inertia::render('B2C-Trade/Sale');
+        })->name('sale');
+    });
+
+    Route::prefix('customer')->name('customer.')->group(function () {
+        Route::get('/my-customers', function () {
+            return Inertia::render('Customers/MyCustomers');
+        })->name('my-customers');
+    });
 });
 
 

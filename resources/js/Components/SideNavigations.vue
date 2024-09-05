@@ -15,47 +15,71 @@ export default {
                     name: "Dashboard",
                     route: "dashboard",
                     open: false,
-                    icon: "bi bi-speedometer2", // Icon choice: Speedometer (bi-speedometer2)
-                    // Explanation: A speedometer icon represents performance and an overview, fitting for a dashboard where users get an overview of their data.
+                    icon: "bi bi-graph-up-arrow",
                     subItems: null,
                 },
                 {
                     name: "Inventory",
-                    icon: "bi bi-boxes", // Icon choice: Boxes (bi-boxes)
-                    // Explanation: The boxes icon represents storage and inventory, making it an intuitive choice for an inventory section.
+                    icon: "bi bi-box-seam",
                     open: false,
                     subItems: [
                         {
                             name: "Resources",
                             route: "inventory.resources",
-                            icon: "bi bi-box-arrow-in-down", // Icon choice: Box arrow in down (bi-box-arrow-in-down)
-                            // Explanation: This icon represents adding or managing resources, appropriate for resource management.
+                            icon: "bi bi-archive",
                         },
                         {
                             name: "Categories",
                             route: "inventory.categories",
-                            icon: "bi bi-tags-fill", // Icon choice: Tags (bi-tags-fill)
-                            // Explanation: Tags represent categorization, making this icon suitable for managing inventory categories.
+                            icon: "bi bi-collection",
                         },
                     ],
                 },
                 {
                     name: "Business",
-                    icon: "bi bi-briefcase-fill", // Icon choice: Briefcase (bi-briefcase-fill)
-                    // Explanation: The briefcase icon symbolizes business and professionalism, making it a fitting choice for the business section.
+                    icon: "bi bi-briefcase",
                     open: false,
                     subItems: [
                         {
                             name: "My business",
                             route: "business.my-business",
-                            icon: "bi bi-building", // Icon choice: Building (bi-building)
-                            // Explanation: A building icon represents the physical aspect of a business, making it relevant for "My business".
+                            icon: "bi bi-shop",
                         },
                         {
                             name: "Connections",
                             route: "business.connection",
-                            icon: "bi bi-people-fill", // Icon choice: People (bi-people-fill)
-                            // Explanation: The people icon represents connections and networking, suitable for the connections section.
+                            icon: "bi bi-person-lines-fill",
+                        },
+                    ],
+                },
+                {
+                    name: "Customer",
+                    route: "customer.my-customers",
+                    open: false,
+                    icon: "bi bi-people",
+                    subItems: null,
+                },
+                {
+                    name: "B2B Trade",
+                    icon: "bi bi-arrow-left-right",
+                    open: false,
+                    subItems: [
+                        {
+                            name: "Purchases",
+                            route: "b2b.purchase",
+                            icon: "bi bi-cart-check",
+                        },
+                    ],
+                },
+                {
+                    name: "B2C Trade",
+                    icon: "bi bi-person-check-fill",
+                    open: false,
+                    subItems: [
+                        {
+                            name: "Direct Sale",
+                            route: "b2c.sale",
+                            icon: "bi bi-cash-stack",
                         },
                     ],
                 },
