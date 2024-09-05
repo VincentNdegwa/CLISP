@@ -43,4 +43,8 @@ Route::prefix("business")->group(function () {
     Route::get("/connection-requests/{business_id}", [BusinessConnectionController::class, "getBusinessConnection"]);
     Route::get("/search-business", [BusinessController::class, "getBusinessSearch"]);
     Route::post('/send-connection-request', [BusinessConnectionController::class, "sendConnectionRequest"]);
+    Route::post('/approve-connection-request', [BusinessConnectionController::class, "approveConnectionRequest"]);
+    Route::post('/reject-connection-request', [BusinessConnectionController::class, "rejectConnectionRequest"]);
+    Route::post('/cancel-connection-request', [BusinessConnectionController::class, "cancelConnectionRequest"]);
+    Route::post('/terminate-connection', [BusinessConnectionController::class, "terminateConnection"]);
 });
