@@ -15,23 +15,71 @@ export default {
                     name: "Dashboard",
                     route: "dashboard",
                     open: false,
-                    icon: "bi bi-menu-up",
+                    icon: "bi bi-graph-up-arrow",
                     subItems: null,
                 },
                 {
                     name: "Inventory",
-                    icon: "bi bi-box-seam-fill",
+                    icon: "bi bi-box-seam",
                     open: false,
                     subItems: [
                         {
                             name: "Resources",
                             route: "inventory.resources",
-                            icon: "bi bi-archive-fill",
+                            icon: "bi bi-archive",
                         },
                         {
                             name: "Categories",
                             route: "inventory.categories",
-                            icon: "bi bi-menu-up",
+                            icon: "bi bi-collection",
+                        },
+                    ],
+                },
+                {
+                    name: "Business",
+                    icon: "bi bi-briefcase",
+                    open: false,
+                    subItems: [
+                        {
+                            name: "My business",
+                            route: "business.my-business",
+                            icon: "bi bi-shop",
+                        },
+                        {
+                            name: "Connections",
+                            route: "business.connection",
+                            icon: "bi bi-person-lines-fill",
+                        },
+                    ],
+                },
+                {
+                    name: "Customer",
+                    route: "customer.my-customers",
+                    open: false,
+                    icon: "bi bi-people",
+                    subItems: null,
+                },
+                {
+                    name: "B2B Trade",
+                    icon: "bi bi-arrow-left-right",
+                    open: false,
+                    subItems: [
+                        {
+                            name: "Purchases",
+                            route: "b2b.purchase",
+                            icon: "bi bi-cart-check",
+                        },
+                    ],
+                },
+                {
+                    name: "B2C Trade",
+                    icon: "bi bi-person-check-fill",
+                    open: false,
+                    subItems: [
+                        {
+                            name: "Direct Sale",
+                            route: "b2c.sale",
+                            icon: "bi bi-cash-stack",
                         },
                     ],
                 },

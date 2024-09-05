@@ -26,7 +26,7 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
-    $user = Auth()->user();
+    $user = Auth::user();
     $business_users = BusinessUser::where('user_id', $user->id)->with(['business', 'user'])->get();
 
     // If the user is not associated with any business or the business is missing
@@ -72,6 +72,34 @@ Route::middleware('auth')->prefix('/')->group(function () {
         Route::get('/resources', [InventoryController::class, 'view'])->name('inventory.resources');
         Route::get('/resources/{id}', [ResourceCategoryController::class, 'openItem'])->name('inventory.item.view');
         Route::get('/categories', [ResourceCategoryController::class, 'view'])->name('inventory.categories');
+    });
+
+    Route::prefix("business")->group(function () {
+        Route::get('/my-business', function () {
+            return Inertia::render('Business/MyBusiness');
+        })->name('business.my-business');
+        // Route::get('/my-business/{id}', [ResourceCategoryController::class, 'viewSingleBusiness'])->name('business.item.view');
+        Route::get('/connections', function () {
+            return Inertia::render('Business/BusinessConnection');
+        })->name('business.connection');
+    });
+
+    Route::prefix('trade-business')->name('b2b.')->group(function () {
+        Route::get('/purchase', function () {
+            return Inertia::render('B2B-Trade/Purchases');
+        })->name('purchase');
+    });
+
+    Route::prefix('trade-customer')->name('b2c.')->group(function () {
+        Route::get('/sale', function () {
+            return Inertia::render('B2C-Trade/Sale');
+        })->name('sale');
+    });
+
+    Route::prefix('customer')->name('customer.')->group(function () {
+        Route::get('/my-customers', function () {
+            return Inertia::render('Customers/MyCustomers');
+        })->name('my-customers');
     });
 });
 

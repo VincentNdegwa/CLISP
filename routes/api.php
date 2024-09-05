@@ -1,10 +1,12 @@
 <?php
 
+use App\Http\Controllers\BusinessConnectionController;
 use App\Http\Controllers\BusinessController;
 use App\Http\Controllers\FileSystemController;
 use App\Http\Controllers\ResourceCategoryController;
 use App\Http\Controllers\ResourceItemController;
 use App\Http\Controllers\SubscriptionController;
+use App\Models\BusinessConnection;
 use App\Models\ResourceItem;
 use Illuminate\Support\Facades\Route;
 
@@ -35,4 +37,14 @@ Route::prefix("category/{business_id}")->group(function () {
     Route::post("/create", [ResourceCategoryController::class, "create"]);
     Route::get("/list", [ResourceCategoryController::class, "read"]);
     Route::post("/update", [ResourceCategoryController::class, "update"]);
+});
+Route::prefix("business")->group(function () {
+    Route::post("/my-business", [BusinessController::class, "fetchMyBusiness"]);
+    Route::get("/connection-requests/{business_id}", [BusinessConnectionController::class, "getBusinessConnection"]);
+    Route::get("/search-business", [BusinessController::class, "getBusinessSearch"]);
+    Route::post('/send-connection-request', [BusinessConnectionController::class, "sendConnectionRequest"]);
+    Route::post('/approve-connection-request', [BusinessConnectionController::class, "approveConnectionRequest"]);
+    Route::post('/reject-connection-request', [BusinessConnectionController::class, "rejectConnectionRequest"]);
+    Route::post('/cancel-connection-request', [BusinessConnectionController::class, "cancelConnectionRequest"]);
+    Route::post('/terminate-connection', [BusinessConnectionController::class, "terminateConnection"]);
 });

@@ -210,14 +210,14 @@ export default {
             <!-- Page Content -->
             <main
                 :class="[
-                    'pt-[6vh] h-[100vh] transition-all duration-200 ease-linear',
+                    'pt-[6vh] h-[100vh] transition-all duration-200 ease-linear overflow-y-scroll hide-overflow ',
                     !menuOpen ? 'ps-0' : 'ps-[230px]',
                 ]"
             >
-                <div class="py-0">
+                <div class="pt-2 h-full">
                     <div class="w-full mx-auto sm:px-4 lg:px-6">
                         <div
-                            class="bg-white overflow-y-scroll hide-overflow shadow-sm sm:rounded-lg p-2"
+                            class="bg-white min-h-[92vh] h-fit shadow-sm sm:rounded-lg p-2"
                         >
                             <slot />
                         </div>
