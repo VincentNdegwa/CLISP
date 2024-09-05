@@ -43,6 +43,21 @@ class BusinessConnectionController extends Controller
                     "message" => "Can't create a request to your business",
                 ]);
             }
+
+            $requestExists = BusinessConnection::where(function ($query) use ($validData) {
+                $query->where('requesting_business_id', $validData['requesting_business_id'])
+                    ->where('receiving_business_id', $validData['receiving_business_id']);
+            })->orWhere(function ($query) use ($validData) {
+                $query->where('requesting_business_id', $validData['receiving_business_id'])
+                    ->where('receiving_business_id', $validData['requesting_business_id']);
+            })->where('connection_status', '!=', 'rejected')
+                ->first();
+            if ($requestExists) {
+                return response()->json([
+                    "error" => true,
+                    "message" => "Request already exists, Reject the exist request to create a new one",
+                ]);
+            }
             $business_request = BusinessConnection::create($request->all());
             $request = BusinessConnection::where('id', $business_request->id)
                 ->with('businessRequester', 'businessReceiver', 'userRequester', 'userReceiver')

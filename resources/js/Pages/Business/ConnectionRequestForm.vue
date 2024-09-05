@@ -156,7 +156,7 @@ export default {
                     type="button"
                     @click="$emit('close')"
                     :disabled="loading"
-                    class="text-white bg-rose-500 hover:bg-rose-700 p-2 rounded flex-1"
+                    class="flex-1"
                 >
                     Cancel
                 </PrimaryRoseButton>
