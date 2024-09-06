@@ -11,12 +11,32 @@ export const useCustomerStore = defineStore("customer_store", {
     }),
     actions: {
         async createCustomer(customerData) {
+            const store = useUserStore();
+            const businessId = store.business;
+            if (!businessId) {
+                this.error = "Business ID not found.";
+                return;
+            }
             this.loading = true;
             try {
                 const response = await axios.post(
                     "/api/customers/create-customer",
-                    customerData
+                    {
+                        business_id: businessId,
+                        ...customerData,
+                    }
                 );
+                if (response.data.error) {
+                    console.log(response);
+
+                    if (response.data.errors) {
+                        this.error = response.data.errors;
+                    } else {
+                        this.error = response.data.message;
+                    }
+                    return;
+                }
+
                 this.customers.push(response.data.data);
                 this.success = "Customer created successfully!";
             } catch (error) {
@@ -52,21 +72,41 @@ export const useCustomerStore = defineStore("customer_store", {
 
         async updateCustomer(customerData) {
             this.loading = true;
+
             try {
-                await axios.patch(
-                    "/api/customers/update-customer",
-                    customerData
-                );
-                const index = this.customers.findIndex(
-                    (c) => c.id === customerData.id
-                );
-                if (index !== -1) {
-                    this.customers[index] = {
-                        ...this.customers[index],
-                        ...customerData,
-                    };
+                const store = useUserStore();
+                const businessId = store.business;
+                if (!businessId) {
+                    this.error = "Business ID not found.";
+                    return;
                 }
-                this.success = "Customer updated successfully!";
+
+                const response = await axios.patch(
+                    "/api/customers/update-customer",
+                    {
+                        business_id: businessId,
+                        ...customerData,
+                    }
+                );
+                if (response.data.error) {
+                    if (response.data.errors) {
+                        this.error = response.data.errors;
+                    } else {
+                        this.error = response.data.message;
+                    }
+                    return;
+                } else {
+                    const index = this.customers.findIndex(
+                        (c) => c.id === customerData.id
+                    );
+                    if (index !== -1) {
+                        this.customers[index] = {
+                            ...this.customers[index],
+                            ...customerData,
+                        };
+                    }
+                    this.success = "Customer updated successfully!";
+                }
             } catch (error) {
                 this.error = error.response
                     ? error.response.data.message
@@ -79,13 +119,18 @@ export const useCustomerStore = defineStore("customer_store", {
         async deleteCustomer(customerId) {
             this.loading = true;
             try {
-                await axios.delete(
+                const response = await axios.delete(
                     `/api/customers/delete-customer/${customerId}`
                 );
-                this.customers = this.customers.filter(
-                    (c) => c.id !== customerId
-                );
-                this.success = "Customer deleted successfully!";
+                if (response.data.error) {
+                    this.error = response.data.message;
+                    return;
+                } else {
+                    this.customers = this.customers.filter(
+                        (c) => c.id !== customerId
+                    );
+                    this.success = "Customer deleted successfully!";
+                }
             } catch (error) {
                 this.error = error.response
                     ? error.response.data.message

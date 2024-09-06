@@ -10,6 +10,7 @@ import { useCustomerStore } from "@/Store/Customer";
 import TableSkeleton from "@/Components/TableSkeleton.vue";
 import Modal from "@/Components/Modal.vue";
 import NewCustomer from "./NewCustomer.vue";
+import NoRecords from "@/Components/NoRecords.vue";
 
 export default {
     components: {
@@ -21,20 +22,29 @@ export default {
         TableSkeleton,
         Modal,
         NewCustomer,
+        NoRecords,
     },
     data() {
         return {
             isDropdownOpen: false,
-            componentModal: {
-                open: false,
-                component: "",
+            selectcustomer: {
+                full_names: "",
+                email: "",
+                phone_number: "",
+                address: "",
             },
+            edit_customer: false,
         };
     },
     setup() {
         const customerStore = useCustomerStore();
         const search = ref("");
         const filter = ref("");
+
+        const componentModal = ref({
+            open: false,
+            component: "",
+        });
 
         onMounted(() => {
             customerStore.fetchBusinessCustomers();
@@ -54,6 +64,7 @@ export default {
 
         return {
             customerStore,
+            componentModal,
             search,
             filter,
             handleCreate,
@@ -74,6 +85,12 @@ export default {
             this.componentModal.open = false;
             this.componentModal.component = "";
         },
+        openEditCustomerForm(customer) {
+            this.componentModal.open = true;
+            this.componentModal.component = "NewCustomer";
+            this.edit_customer = true;
+            this.selectcustomer = customer;
+        },
     },
 };
 </script>
@@ -81,7 +98,12 @@ export default {
 <template>
     <Head title="Customers" />
     <Modal :show="componentModal.open" @close="closeModal">
-        <NewCustomer v-if="componentModal.component == 'NewCustomer'" />
+        <NewCustomer
+            v-if="componentModal.component == 'NewCustomer'"
+            :customer="selectcustomer"
+            :is-editing="edit_customer"
+            @close="closeModal"
+        />
     </Modal>
     <AuthenticatedLayout>
         <div class="bg-white">
@@ -160,14 +182,15 @@ export default {
             <!-- Customer Table -->
             <div class="h-[74vh] overflow-scroll relative mt-1">
                 <TableSkeleton v-if="customerStore.loading" />
+                <NoRecords v-else-if="customerStore.customers.length == 0" />
                 <table v-else class="table min-w-full bg-white relative">
                     <thead>
                         <tr>
-                            <th class="bg-slate-900 text-white">Full Names</th>
-                            <th class="bg-slate-900 text-white">Email</th>
-                            <th class="bg-slate-900 text-white">Phone</th>
-                            <th class="bg-slate-900 text-white">Address</th>
-                            <th class="bg-slate-900 text-white">Actions</th>
+                            <th class="bg-gray-500 text-white">Full Names</th>
+                            <th class="bg-gray-500 text-white">Email</th>
+                            <th class="bg-gray-500 text-white">Phone</th>
+                            <th class="bg-gray-500 text-white">Address</th>
+                            <th class="bg-gray-500 text-white">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -200,7 +223,11 @@ export default {
                                         tabindex="0"
                                         class="dropdown-content menu bg-white rounded-box z-[1] w-52 p-2 shadow"
                                     >
-                                        <li @click="handleEdit(customer)">
+                                        <li
+                                            @click="
+                                                openEditCustomerForm(customer)
+                                            "
+                                        >
                                             <a>Edit</a>
                                         </li>
                                         <li @click="handleDelete(customer.id)">

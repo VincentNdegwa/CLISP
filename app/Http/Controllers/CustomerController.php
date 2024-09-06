@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Customer;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class CustomerController extends Controller
@@ -13,8 +14,19 @@ class CustomerController extends Controller
 
         try {
             $request->validate([
-                'full_names' => 'required',
-                'email' => 'required|email',
+                'full_names' => [
+                    'required',
+                    Rule::unique('customers')->where(function ($query) use ($request) {
+                        return $query->where('business_id', $request->business_id);
+                    }),
+                ],
+                'email' => [
+                    'required',
+                    'email',
+                    Rule::unique('customers')->where(function ($query) use ($request) {
+                        return $query->where('business_id', $request->business_id);
+                    }),
+                ],
                 'phone_number' => 'required',
                 'address' => 'required',
                 'business_id' => 'required|exists:business,business_id'
@@ -61,12 +73,27 @@ class CustomerController extends Controller
     public function update(Request $request)
     {
         $request->validate([
-            'full_names' => 'required',
-            'email' => 'required|email',
+            'full_names' => [
+                'required',
+                // Rule::unique('customers')
+                //     ->ignore($request->id)
+                //     ->where(function ($query) use ($request) {
+                //         return $query->where('business_id', $request->business_id);
+                //     })
+            ],
+            'email' => [
+                'required',
+                'email',
+                // Rule::unique('customers')
+                //     ->ignore($request->id)
+                //     ->where(function ($query) use ($request) {
+                //         return $query->where('business_id', $request->business_id);
+                //     })
+            ],
             'phone_number' => 'required',
             'address' => 'required',
             'business_id' => 'required|exists:business,business_id',
-            'id' => 'required|exists:customers,id'
+            'id' => 'sometimes|required|exists:customers,id',
         ]);
         $customer = Customer::find($request->input('id'));
         if (!$customer) {
@@ -77,7 +104,7 @@ class CustomerController extends Controller
         }
         $customer->update($request->all());
         return response()->json([
-            "error" => true,
+            "error" => false,
             "message" => "Customer updated successfully",
             "data" => $customer,
         ]);
