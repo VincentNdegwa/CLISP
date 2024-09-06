@@ -158,7 +158,7 @@ export default {
                             <td class="py-2 px-4 border-b">
                                 {{ item.description }}
                             </td>
-                            <td>
+                            <td class="py-2 px-4 border-b">
                                 <div class="dropdown dropdown-left">
                                     <div
                                         tabindex="0"

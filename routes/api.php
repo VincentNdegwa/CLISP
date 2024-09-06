@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\BusinessConnectionController;
 use App\Http\Controllers\BusinessController;
+use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\FileSystemController;
 use App\Http\Controllers\ResourceCategoryController;
 use App\Http\Controllers\ResourceItemController;
@@ -47,4 +48,10 @@ Route::prefix("business")->group(function () {
     Route::post('/reject-connection-request', [BusinessConnectionController::class, "rejectConnectionRequest"]);
     Route::post('/cancel-connection-request', [BusinessConnectionController::class, "cancelConnectionRequest"]);
     Route::post('/terminate-connection', [BusinessConnectionController::class, "terminateConnection"]);
+});
+Route::prefix("customers")->group(function () {
+    Route::post('/create-customer', [CustomerController::class, "create"]);
+    Route::get('/business-customers/{business_id}', [CustomerController::class, "getBusinessCustomers"]);
+    Route::patch('/update-customer', [CustomerController::class, "update"]);
+    Route::delete('/delete-customer/{id}', [CustomerController::class, "delete"]);
 });
