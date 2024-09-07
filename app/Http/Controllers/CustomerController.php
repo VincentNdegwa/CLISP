@@ -76,7 +76,7 @@ class CustomerController extends Controller
             'full_names' => [
                 'required',
                 // Rule::unique('customers')
-                //     ->ignore($request->id)
+                //     ->ignore($request->id, 'id')
                 //     ->where(function ($query) use ($request) {
                 //         return $query->where('business_id', $request->business_id);
                 //     })
@@ -85,7 +85,7 @@ class CustomerController extends Controller
                 'required',
                 'email',
                 // Rule::unique('customers')
-                //     ->ignore($request->id)
+                //     ->ignore($request->id, 'id')
                 //     ->where(function ($query) use ($request) {
                 //         return $query->where('business_id', $request->business_id);
                 //     })

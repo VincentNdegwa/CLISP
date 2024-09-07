@@ -7,6 +7,7 @@ use App\Http\Controllers\FileSystemController;
 use App\Http\Controllers\ResourceCategoryController;
 use App\Http\Controllers\ResourceItemController;
 use App\Http\Controllers\SubscriptionController;
+use App\Http\Controllers\TransactionController;
 use App\Models\BusinessConnection;
 use App\Models\ResourceItem;
 use Illuminate\Support\Facades\Route;
@@ -54,4 +55,11 @@ Route::prefix("customers")->group(function () {
     Route::get('/business-customers/{business_id}', [CustomerController::class, "getBusinessCustomers"]);
     Route::patch('/update-customer', [CustomerController::class, "update"]);
     Route::delete('/delete-customer/{id}', [CustomerController::class, "delete"]);
+});
+
+Route::prefix('transactions/{business_id}')->group(function () {
+    Route::post('/add-transaction', [TransactionController::class, "create"]);
+    Route::post('/get-transaction', [TransactionController::class, 'getTransaction']);
+    Route::patch('/update-transaction/{transaction_id}', [TransactionController::class, 'updateTransaction']);
+    Route::patch('/delete-transaction/{transaction_id}', [TransactionController::class, 'deleteTransaction']);
 });
