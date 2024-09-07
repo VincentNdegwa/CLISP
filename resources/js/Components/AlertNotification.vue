@@ -38,7 +38,7 @@ export default {
         },
         position: {
             type: String,
-            default: "bottom",
+            default: "top",
         },
     },
     data() {

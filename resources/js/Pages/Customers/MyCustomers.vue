@@ -11,6 +11,7 @@ import TableSkeleton from "@/Components/TableSkeleton.vue";
 import Modal from "@/Components/Modal.vue";
 import NewCustomer from "./NewCustomer.vue";
 import NoRecords from "@/Components/NoRecords.vue";
+import ConfirmationModal from "@/Components/ConfirmationModal.vue";
 
 export default {
     components: {
@@ -23,6 +24,7 @@ export default {
         Modal,
         NewCustomer,
         NoRecords,
+        ConfirmationModal,
     },
     data() {
         return {
@@ -34,6 +36,12 @@ export default {
                 address: "",
             },
             edit_customer: false,
+            confirmBox: {
+                open: false,
+                message: "Are you sure you want to proceed?",
+                title: "Confirm Action",
+                method: null,
+            },
         };
     },
     setup() {
@@ -91,6 +99,18 @@ export default {
             this.edit_customer = true;
             this.selectcustomer = customer;
         },
+        openConfirm(message, title, method) {
+            this.confirmBox.open = true;
+            this.confirmBox.title = title;
+            this.confirmBox.message = message;
+            this.confirmBox.method = method;
+        },
+        closeConfirm() {
+            this.confirmBox.open = false;
+            this.confirmBox.message = "Are you sure you want to proceed?";
+            this.confirmBox.title = "Confirm Action";
+            this.confirmBox.method = null;
+        },
     },
 };
 </script>
@@ -105,6 +125,13 @@ export default {
             @close="closeModal"
         />
     </Modal>
+    <ConfirmationModal
+        :isOpen="confirmBox.open"
+        :message="confirmBox.message"
+        :title="confirmBox.title"
+        @confirm="confirmBox.method()"
+        @close="closeConfirm"
+    />
     <AuthenticatedLayout>
         <div class="bg-white">
             <div class="flex justify-between items-center mb-1">
@@ -230,7 +257,18 @@ export default {
                                         >
                                             <a>Edit</a>
                                         </li>
-                                        <li @click="handleDelete(customer.id)">
+                                        <li
+                                            @click="
+                                                openConfirm(
+                                                    'Are you sure you want to delete this customer',
+                                                    'Confirm Delete action',
+                                                    () =>
+                                                        handleDelete(
+                                                            customer.id
+                                                        )
+                                                )
+                                            "
+                                        >
                                             <a>Delete</a>
                                         </li>
                                     </ul>

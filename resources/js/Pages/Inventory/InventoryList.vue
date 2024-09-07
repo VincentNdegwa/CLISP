@@ -8,6 +8,7 @@ import { useResourceStore } from "@/Store/Resource";
 import TableSkeleton from "@/Components/TableSkeleton.vue";
 import { ref } from "vue";
 import ConfirmationModal from "@/Components/ConfirmationModal.vue";
+import NoRecords from "@/Components/NoRecords.vue";
 
 export default {
     setup() {
@@ -170,6 +171,7 @@ export default {
         NewCategory,
         TableSkeleton,
         ConfirmationModal,
+        NoRecords,
     },
 };
 </script>
@@ -275,6 +277,8 @@ export default {
 
         <div class="overflow-x-auto h-[75vh] w-full">
             <TableSkeleton v-if="resources.loading" />
+            <NoRecords v-else-if="resources.items.data.length == 0" />
+
             <table v-else class="table w-full">
                 <thead>
                     <tr>
@@ -335,7 +339,10 @@ export default {
             </table>
         </div>
 
-        <div class="flex justify-between items-center">
+        <div
+            v-if="resources.items.data.length > 0"
+            class="flex justify-between items-center"
+        >
             <button
                 :class="[
                     'py-2 px-4 rounded',
