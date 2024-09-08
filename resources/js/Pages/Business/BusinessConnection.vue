@@ -7,6 +7,7 @@ import ConnectionRequestForm from "./ConnectionRequestForm.vue";
 import { useUserStore } from "@/Store/UserStore";
 import ConfirmationModal from "@/Components/ConfirmationModal.vue";
 import axios from "axios";
+import NoRecords from "@/Components/NoRecords.vue";
 
 export default {
     components: {
@@ -16,6 +17,7 @@ export default {
         Modal,
         ConnectionRequestForm,
         ConfirmationModal,
+        NoRecords,
     },
     data() {
         return {
@@ -386,8 +388,8 @@ export default {
                         </div>
                     </div>
                 </div>
-                <div v-else class="text-center text-gray-700">
-                    No sent requests.
+                <div v-else class="text-center text-gray-700 w-full">
+                    <NoRecords />
                 </div>
             </div>
         </div>
@@ -503,8 +505,8 @@ export default {
                     </div>
                 </div>
 
-                <div v-else class="text-center text-gray-700">
-                    No incoming requests.
+                <div v-else class="text-center text-gray-700 w-full">
+                    <NoRecords />
                 </div>
             </div>
         </div>

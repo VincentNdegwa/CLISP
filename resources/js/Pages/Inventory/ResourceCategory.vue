@@ -7,6 +7,7 @@ import NewCategory from "./NewCategory.vue";
 import { ref } from "vue";
 import TableSkeleton from "@/Components/TableSkeleton.vue";
 import ConfirmationModal from "@/Components/ConfirmationModal.vue";
+import NoRecords from "@/Components/NoRecords.vue";
 
 export default {
     components: {
@@ -16,6 +17,7 @@ export default {
         NewCategory,
         TableSkeleton,
         ConfirmationModal,
+        NoRecords,
     },
     setup() {
         const categories = useResourceCategoryStore();
@@ -134,6 +136,8 @@ export default {
             </div>
 
             <TableSkeleton v-if="categories.loading" />
+            <NoRecords v-else-if="categories.items?.data.length == 0" />
+
             <div v-else class="h-[74vh] overflow-y-scroll relative mt-1">
                 <table class="min-w-full bg-white relative table">
                     <thead
@@ -158,7 +162,7 @@ export default {
                             <td class="py-2 px-4 border-b">
                                 {{ item.description }}
                             </td>
-                            <td>
+                            <td class="py-2 px-4 border-b">
                                 <div class="dropdown dropdown-left">
                                     <div
                                         tabindex="0"
@@ -193,7 +197,10 @@ export default {
                 </table>
             </div>
 
-            <div class="flex justify-between items-center">
+            <div
+                v-if="categories.items?.data?.length > 0"
+                class="flex justify-between items-center"
+            >
                 <button
                     :class="[
                         'py-2 px-4 rounded',
