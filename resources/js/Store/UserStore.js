@@ -1,18 +1,19 @@
 import { defineStore } from "pinia";
 
-export const useUserStore = defineStore('userStore', {
+export const useUserStore = defineStore("userStore", {
     state: () => ({
         businessId: null,
+        actualBusiness: null,
     }),
     getters: {
         business(state) {
-            const business = window.localStorage.getItem('default_business');
+            const business = window.localStorage.getItem("default_business");
             if (business) {
-                const business_id = JSON.parse(business).business_id;
-                state.businessId = business_id;
+                state.actualBusiness = JSON.parse(business);
+                state.businessId = JSON.parse(business).business_id;
                 return state.businessId;
             }
             return null;
-        }
-    }
+        },
+    },
 });

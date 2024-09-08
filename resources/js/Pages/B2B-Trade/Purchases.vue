@@ -6,32 +6,52 @@ import PrimaryButton from "@/Components/PrimaryButton.vue";
 import TextInput from "@/Components/TextInput.vue";
 import { useTransactionStore } from "@/Store/TransactionStore";
 import TableDisplay from "@/Layouts/TableDisplay.vue";
-import IncommingPurchase from "./IncommingPurchase.vue";
-import OutgoingPurchase from "./OutgoingPurchase.vue";
+import Incoming from "./Incomming.vue";
+import Outgoing from "./Outgoing.vue";
+import Modal from "@/Components/Modal.vue";
+import NewTransactionForm from "@/Components/NewTransactionForm.vue";
+import { useUserStore } from "@/Store/UserStore";
+import { useMyBusiness } from "@/Store/MyBusiness";
+import { useCustomerStore } from "@/Store/Customer";
 
 export default {
+    props: {
+        transactionType: {
+            type: String,
+            required: true,
+        },
+        isB2B: {
+            type: Boolean,
+            required: true,
+        },
+    },
     components: {
         AuthenticatedLayout,
         Head,
         PrimaryButton,
         TextInput,
         TableDisplay,
-        IncommingPurchase,
-        OutgoingPurchase,
+        Incoming,
+        Outgoing,
+        Modal,
+        NewTransactionForm,
     },
 
     setup() {
         const transactionStore = useTransactionStore();
+        const businessStore = useUserStore();
+        const myBusinessStore = useMyBusiness();
+        const customerStore = useCustomerStore();
+        const InitiatorBusiness = businessStore.business;
         const search = ref("");
         const filter = ref("all");
         const isDropdownOpen = ref(false);
         const incoming = ref(true);
+        const type = ref("");
 
         onMounted(() => {
-            transactionStore.getTransaction({
-                type: "purchase",
-                incoming: incoming.value,
-            });
+            myBusinessStore.fetchActiveConnection();
+            customerStore.fetchBusinessCustomers();
         });
 
         const toggleDropdown = () => {
@@ -41,7 +61,7 @@ export default {
         const handleFilter = (filterValue) => {
             filter.value = filterValue;
             transactionStore.getTransaction({
-                type: "purchase",
+                type: type.value,
                 incoming: incoming.value,
                 filter: filterValue,
             });
@@ -50,9 +70,9 @@ export default {
 
         const openCreateNewPurchase = () => {};
 
-        watch([search, filter, incoming], () => {
+        watch([search, filter, incoming, type], () => {
             transactionStore.getTransaction({
-                type: "purchase",
+                type: type.value,
                 incoming: incoming.value,
                 search: search.value,
                 filter: filter.value,
@@ -64,6 +84,9 @@ export default {
         };
         const openOutgoing = () => {
             incoming.value = false;
+        };
+        const changeType = (transactionType) => {
+            type.value = transactionType;
         };
 
         return {
@@ -77,18 +100,50 @@ export default {
             openIncomming,
             openOutgoing,
             incoming,
+            InitiatorBusiness,
+            changeType,
+            myBusinessStore,
+            customerStore,
         };
     },
     data() {
         return {
             tableHeaders: ["#", "item", "qnty", "price", "status", "date"],
+            modal: {
+                open: false,
+                maxWidth: "4xl",
+                component: "",
+            },
         };
+    },
+    methods: {
+        openModal(component) {
+            this.modal.open = true;
+            this.modal.component = component;
+        },
+        closeModal() {
+            this.modal.open = false;
+            this.modal.component = "";
+        },
+    },
+    mounted() {
+        this.changeType(this.transactionType);
     },
 };
 </script>
 
 <template>
-    <Head title="Purchases" />
+    <Head :title="transactionType" />
+    <Modal :show="modal.open" :maxWidth="modal.maxWidth" @close="closeModal">
+        <NewTransactionForm
+            v-if="modal.component == 'NewTransaction'"
+            :initiatorBusiness="InitiatorBusiness"
+            :business="myBusinessStore.data"
+            :customer="customerStore.customers"
+            :transactionType="transactionType"
+            :isB2B="isB2B"
+        />
+    </Modal>
     <AuthenticatedLayout>
         <div class="flex justify-between items-center mt-1">
             <div class="flex items-center md:gap-6 gap-2">
@@ -136,21 +191,21 @@ export default {
             </div>
             <div class="flex items-center">
                 <PrimaryButton
-                    @click="openCreateNewPurchase"
-                    class="bg-slate-900 text-white"
+                    @click="() => openModal('NewTransaction')"
+                    class="bg-slate-900 text-white capitalize"
                 >
-                    Create New Purchase
+                    Create New {{ transactionType }}
                 </PrimaryButton>
             </div>
         </div>
 
-        <p class="text-xs m-0">
+        <!-- <p class="text-xs m-0">
             Outgoing Purchase (From Your Business to Another)
         </p>
 
         <p class="text-xs m-0">
             Incoming Purchase (From Another Business to Your Business)
-        </p>
+        </p> -->
 
         <!-- Tabs -->
         <div class="flex border-b mt-2 mb-2">
@@ -163,7 +218,7 @@ export default {
                         : '',
                 ]"
             >
-                Incomming Purchases
+                Incomming {{ transactionType }}
             </button>
             <button
                 @click="openOutgoing"
@@ -174,18 +229,18 @@ export default {
                         : '',
                 ]"
             >
-                Outgoing Requests
+                Outgoing {{ transactionType }}
             </button>
         </div>
 
         <div id="incomming" v-if="incoming">
-            <IncommingPurchase
+            <Incoming
                 :transactionStore="transactionStore"
                 :tableHeaders="tableHeaders"
             />
         </div>
         <div id="outgoing" v-else>
-            <OutgoingPurchase
+            <Outgoing
                 :transactionStore="transactionStore"
                 :tableHeaders="tableHeaders"
             />

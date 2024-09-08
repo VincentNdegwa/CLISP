@@ -94,8 +94,6 @@ class TransactionController extends Controller
                 "incoming" => 'required|boolean',
                 "status" => 'nullable|string',
                 "type" => 'required|string',
-                "initiator_id" => 'nullable|exists:business,business_id',
-                "receiver_business_id" => 'nullable|exists:business,business_id',
                 "items_count" => "nullable|integer"
             ]);
 

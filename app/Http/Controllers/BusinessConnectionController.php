@@ -156,4 +156,43 @@ class BusinessConnectionController extends Controller
             'message' => $successMessage,
         ]);
     }
+
+    public function getActiveConnections($business_id)
+    {
+        try {
+            $connection_data = [];
+            $connections = BusinessConnection::where('connection_status', 'approved')
+                ->where(function ($query) use ($business_id) {
+                    $query->where('receiving_business_id', $business_id)
+                        ->orWhere('requesting_business_id', $business_id);
+                })
+                ->with(['businessRequester:business_id,business_name', 'businessReceiver:business_id,business_name'])
+                ->get();
+
+            foreach ($connections as $item) {
+                if ($item->receiving_business_id == $business_id) {
+                    $connection_data[] = [
+                        'business_id' => $item->businessRequester->business_id,
+                        'business_name' => $item->businessRequester->business_name,
+                    ];
+                } else {
+                    $connection_data[] = [
+                        'business_id' => $item->businessReceiver->business_id,
+                        'business_name' => $item->businessReceiver->business_name,
+                    ];
+                }
+            }
+            return response()->json([
+                "error" => false,
+                "message" => "Connections were successfully retrieved",
+                "data" => $connection_data
+            ]);
+        } catch (\Exception $th) {
+            return response()->json([
+                'error' => true,
+                'message' => 'An unexpected error occurred.',
+                'errors' => $th->getMessage()
+            ]);
+        }
+    }
 }

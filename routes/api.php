@@ -49,6 +49,7 @@ Route::prefix("business")->group(function () {
     Route::post('/reject-connection-request', [BusinessConnectionController::class, "rejectConnectionRequest"]);
     Route::post('/cancel-connection-request', [BusinessConnectionController::class, "cancelConnectionRequest"]);
     Route::post('/terminate-connection', [BusinessConnectionController::class, "terminateConnection"]);
+    Route::get("/get-active-connection/{business_id}", [BusinessConnectionController::class, "getActiveConnections"]);
 });
 Route::prefix("customers")->group(function () {
     Route::post('/create-customer', [CustomerController::class, "create"]);

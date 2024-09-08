@@ -86,7 +86,10 @@ Route::middleware('auth')->prefix('/')->group(function () {
 
     Route::prefix('trade-business')->name('b2b.')->group(function () {
         Route::get('/purchase', function () {
-            return Inertia::render('B2B-Trade/Purchases');
+            return Inertia::render('B2B-Trade/Purchases', [
+                'transactionType' => 'purchase',
+                'isB2B' => true
+            ]);
         })->name('purchase');
     });
 

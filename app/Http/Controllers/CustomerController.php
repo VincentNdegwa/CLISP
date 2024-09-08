@@ -56,7 +56,7 @@ class CustomerController extends Controller
 
     public function getBusinessCustomers($business_id)
     {
-        $business = Customer::where('business_id', $business_id)->with('business')->get();
+        $business = Customer::where('business_id', $business_id)->get();
         if (!$business) {
             return response()->json([
                 'error' => true,
