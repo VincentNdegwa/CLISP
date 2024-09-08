@@ -6,6 +6,8 @@ import PrimaryButton from "@/Components/PrimaryButton.vue";
 import TextInput from "@/Components/TextInput.vue";
 import { useTransactionStore } from "@/Store/TransactionStore";
 import TableDisplay from "@/Layouts/TableDisplay.vue";
+import IncommingPurchase from "./IncommingPurchase.vue";
+import OutgoingPurchase from "./OutgoingPurchase.vue";
 
 export default {
     components: {
@@ -14,6 +16,8 @@ export default {
         PrimaryButton,
         TextInput,
         TableDisplay,
+        IncommingPurchase,
+        OutgoingPurchase,
     },
 
     setup() {
@@ -46,13 +50,21 @@ export default {
 
         const openCreateNewPurchase = () => {};
 
-        watch([search, filter], () => {
+        watch([search, filter, incoming], () => {
             transactionStore.getTransaction({
                 type: "purchase",
+                incoming: incoming.value,
                 search: search.value,
                 filter: filter.value,
             });
         });
+
+        const openIncomming = () => {
+            incoming.value = true;
+        };
+        const openOutgoing = () => {
+            incoming.value = false;
+        };
 
         return {
             search,
@@ -62,6 +74,9 @@ export default {
             handleFilter,
             openCreateNewPurchase,
             transactionStore,
+            openIncomming,
+            openOutgoing,
+            incoming,
         };
     },
     data() {
@@ -75,93 +90,106 @@ export default {
 <template>
     <Head title="Purchases" />
     <AuthenticatedLayout>
-        <div class="flex justify-between items-center mb-4">
-            <h1 class="text-slate-900 text-xl font-semibold">Purchases</h1>
-            <PrimaryButton
-                @click="openCreateNewPurchase"
-                class="bg-slate-900 text-white"
-            >
-                Create New Purchase
-            </PrimaryButton>
-        </div>
-
-        <!-- Filter and Search -->
-        <div class="flex items-center mb-4">
-            <div class="mr-4">
-                <TextInput
-                    id="search"
-                    v-model="search"
-                    class="block mt-1 w-full"
-                    placeholder="Search by item"
-                />
-            </div>
-            <div class="dropdown">
-                <div
-                    tabindex="0"
-                    role="button"
-                    class="btn m-1 bg-slate-900 text-white"
-                    @click="toggleDropdown"
-                >
-                    Filters <i class="bi bi-funnel"></i>
-                </div>
-                <ul
-                    tabindex="0"
-                    v-if="isDropdownOpen"
-                    class="dropdown-content flex flex-col gap-2 bg-white text-slate-900 rounded-box z-[1] w-52 p-2 shadow"
-                >
-                    <li>
-                        <a @click="handleFilter('all')">All</a>
-                    </li>
-                    <li>
-                        <a @click="handleFilter('incoming')">Incoming</a>
-                    </li>
-                    <li>
-                        <a @click="handleFilter('outgoing')">Outgoing</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-
-        <TableDisplay
-            :loading="transactionStore.loading"
-            :key="tableHeaders"
-            :data_length="transactionStore?.transactions?.length"
-        >
-            <template v-slot:row>
-                <tr
-                    v-for="transaction in transactionStore.transactions"
-                    :key="transaction.id"
-                    class="hover:bg-gray-100 transition-colors"
-                >
-                    <td class="py-2 px-4 border-b">
-                        {{ transaction.item }}
-                    </td>
-                    <td class="px-6 py-4 border-b">
-                        {{ transaction.quantity }}
-                    </td>
-                    <td class="px-6 py-4 border-b">
-                        ${{ transaction.price || 0 }}
-                    </td>
-                    <td class="px-6 py-4 border-b">
-                        <span
-                            :class="{
-                                'text-yellow-500':
-                                    transaction.status === 'pending',
-                                'text-green-500':
-                                    transaction.status === 'completed',
-                                'text-red-500':
-                                    transaction.status === 'canceled',
-                            }"
+        <div class="flex justify-between items-center mt-1">
+            <div class="flex items-center md:gap-6 gap-2">
+                <h1 class="text-slate-900 text-xl font-semibold">Purchases</h1>
+                <!-- Filter and Search -->
+                <div class="flex items-center">
+                    <div class="mr-4">
+                        <TextInput
+                            id="search"
+                            v-model="search"
+                            class="block mt-1 w-full"
+                            placeholder="Search by item"
+                        />
+                    </div>
+                    <div class="dropdown">
+                        <div
+                            tabindex="0"
+                            role="button"
+                            class="btn m-1 bg-slate-900 text-white"
+                            @click="toggleDropdown"
                         >
-                            {{ transaction.status }}
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 border-b">
-                        {{ transaction.date }}
-                    </td>
-                </tr>
-            </template>
-        </TableDisplay>
+                            Filters <i class="bi bi-funnel"></i>
+                        </div>
+                        <ul
+                            tabindex="0"
+                            v-if="isDropdownOpen"
+                            class="dropdown-content flex flex-col gap-2 bg-white text-slate-900 rounded-box z-[1] w-52 p-2 shadow"
+                        >
+                            <li>
+                                <a @click="handleFilter('all')">All</a>
+                            </li>
+                            <li>
+                                <a @click="handleFilter('incoming')"
+                                    >Incoming</a
+                                >
+                            </li>
+                            <li>
+                                <a @click="handleFilter('outgoing')"
+                                    >Outgoing</a
+                                >
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-center">
+                <PrimaryButton
+                    @click="openCreateNewPurchase"
+                    class="bg-slate-900 text-white"
+                >
+                    Create New Purchase
+                </PrimaryButton>
+            </div>
+        </div>
+
+        <p class="text-xs m-0">
+            Outgoing Purchase (From Your Business to Another)
+        </p>
+
+        <p class="text-xs m-0">
+            Incoming Purchase (From Another Business to Your Business)
+        </p>
+
+        <!-- Tabs -->
+        <div class="flex border-b mt-2 mb-2">
+            <button
+                @click="openIncomming"
+                :class="[
+                    'py-2 px-4 rounded-t-lg transition-all ease-linear duration-150',
+                    incoming
+                        ? 'border-b-2 border-blue-600 bg-slate-700 text-white'
+                        : '',
+                ]"
+            >
+                Incomming Purchases
+            </button>
+            <button
+                @click="openOutgoing"
+                :class="[
+                    'py-2 px-4 rounded-t-lg transition-all ease-linear duration-150',
+                    !incoming
+                        ? 'border-b-2 border-blue-600 bg-slate-700 text-white'
+                        : '',
+                ]"
+            >
+                Outgoing Requests
+            </button>
+        </div>
+
+        <div id="incomming" v-if="incoming">
+            <IncommingPurchase
+                :transactionStore="transactionStore"
+                :tableHeaders="tableHeaders"
+            />
+        </div>
+        <div id="outgoing" v-else>
+            <OutgoingPurchase
+                :transactionStore="transactionStore"
+                :tableHeaders="tableHeaders"
+            />
+        </div>
     </AuthenticatedLayout>
 </template>
 
