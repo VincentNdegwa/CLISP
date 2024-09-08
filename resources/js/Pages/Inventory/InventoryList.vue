@@ -9,6 +9,7 @@ import TableSkeleton from "@/Components/TableSkeleton.vue";
 import { ref } from "vue";
 import ConfirmationModal from "@/Components/ConfirmationModal.vue";
 import NoRecords from "@/Components/NoRecords.vue";
+import TableDisplay from "@/Layouts/TableDisplay.vue";
 
 export default {
     setup() {
@@ -85,6 +86,16 @@ export default {
             },
             item_to_delete: {},
             isDropdownOpen: false,
+            table_header: [
+                "#",
+                "Item Name",
+                "Category",
+                "Quantity",
+                "Unit",
+                "Price",
+                "Date Added",
+                "Actions",
+            ],
         };
     },
     methods: {
@@ -172,12 +183,13 @@ export default {
         TableSkeleton,
         ConfirmationModal,
         NoRecords,
+        TableDisplay,
     },
 };
 </script>
 
 <template>
-    <div class="h-[83vh]">
+    <div class="">
         <AlertNotification
             :open="notification.open"
             :message="notification.message"
@@ -202,7 +214,7 @@ export default {
             @close="closeConfirm"
         />
 
-        <div class="w-full mt-2 flex justify-between items-center">
+        <div class="mt-1 flex justify-between items-center">
             <div class="flex items-center gap-2">
                 <SearchInput @search="makeSearch" />
 
@@ -275,72 +287,55 @@ export default {
             </div>
         </div>
 
-        <div class="overflow-x-auto h-[75vh] w-full">
-            <TableSkeleton v-if="resources.loading" />
-            <NoRecords v-else-if="resources.items.data.length == 0" />
-
-            <table v-else class="table w-full">
-                <thead>
-                    <tr>
-                        <th class="text-slate-900 font-medium">#</th>
-                        <th class="text-slate-900 font-medium">Item Name</th>
-                        <th class="text-slate-900 font-medium">Category</th>
-                        <th class="text-slate-900 font-medium">Quantity</th>
-                        <th class="text-slate-900 font-medium">Unit</th>
-                        <th class="text-slate-900 font-medium">Price</th>
-                        <th class="text-slate-900 font-medium">Date Added</th>
-                        <th class="text-slate-900 font-medium">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr
-                        v-for="(item, index) in resources.items.data"
-                        :key="item.item_id"
-                    >
-                        <td>{{ index + 1 }}</td>
-                        <td>{{ item.item_name }}</td>
-                        <td>
-                            {{ item.category ? item.category?.name : "--" }}
-                        </td>
-                        <td>{{ item.quantity }}</td>
-                        <td>{{ item.unit }}</td>
-                        <td>{{ item.price }}</td>
-                        <td>{{ formatDate(item.date_added) }}</td>
-                        <td>
-                            <div class="dropdown dropdown-left">
-                                <div
-                                    tabindex="0"
-                                    class="btn btn-xs bg-blue-500 text-white"
-                                >
-                                    Action
-                                </div>
-                                <ul
-                                    tabindex="0"
-                                    class="dropdown-content menu bg-white rounded-box z-[1] w-52 p-2 shadow"
-                                >
-                                    <li>
-                                        <a :href="viewItem(item.id)">View</a>
-                                    </li>
-                                    <li @click="() => editResource(item)">
-                                        <a>Edit</a>
-                                    </li>
-                                    <li
-                                        @click="
-                                            () => handleResourceDelete(item)
-                                        "
-                                    >
-                                        <a>Delete</a>
-                                    </li>
-                                </ul>
+        <TableDisplay
+            :loading="resources.loading"
+            :keys="table_header"
+            :data_length="resources.items.data?.length"
+        >
+            <template v-slot:row>
+                <tr
+                    v-for="(item, index) in resources.items.data"
+                    :key="item.item_id"
+                >
+                    <td>{{ index + 1 }}</td>
+                    <td>{{ item.item_name }}</td>
+                    <td>
+                        {{ item.category ? item.category?.name : "--" }}
+                    </td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.unit }}</td>
+                    <td>{{ item.price }}</td>
+                    <td>{{ formatDate(item.date_added) }}</td>
+                    <td>
+                        <div class="dropdown dropdown-left">
+                            <div
+                                tabindex="0"
+                                class="btn btn-xs bg-blue-500 text-white"
+                            >
+                                Action
                             </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+                            <ul
+                                tabindex="0"
+                                class="dropdown-content menu bg-white rounded-box z-[1] w-52 p-2 shadow"
+                            >
+                                <li>
+                                    <a :href="viewItem(item.id)">View</a>
+                                </li>
+                                <li @click="() => editResource(item)">
+                                    <a>Edit</a>
+                                </li>
+                                <li @click="() => handleResourceDelete(item)">
+                                    <a>Delete</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </td>
+                </tr>
+            </template>
+        </TableDisplay>
 
         <div
-            v-if="resources.items.data.length > 0"
+            v-if="resources.items.data?.length > 0"
             class="flex justify-between items-center"
         >
             <button

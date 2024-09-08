@@ -2,13 +2,13 @@
 
 import { defineStore } from "pinia";
 import axios from "axios";
-import { useUserStore } from "./userStore"; // Assuming this is the store where business_id is stored
+import { useUserStore } from "./UserStore";
 
 export const useTransactionStore = defineStore("transactionStore", {
     state: () => ({
-        transactions: [],
+        transactions: {},
         error: null,
-        success: null, // Add success message state
+        success: null,
         loading: false,
     }),
 
@@ -24,14 +24,14 @@ export const useTransactionStore = defineStore("transactionStore", {
 
             try {
                 this.loading = true;
-                this.error = null; // Clear any previous error
-                this.success = null; // Clear any previous success message
+                this.error = null;
+                this.success = null;
 
                 const response = await axios.post(
                     `/api/transactions/${businessId}/add-transaction`,
                     transactionData
                 );
-                this.transactions.push(response.data.data); // Assuming the API returns the created transaction
+                this.transactions.push(response.data.data.data);
 
                 this.success = "Transaction added successfully.";
             } catch (error) {
@@ -61,6 +61,8 @@ export const useTransactionStore = defineStore("transactionStore", {
                     `/api/transactions/${businessId}/get-transaction`,
                     filters
                 );
+                // console.log(response.data.data.data);
+
                 this.transactions = response.data.data;
             } catch (error) {
                 this.error =
@@ -89,11 +91,11 @@ export const useTransactionStore = defineStore("transactionStore", {
                     `/api/transactions/${businessId}/update-transaction/${transactionId}`,
                     transactionData
                 );
-                const index = this.transactions.findIndex(
+                const index = this.transactions.data.findIndex(
                     (transaction) => transaction.id === transactionId
                 );
                 if (index !== -1) {
-                    this.transactions[index] = response.data.data; // Assuming the API returns the updated transaction
+                    this.transactions.data[index] = response.data.data; // Assuming the API returns the updated transaction
                 }
 
                 this.success = "Transaction updated successfully.";
@@ -123,7 +125,7 @@ export const useTransactionStore = defineStore("transactionStore", {
                 await axios.patch(
                     `/api/transactions/${businessId}/delete-transaction/${transactionId}`
                 );
-                this.transactions = this.transactions.filter(
+                this.transactions = this.transactions.data.filter(
                     (transaction) => transaction.id !== transactionId
                 );
 

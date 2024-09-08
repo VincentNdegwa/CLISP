@@ -198,7 +198,7 @@ export default {
             </div>
 
             <div
-                v-if="categories.items?.data.length > 0"
+                v-if="categories.items?.data?.length > 0"
                 class="flex justify-between items-center"
             >
                 <button

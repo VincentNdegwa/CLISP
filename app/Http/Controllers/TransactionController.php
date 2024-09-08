@@ -99,12 +99,12 @@ class TransactionController extends Controller
                 "items_count" => "nullable|integer"
             ]);
 
-            $transactionsQuery = Transaction::with('details', 'initiator', 'receiver_business', 'receiver_customer', 'items')
-                ->when($validatedData['status'], function ($query, $status) {
+            $transactionsQuery = Transaction::with('details', 'initiator', 'receiver_business', 'receiver_customer', 'items');
+            if ($request->input('status')) {
+                $transactionsQuery->when($request->input('status'), function ($query, $status) {
                     $query->where('status', $status);
-                })
-                ->where('type', $validatedData['type'])
-                ->where('deleted', false);
+                });
+            }
 
             if ($validatedData['incoming']) {
                 $transactionsQuery->where('receiver_business_id', $business_id);
@@ -113,7 +113,10 @@ class TransactionController extends Controller
             }
 
             $itemsCount = $validatedData['items_count'] ?? 20;
-            $transactions = $transactionsQuery->paginate($itemsCount);
+            $transactions = $transactionsQuery
+                ->where('type', $validatedData['type'])
+                ->where('deleted', false)
+                ->paginate($itemsCount);
 
             return response()->json([
                 "error" => false,
@@ -121,14 +124,12 @@ class TransactionController extends Controller
                 "data" => $transactions,
             ]);
         } catch (ValidationException $e) {
-            // Handle validation errors
             return response()->json([
                 'error' => true,
                 'message' => 'Validation error.',
                 'errors' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
-            // Handle general errors
             return response()->json([
                 'error' => true,
                 'message' => 'An unexpected error occurred.',
