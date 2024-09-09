@@ -22,7 +22,7 @@ class TransactionController extends Controller
                 "receiver_business_id" => 'nullable|exists:business,business_id',
                 "receiver_customer_id" => 'nullable|exists:customer,id',
                 "transaction_items" => 'required|array',
-                "transaction_items.*.item_id" => 'required|exists:items,id',
+                "transaction_items.*.item_id" => 'required|exists:resource_item,id',
                 "transaction_items.*.quantity" => 'required|numeric|min:0',
                 "transaction_items.*.price" => 'required|numeric|min:0',
                 "lease_start_date" => 'nullable|date',
@@ -94,8 +94,6 @@ class TransactionController extends Controller
                 "incoming" => 'required|boolean',
                 "status" => 'nullable|string',
                 "type" => 'required|string',
-                "initiator_id" => 'nullable|exists:business,business_id',
-                "receiver_business_id" => 'nullable|exists:business,business_id',
                 "items_count" => "nullable|integer"
             ]);
 
@@ -116,6 +114,7 @@ class TransactionController extends Controller
             $transactions = $transactionsQuery
                 ->where('type', $validatedData['type'])
                 ->where('deleted', false)
+                ->orderBy('created_at', 'DESC')
                 ->paginate($itemsCount);
 
             return response()->json([

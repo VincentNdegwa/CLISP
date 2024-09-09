@@ -1,7 +1,7 @@
 <template>
     <div
         v-if="isVisible"
-        :class="`alert ${statusClass} absolute ${position}-1 right-1 min-w-[200px] max-w-fit z-[1000]`"
+        :class="`alert ${statusClass} absolute top-1 right-1 min-w-[200px] max-w-fit z-[1000]`"
         role="alert"
     >
         <svg

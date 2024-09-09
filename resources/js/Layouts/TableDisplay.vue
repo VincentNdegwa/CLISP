@@ -4,7 +4,7 @@
 
         <NoRecords v-else-if="!loading && data_length === 0" />
 
-        <div v-else class="h-full max-h-[75vh] overflow-y-scroll relative">
+        <div v-else class="max-h-[75vh] h-[75vh] overflow-y-scroll relative">
             <table class="min-w-full relative table bg-white">
                 <thead
                     class="sticky top-0 bg-gray-200 z-[2] font-bold text-slate-950 w-full"

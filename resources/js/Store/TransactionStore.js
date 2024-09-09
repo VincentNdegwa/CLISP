@@ -31,13 +31,18 @@ export const useTransactionStore = defineStore("transactionStore", {
                     `/api/transactions/${businessId}/add-transaction`,
                     transactionData
                 );
-                this.transactions.push(response.data.data.data);
-
-                this.success = "Transaction added successfully.";
+                if (response.data.error) {
+                    this.error = response.data.error;
+                    if (response.data.errors) {
+                        this.error = response.data.errors;
+                    }
+                } else {
+                    this.transactions.data.unshift(response.data.data);
+                    this.success = "Transaction added successfully.";
+                }
             } catch (error) {
-                this.error =
-                    error.response?.data?.message ||
-                    "An error occurred while adding the transaction.";
+                console.log(error);
+                this.error = error.response?.data?.message;
             } finally {
                 this.loading = false;
             }
