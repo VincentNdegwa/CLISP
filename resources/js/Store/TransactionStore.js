@@ -37,7 +37,7 @@ export const useTransactionStore = defineStore("transactionStore", {
                         this.error = response.data.errors;
                     }
                 } else {
-                    this.transactions.data.push(response.data.data);
+                    this.transactions.data.unshift(response.data.data);
                     this.success = "Transaction added successfully.";
                 }
             } catch (error) {
