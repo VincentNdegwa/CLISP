@@ -1,41 +1,12 @@
 <template>
-    <div class="p-1">
-        <div class="text-2xl font-bold">New Transaction</div>
+    <div class="p-1 h-fit relative">
+        <div class="text-2xl font-bold ms-6 mt-2">New Transaction</div>
         <form
             @submit.prevent="submitForm"
             class="space-y-8 p-6 bg-white shadow-lg rounded-lg"
         >
-            <!-- Row 1: Type and Status -->
-            <!-- <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-                <InputLabel for="type" value="Type" />
-                <TextInput v-model="form.type" type="text" id="type" required />
-            </div>
-
-            <div>
-                <InputLabel for="status" value="Status" />
-                <TextInput
-                    v-model="form.status"
-                    type="text"
-                    id="status"
-                    required
-                />
-            </div>
-        </div> -->
-
             <!-- Row 2: Initiator and Receiver -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- <div>
-                <InputLabel for="initiator_id" value="Initiator ID" />
-                <TextInput
-                    v-model="form.initiator_id"
-                    type="number"
-                    id="initiator_id"
-                    required
-                />
-            </div> -->
-
-                <!-- Receiver Business ID -->
                 <div v-if="isB2B">
                     <InputLabel
                         for="receiver_business_id"
@@ -90,7 +61,10 @@
             </div>
 
             <!-- Row 3: Receiver Customer and Lease Dates -->
-            <div class="flex gap-1">
+            <div
+                class="flex gap-1"
+                v-if="tr_with_dates.includes(transactionType)"
+            >
                 <div>
                     <InputLabel
                         for="lease_start_date"
@@ -115,24 +89,36 @@
             </div>
 
             <!-- Transaction Items Section -->
-            <div class="bg-gray-100 p-4 rounded-lg shadow-md">
-                <h3 class="text-lg font-bold mb-4">Transaction Items</h3>
-
+            <div class="p-2 rounded-lg shadow-md">
+                <div class="flex justify-between">
+                    <h3 class="text-lg font-bold mb-4">Transaction Items</h3>
+                    <div class="text-right">
+                        <button
+                            type="button"
+                            @click="addItem"
+                            class="btn bg-slate-900 text-white btn-sm"
+                        >
+                            Add Another Item
+                        </button>
+                    </div>
+                </div>
                 <div
                     v-for="(item, index) in form.transaction_items"
                     :key="index"
-                    class="flex gap-1 items-center"
+                    class="w-full flex flex-col md:flex-row gap-2 md:gap-4 items-center mt-2"
                 >
                     <!-- Item ID -->
-                    <div>
+                    <div class="w-full md:w-fit">
                         <InputLabel
                             :for="`item_id_${index}`"
                             value="Item"
                             required="true"
+                            class="w-full"
                         />
 
                         <v-select
                             id="autocomplete"
+                            required
                             v-model="item.item_id"
                             :options="options"
                             :get-option-label="(option) => option.item_name"
@@ -141,64 +127,65 @@
                             placeholder="Search Item..."
                             @search="onSearch"
                             @update:modelValue="onInput"
-                            @open="openList"
-                            @close="closeList"
-                            class="max-w-60 w-60 bg-white text-slate-950 p-1 b-0 ring-0"
+                            @option:selected="onOptionSelected"
+                            class="md:max-w-60 md:w-60 bg-white text-slate-950 p-1 b-0 ring-0 w-full relative"
                         />
                     </div>
 
                     <!-- Quantity -->
-                    <div>
+                    <div class="md:w-[100px] md:max-w-fit w-full">
                         <InputLabel
                             :for="`quantity_${index}`"
                             value="Quantity"
+                            class="w-full"
+                            required="true"
                         />
                         <TextInput
                             v-model="item.quantity"
                             :id="`quantity_${index}`"
-                            type="number"
-                            min="0"
+                            type="text"
+                            class="w-full"
+                            min="0.01"
                             required
                         />
                     </div>
 
                     <!-- Price -->
-                    <div>
-                        <InputLabel :for="`price_${index}`" value="Price" />
+                    <div class="md:w-[150px] w-full md:max-w-fit">
+                        <InputLabel
+                            :for="`price_${index}`"
+                            value="Unit Price"
+                            class="w-full"
+                            required="true"
+                        />
                         <TextInput
                             v-model="item.price"
                             :id="`price_${index}`"
                             type="number"
+                            class="w-full"
                             min="0"
                             required
                         />
                     </div>
 
                     <!-- Remove Item Button -->
-                    <div class="">
+                    <div class="mt-4">
                         <button
                             type="button"
                             @click="removeItem(index)"
-                            class="btn btn-outline btn-sm bg-rose-100 text-red-500"
+                            class="btn btn-outline btn-sm bg-rose-500 text-white hover:bg-rose-700"
                         >
                             Remove Item
                         </button>
                     </div>
                 </div>
-
-                <div class="text-right">
-                    <button
-                        type="button"
-                        @click="addItem"
-                        class="btn btn-primary btn-sm"
-                    >
-                        Add Another Item
-                    </button>
-                </div>
             </div>
 
             <!-- Transaction Details Section -->
-            <div class="bg-gray-100 p-4 rounded-lg shadow-md">
+            <div
+                class="bg-gray-100 p-4 rounded-lg shadow-md"
+                v-if="tr_with_dates.includes(transactionType)"
+            >
                 <h3 class="text-lg font-bold mb-4">Transaction Details</h3>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -261,11 +248,15 @@
 
             <!-- Submit Button -->
             <div class="text-right flex gap-1">
-                <PrimaryButton class="flex-1" type="submit"
+                <PrimaryButton
+                    class="flex-1"
+                    type="submit"
+                    :disabled="transactionStore.loading || loadingClose"
                     >Submit</PrimaryButton
                 >
                 <PrimaryRoseButton
-                    @click="$emit('close')"
+                    :disabled="transactionStore.loading || loadingClose"
+                    @click="closeForm"
                     class="flex-1"
                     type="button"
                     >Cancel</PrimaryRoseButton
@@ -273,6 +264,19 @@
             </div>
         </form>
     </div>
+    <AlertNotification
+        :open="
+            transactionStore.success != null || transactionStore.error != null
+        "
+        :message="
+            transactionStore.success != null
+                ? transactionStore.success
+                : '' || transactionStore.error != null
+                ? transactionStore.error
+                : ''
+        "
+        :status="transactionStore.success ? 'success' : 'error'"
+    />
 </template>
 
 <script>
@@ -283,6 +287,7 @@ import TextInput from "@/Components/TextInput.vue";
 import PrimaryRoseButton from "./PrimaryRoseButton.vue";
 import vSelect from "vue-select";
 import { useResourceStore } from "@/Store/Resource";
+import { useTransactionStore } from "@/Store/TransactionStore";
 
 export default {
     props: {
@@ -318,15 +323,17 @@ export default {
         PrimaryRoseButton,
         vSelect,
     },
-    setup(props) {
+    setup(props, { emit }) {
         const resourceStore = useResourceStore();
+        const transactionStore = useTransactionStore();
+        const loadingClose = ref(false);
         const form = ref({
             type: props.transactionType,
             status: "pending",
             initiator_id: props.initiatorBusiness,
             receiver_business_id: null,
             receiver_customer_id: null,
-            transaction_items: [{ item_id: null, quantity: 0, price: 0 }],
+            transaction_items: [{ item_id: null, quantity: 1, price: 0 }],
             lease_start_date: null,
             lease_end_date: null,
             transaction_details: {
@@ -341,7 +348,7 @@ export default {
         const addItem = () => {
             form.value.transaction_items.push({
                 item_id: null,
-                quantity: 0,
+                quantity: 1,
                 price: 0,
             });
         };
@@ -352,12 +359,33 @@ export default {
             }
         };
 
-        const submitForm = () => {
-            // Handle form submission (e.g., API call)
-            console.log("Form submitted", form.value);
+        const submitForm = async () => {
+            await transactionStore.addTransaction(form.value);
+
+            if (transactionStore.success) {
+                loadingClose.value = true;
+                setTimeout(() => {
+                    closeForm();
+                }, 1000);
+                setTimeout(() => {
+                    loadingClose.value = false;
+                }, 3000);
+            }
+        };
+        const closeForm = () => {
+            emit("close");
         };
 
-        return { form, addItem, removeItem, submitForm, resourceStore };
+        return {
+            form,
+            addItem,
+            removeItem,
+            submitForm,
+            resourceStore,
+            transactionStore,
+            closeForm,
+            loadingClose,
+        };
     },
     data() {
         return {
@@ -365,38 +393,58 @@ export default {
             queries: {
                 search: "",
             },
+            filteredOptions: this.products,
+            tr_types: ["purchase", "sale", "leasing", "borrowing"],
+            tr_with_dates: ["leasing", "borrowing"],
         };
     },
     methods: {
         async onSearch(searchQuery) {
-            console.log(searchQuery);
+            if (searchQuery.trim()) {
+                this.queries.search = searchQuery.trim();
+                await this.resourceStore.fetchResources(this.queries);
 
-            if (searchQuery.length > 1) {
-                let queries = {};
-                queries.search = searchQuery;
-                this.resourceStore.fetchResources(queries);
+                const newOptions = this.resourceStore.items.data;
+
+                const selectedItems = this.form.transaction_items
+                    .map((item) => {
+                        return this.options.find(
+                            (option) => option.id === item.item_id
+                        );
+                    })
+                    .filter((item) => item);
+
+                this.options = [...new Set([...selectedItems, ...newOptions])];
+            } else {
+                await this.resourceStore.fetchResources();
                 this.options = this.resourceStore.items.data;
             }
         },
-        onInput(value) {
-            console.log(value);
 
+        onInput(value) {
             if (value == null) {
+                this.options = this.products;
+            } else {
+                this.options = [];
                 this.options = this.products;
             }
         },
-        openList() {
-            console.log("openList");
-
-            this.options = this.products;
-        },
-        closeList() {
-            this.options = this.products;
+        onOptionSelected(selectedOption) {
+            this.form.transaction_items.map((item) => {
+                if (selectedOption.id == item.item_id) {
+                    if (!item.price) {
+                        item.price = selectedOption.price;
+                        return item;
+                    }
+                    return item;
+                }
+                return item;
+            });
         },
     },
 };
 </script>
 
-<style scoped>
-/* Additional styling can be added here if needed */
+<style>
+@import url(".././../css/select.css");
 </style>

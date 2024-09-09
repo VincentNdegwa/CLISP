@@ -112,7 +112,13 @@ export default {
     },
     data() {
         return {
-            tableHeaders: ["#", "item", "qnty", "price", "status", "date"],
+            tableHeaders: [
+                "Initiator Business Name",
+                "Receiver Business Name",
+                "Transaction Status",
+                "Created Date",
+                "Actions",
+            ],
             modal: {
                 open: false,
                 maxWidth: "4xl",
@@ -176,7 +182,7 @@ export default {
                         <ul
                             tabindex="0"
                             v-if="isDropdownOpen"
-                            class="dropdown-content flex flex-col gap-2 bg-white text-slate-900 rounded-box z-[1] w-52 p-2 shadow"
+                            class="dropdown-content flex flex-col gap-2 bg-white text-slate-900 rounded-box z-[100] w-52 p-2 shadow"
                         >
                             <li>
                                 <a @click="handleFilter('all')">All</a>
@@ -195,23 +201,15 @@ export default {
                     </div>
                 </div>
             </div>
-            <div class="flex items-center">
+            <div class="flex items-center" v-if="!incoming">
                 <PrimaryButton
                     @click="() => openModal('NewTransaction')"
-                    class="bg-slate-900 text-white capitalize"
+                    class="bg-slate-900 text-white"
                 >
-                    Create New {{ transactionType }}
+                    New {{ transactionType }}
                 </PrimaryButton>
             </div>
         </div>
-
-        <!-- <p class="text-xs m-0">
-            Outgoing Purchase (From Your Business to Another)
-        </p>
-
-        <p class="text-xs m-0">
-            Incoming Purchase (From Another Business to Your Business)
-        </p> -->
 
         <!-- Tabs -->
         <div class="flex border-b mt-2 mb-2">
