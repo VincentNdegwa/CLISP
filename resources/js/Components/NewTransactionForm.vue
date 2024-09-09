@@ -131,19 +131,20 @@
                             required="true"
                         />
 
-                        <select
+                        <v-select
+                            id="autocomplete"
                             v-model="item.item_id"
-                            required
-                            :id="`item_id_${index}`"
-                            class="select w-full max-w-xs m-0 bg-white text-slate-950"
-                        >
-                            <option disabled selected>Select item</option>
-                            <option>Homer</option>
-                            <option>Marge</option>
-                            <option>Bart</option>
-                            <option>Lisa</option>
-                            <option>Maggie</option>
-                        </select>
+                            :options="options"
+                            :get-option-label="(option) => option.item_name"
+                            :reduce="(option) => option.id"
+                            :filterable="false"
+                            placeholder="Search Item..."
+                            @search="onSearch"
+                            @update:modelValue="onInput"
+                            @open="openList"
+                            @close="closeList"
+                            class="max-w-60 w-60 bg-white text-slate-950 p-1 b-0 ring-0"
+                        />
                     </div>
 
                     <!-- Quantity -->
@@ -259,8 +260,16 @@
             </div>
 
             <!-- Submit Button -->
-            <div class="text-right">
-                <PrimaryButton type="submit">Submit</PrimaryButton>
+            <div class="text-right flex gap-1">
+                <PrimaryButton class="flex-1" type="submit"
+                    >Submit</PrimaryButton
+                >
+                <PrimaryRoseButton
+                    @click="$emit('close')"
+                    class="flex-1"
+                    type="button"
+                    >Cancel</PrimaryRoseButton
+                >
             </div>
         </form>
     </div>
@@ -271,6 +280,9 @@ import { ref } from "vue";
 import InputLabel from "@/Components/InputLabel.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import TextInput from "@/Components/TextInput.vue";
+import PrimaryRoseButton from "./PrimaryRoseButton.vue";
+import vSelect from "vue-select";
+import { useResourceStore } from "@/Store/Resource";
 
 export default {
     props: {
@@ -290,6 +302,10 @@ export default {
             type: String,
             required: true,
         },
+        products: {
+            type: Array,
+            required: true,
+        },
         isB2B: {
             type: Boolean,
             required: true,
@@ -299,8 +315,11 @@ export default {
         InputLabel,
         PrimaryButton,
         TextInput,
+        PrimaryRoseButton,
+        vSelect,
     },
     setup(props) {
+        const resourceStore = useResourceStore();
         const form = ref({
             type: props.transactionType,
             status: "pending",
@@ -338,7 +357,42 @@ export default {
             console.log("Form submitted", form.value);
         };
 
-        return { form, addItem, removeItem, submitForm };
+        return { form, addItem, removeItem, submitForm, resourceStore };
+    },
+    data() {
+        return {
+            options: this.products,
+            queries: {
+                search: "",
+            },
+        };
+    },
+    methods: {
+        async onSearch(searchQuery) {
+            console.log(searchQuery);
+
+            if (searchQuery.length > 1) {
+                let queries = {};
+                queries.search = searchQuery;
+                this.resourceStore.fetchResources(queries);
+                this.options = this.resourceStore.items.data;
+            }
+        },
+        onInput(value) {
+            console.log(value);
+
+            if (value == null) {
+                this.options = this.products;
+            }
+        },
+        openList() {
+            console.log("openList");
+
+            this.options = this.products;
+        },
+        closeList() {
+            this.options = this.products;
+        },
     },
 };
 </script>

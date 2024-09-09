@@ -12,6 +12,7 @@ import "vuetify/styles";
 import { createVuetify } from "vuetify";
 import * as components from "vuetify/components";
 import * as directives from "vuetify/directives";
+import "vue-select/dist/vue-select.css";
 
 const appName = import.meta.env.VITE_APP_NAME || "Laravel";
 const pinia = createPinia();

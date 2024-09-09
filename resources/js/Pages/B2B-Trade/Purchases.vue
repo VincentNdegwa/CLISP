@@ -13,6 +13,7 @@ import NewTransactionForm from "@/Components/NewTransactionForm.vue";
 import { useUserStore } from "@/Store/UserStore";
 import { useMyBusiness } from "@/Store/MyBusiness";
 import { useCustomerStore } from "@/Store/Customer";
+import { useResourceStore } from "@/Store/Resource";
 
 export default {
     props: {
@@ -42,6 +43,7 @@ export default {
         const businessStore = useUserStore();
         const myBusinessStore = useMyBusiness();
         const customerStore = useCustomerStore();
+        const resourceStore = useResourceStore();
         const InitiatorBusiness = businessStore.business;
         const search = ref("");
         const filter = ref("all");
@@ -52,6 +54,7 @@ export default {
         onMounted(() => {
             myBusinessStore.fetchActiveConnection();
             customerStore.fetchBusinessCustomers();
+            resourceStore.fetchResources();
         });
 
         const toggleDropdown = () => {
@@ -104,6 +107,7 @@ export default {
             changeType,
             myBusinessStore,
             customerStore,
+            resourceStore,
         };
     },
     data() {
@@ -142,6 +146,8 @@ export default {
             :customer="customerStore.customers"
             :transactionType="transactionType"
             :isB2B="isB2B"
+            :products="resourceStore.items.data"
+            @close="closeModal"
         />
     </Modal>
     <AuthenticatedLayout>
