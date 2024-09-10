@@ -97,7 +97,7 @@ class TransactionController extends Controller
                 "items_count" => "nullable|integer"
             ]);
 
-            $transactionsQuery = Transaction::with('details', 'initiator', 'receiver_business', 'receiver_customer', 'items');
+            $transactionsQuery = Transaction::with('details', 'initiator:business_id,business_name', 'receiver_business:business_id,business_name', 'receiver_customer:full_names', 'items');
             if ($request->input('status')) {
                 $transactionsQuery->when($request->input('status'), function ($query, $status) {
                     $query->where('status', $status);
@@ -110,17 +110,21 @@ class TransactionController extends Controller
                 $transactionsQuery->where('initiator_id', $business_id);
             }
 
-            $itemsCount = $validatedData['items_count'] ?? 20;
+            $itemsCount = $validatedData['items_count'] ?? 2;
             $transactions = $transactionsQuery
                 ->where('type', $validatedData['type'])
                 ->where('deleted', false)
                 ->orderBy('created_at', 'DESC')
                 ->paginate($itemsCount);
-
+            foreach ($transactions as $transaction) {
+                $transaction->totalPrice = $transaction->items->sum(function ($item) {
+                    return $item->quantity * $item->price;
+                });
+            }
             return response()->json([
                 "error" => false,
                 "message" => "Transactions retrieved successfully",
-                "data" => $transactions,
+                "data" => $transactions
             ]);
         } catch (ValidationException $e) {
             return response()->json([

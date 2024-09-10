@@ -116,6 +116,7 @@ export default {
                 "Initiator Business Name",
                 "Receiver Business Name",
                 "Transaction Status",
+                "Total Amount",
                 "Created Date",
                 "Actions",
             ],
@@ -134,7 +135,9 @@ export default {
         closeModal() {
             this.modal.open = false;
             this.modal.component = "";
-        },
+        }, fetchTransactions() {
+
+        }
     },
     mounted() {
         this.changeType(this.transactionType);
@@ -248,6 +251,47 @@ export default {
                 :transactionStore="transactionStore"
                 :tableHeaders="tableHeaders"
             />
+        </div>
+        <div
+            v-if="transactionStore.transactions?.data?.length > 0"
+            class="flex justify-between items-center"
+        >
+            <button
+                :class="[
+                    'py-2 px-4 rounded',
+                    transactionStore.transactions?.prev_page_url == null
+                        ? 'bg-gray-300 text-gray-700 cursor-not-allowed'
+                        : 'bg-slate-900 text-white',
+                ]"
+                :disabled="transactionStore.transactions?.prev_page_url == null"
+                @click="
+                    fetchTransactions(
+                        transactionStore.transactions?.current_page - 1
+                    )
+                "
+            >
+                Previous
+            </button>
+            <span
+                >Page {{ transactionStore.transactions?.current_page }} of
+                {{ transactionStore.transactions?.last_page }}</span
+            >
+            <button
+                :class="[
+                    'py-2 px-4 rounded',
+                    transactionStore.transactions?.prev_page_url == null
+                        ? 'bg-gray-300 text-gray-700 cursor-not-allowed'
+                        : 'bg-slate-900 text-white',
+                ]"
+                :disabled="transactionStore.transactions?.next_page_url == null"
+                @click="
+                    fetchTransactions(
+                        transactionStore.transactions?.current_page + 1
+                    )
+                "
+            >
+                Next
+            </button>
         </div>
     </AuthenticatedLayout>
 </template>

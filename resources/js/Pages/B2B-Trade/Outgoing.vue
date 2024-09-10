@@ -29,6 +29,11 @@
                         {{ transaction.status }}
                     </span>
                 </td>
+
+                <td class="py-2 px-4 border-b">
+                    {{ convertCurrency(transaction.totalPrice) }}
+                </td>
+
                 <td class="px-6 py-4 border-b">
                     {{ formatDate(transaction.created_at) }}
                 </td>
@@ -93,6 +98,16 @@ export default {
                 hour12: false,
             };
             return new Date(date).toLocaleDateString(undefined, options);
+        },
+        convertCurrency(currency) {
+            if (currency) {
+                return Intl.NumberFormat({
+                    style: "currency",
+                    currency: "KES",
+                }).format(currency);
+            } else {
+                ("0.0");
+            }
         },
     },
 };
