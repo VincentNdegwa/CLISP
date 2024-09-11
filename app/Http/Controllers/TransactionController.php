@@ -20,7 +20,7 @@ class TransactionController extends Controller
                 "status" => 'required|string',
                 "initiator_id" => 'required|exists:business,business_id',
                 "receiver_business_id" => 'nullable|exists:business,business_id',
-                "receiver_customer_id" => 'nullable|exists:customer,id',
+                "receiver_customer_id" => 'nullable|exists:customers,id',
                 "transaction_items" => 'required|array',
                 "transaction_items.*.item_id" => 'required|exists:resource_item,id',
                 "transaction_items.*.quantity" => 'required|numeric|min:0',
@@ -91,7 +91,7 @@ class TransactionController extends Controller
     {
         try {
             $validatedData = $request->validate([
-                "incoming" => 'required|boolean',
+                "incoming" => 'string',
                 "status" => 'nullable|string',
                 "type" => 'required|string',
                 "items_count" => "nullable|integer"
@@ -104,10 +104,15 @@ class TransactionController extends Controller
                 });
             }
 
-            if ($validatedData['incoming']) {
+            if ($validatedData['incoming'] == 'incoming') {
                 $transactionsQuery->where('receiver_business_id', $business_id);
-            } else {
+            } else if ($validatedData['incoming'] == 'outgoing') {
                 $transactionsQuery->where('initiator_id', $business_id);
+            } else {
+                $transactionsQuery->where(function ($query) use ($business_id) {
+                    $query->where('initiator_id', $business_id)
+                        ->orWhere('receiver_business_id', $business_id);
+                });
             }
 
             $itemsCount = $validatedData['items_count'] ?? 2;
@@ -151,7 +156,7 @@ class TransactionController extends Controller
                 "status" => 'nullable|string',
                 "initiator_id" => 'nullable|exists:business,business_id',
                 "receiver_business_id" => 'nullable|exists:business,business_id',
-                "receiver_customer_id" => 'nullable|exists:customer,id',
+                "receiver_customer_id" => 'nullable|exists:customers,id',
                 "transaction_items" => 'nullable|array',
                 "transaction_items.*.item_id" => 'required_with:transaction_items|exists:items,id',
                 "transaction_items.*.quantity" => 'required_with:transaction_items|numeric|min:0',

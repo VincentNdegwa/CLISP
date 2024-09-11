@@ -80,17 +80,44 @@ Route::middleware(['auth', 'check.business'])->group(function () {
 
         Route::prefix('trade-business')->name('b2b.')->group(function () {
             Route::get('/purchase', function () {
-                return Inertia::render('B2B-Trade/Purchases', [
+                return Inertia::render('Trade/Trade', [
                     'transactionType' => 'purchase',
                     'isB2B' => true
                 ]);
             })->name('purchase');
+            Route::get('/leasing', function () {
+                return Inertia::render('Trade/Trade', [
+                    'transactionType' => 'leasing',
+                    'isB2B' => true
+                ]);
+            })->name('leasing');
+            Route::get('/borrowing', function () {
+                return Inertia::render('Trade/Trade', [
+                    'transactionType' => 'borrowing',
+                    'isB2B' => true
+                ]);
+            })->name('borrowing');
         });
 
         Route::prefix('trade-customer')->name('b2c.')->group(function () {
             Route::get('/sale', function () {
-                return Inertia::render('B2C-Trade/Sale');
+                return Inertia::render('Trade/Trade', [
+                    'transactionType' => 'sale',
+                    'isB2B' => false
+                ]);
             })->name('sale');
+            Route::get('/leasing', function () {
+                return Inertia::render('Trade/Trade', [
+                    'transactionType' => 'leasing',
+                    'isB2B' => false
+                ]);
+            })->name('leasing');
+            Route::get('/borrowing', function () {
+                return Inertia::render('Trade/Trade', [
+                    'transactionType' => 'borrowing',
+                    'isB2B' => false
+                ]);
+            })->name('borrowing');
         });
 
         Route::prefix('customer')->name('customer.')->group(function () {
