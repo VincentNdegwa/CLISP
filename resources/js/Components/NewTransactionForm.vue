@@ -70,19 +70,22 @@
                         for="lease_start_date"
                         value="Lease Start Date"
                     />
-                    <TextInput
+                    <DatePicker
                         v-model="form.lease_start_date"
-                        type="date"
-                        id="lease_start_date"
+                        showIcon
+                        fluid
+                        iconDisplay="input"
                     />
                 </div>
 
                 <!-- Lease End Date -->
                 <div>
                     <InputLabel for="lease_end_date" value="Lease End Date" />
-                    <TextInput
+                    <DatePicker
                         v-model="form.lease_end_date"
-                        type="date"
+                        showIcon
+                        fluid
+                        iconDisplay="input"
                         id="lease_end_date"
                     />
                 </div>
@@ -192,9 +195,12 @@
                     <!-- Due Date -->
                     <div>
                         <InputLabel for="due_date" value="Due Date" />
-                        <TextInput
+
+                        <DatePicker
                             v-model="form.transaction_details.due_date"
-                            type="date"
+                            showIcon
+                            fluid
+                            iconDisplay="input"
                             id="due_date"
                         />
                     </div>
@@ -202,9 +208,12 @@
                     <!-- Return Date -->
                     <div>
                         <InputLabel for="return_date" value="Return Date" />
-                        <TextInput
+
+                        <DatePicker
                             v-model="form.transaction_details.return_date"
-                            type="date"
+                            showIcon
+                            fluid
+                            iconDisplay="input"
                             id="return_date"
                         />
                     </div>
@@ -288,6 +297,7 @@ import PrimaryRoseButton from "./PrimaryRoseButton.vue";
 import vSelect from "vue-select";
 import { useResourceStore } from "@/Store/Resource";
 import { useTransactionStore } from "@/Store/TransactionStore";
+import DatePicker from "primevue/datepicker";
 
 export default {
     props: {
@@ -322,6 +332,7 @@ export default {
         TextInput,
         PrimaryRoseButton,
         vSelect,
+        DatePicker,
     },
     setup(props, { emit }) {
         const resourceStore = useResourceStore();
@@ -447,4 +458,8 @@ export default {
 
 <style>
 @import url(".././../css/select.css");
+.p-inputtext {
+    background: white !important;
+    color: black !important;
+}
 </style>

@@ -15,6 +15,8 @@ import { useMyBusiness } from "@/Store/MyBusiness";
 import { useCustomerStore } from "@/Store/Customer";
 import { useResourceStore } from "@/Store/Resource";
 
+import Paginator from "primevue/paginator";
+
 export default {
     props: {
         transactionType: {
@@ -36,6 +38,7 @@ export default {
         Outgoing,
         Modal,
         NewTransactionForm,
+        Paginator,
     },
 
     setup() {
@@ -212,6 +215,56 @@ export default {
                 :tableHeaders="tableHeaders"
             />
         </div>
+
+        <div
+            v-if="transactionStore.transactions?.data?.length > 0"
+            class="flex justify-between items-center"
+        >
+            <button
+                :class="[
+                    'py-2 px-4 rounded',
+                    transactionStore.transactions?.prev_page_url == null
+                        ? 'bg-gray-300 text-gray-700 cursor-not-allowed'
+                        : 'bg-slate-900 text-white',
+                ]"
+                :disabled="transactionStore.transactions?.prev_page_url == null"
+                @click="
+                    fetchTransactions(
+                        transactionStore.transactions?.current_page - 1
+                    )
+                "
+            >
+                Previous
+            </button>
+            <span>
+                Page {{ transactionStore.transactions?.current_page }} of
+                {{ transactionStore.transactions?.last_page }}
+            </span>
+            <button
+                :class="[
+                    'py-2 px-4 rounded',
+                    transactionStore.transactions?.next_page_url == null
+                        ? 'bg-gray-300 text-gray-700 cursor-not-allowed'
+                        : 'bg-slate-900 text-white',
+                ]"
+                :disabled="
+                    transactionStore.transactions?.next_page_url === null
+                "
+                @click="
+                    fetchTransactions(
+                        transactionStore.transactions?.current_page + 1
+                    )
+                "
+            >
+                Next
+            </button>
+        </div>
+        <!-- <Paginator
+            class="bg-white"
+            :rows="10"
+            :totalRecords="120"
+            :rowsPerPageOptions="[10, 20, 30]"
+        ></Paginator> -->
     </AuthenticatedLayout>
 </template>
 
