@@ -20,7 +20,7 @@ class TransactionController extends Controller
                 "status" => 'required|string',
                 "initiator_id" => 'required|exists:business,business_id',
                 "receiver_business_id" => 'nullable|exists:business,business_id',
-                "receiver_customer_id" => 'nullable|exists:customer,id',
+                "receiver_customer_id" => 'nullable|exists:customers,id',
                 "transaction_items" => 'required|array',
                 "transaction_items.*.item_id" => 'required|exists:resource_item,id',
                 "transaction_items.*.quantity" => 'required|numeric|min:0',
@@ -91,36 +91,45 @@ class TransactionController extends Controller
     {
         try {
             $validatedData = $request->validate([
-                "incoming" => 'required|boolean',
+                "incoming" => 'string',
                 "status" => 'nullable|string',
                 "type" => 'required|string',
                 "items_count" => "nullable|integer"
             ]);
 
-            $transactionsQuery = Transaction::with('details', 'initiator', 'receiver_business', 'receiver_customer', 'items');
+            $transactionsQuery = Transaction::with('details', 'initiator:business_id,business_name', 'receiver_business:business_id,business_name', 'receiver_customer:full_names', 'items');
             if ($request->input('status')) {
                 $transactionsQuery->when($request->input('status'), function ($query, $status) {
                     $query->where('status', $status);
                 });
             }
 
-            if ($validatedData['incoming']) {
+            if ($validatedData['incoming'] == 'incoming') {
                 $transactionsQuery->where('receiver_business_id', $business_id);
-            } else {
+            } else if ($validatedData['incoming'] == 'outgoing') {
                 $transactionsQuery->where('initiator_id', $business_id);
+            } else {
+                $transactionsQuery->where(function ($query) use ($business_id) {
+                    $query->where('initiator_id', $business_id)
+                        ->orWhere('receiver_business_id', $business_id);
+                });
             }
 
-            $itemsCount = $validatedData['items_count'] ?? 20;
+            $itemsCount = $validatedData['items_count'] ?? 2;
             $transactions = $transactionsQuery
                 ->where('type', $validatedData['type'])
                 ->where('deleted', false)
                 ->orderBy('created_at', 'DESC')
                 ->paginate($itemsCount);
-
+            foreach ($transactions as $transaction) {
+                $transaction->totalPrice = $transaction->items->sum(function ($item) {
+                    return $item->quantity * $item->price;
+                });
+            }
             return response()->json([
                 "error" => false,
                 "message" => "Transactions retrieved successfully",
-                "data" => $transactions,
+                "data" => $transactions
             ]);
         } catch (ValidationException $e) {
             return response()->json([
@@ -147,7 +156,7 @@ class TransactionController extends Controller
                 "status" => 'nullable|string',
                 "initiator_id" => 'nullable|exists:business,business_id',
                 "receiver_business_id" => 'nullable|exists:business,business_id',
-                "receiver_customer_id" => 'nullable|exists:customer,id',
+                "receiver_customer_id" => 'nullable|exists:customers,id',
                 "transaction_items" => 'nullable|array',
                 "transaction_items.*.item_id" => 'required_with:transaction_items|exists:items,id',
                 "transaction_items.*.quantity" => 'required_with:transaction_items|numeric|min:0',

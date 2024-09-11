@@ -69,6 +69,16 @@ export default {
                             route: "b2b.purchase",
                             icon: "bi bi-cart-check",
                         },
+                        {
+                            name: "Borrowings",
+                            route: "b2b.borrowing",
+                            icon: "bi bi-cart-check",
+                        },
+                        {
+                            name: "Leasing",
+                            route: "b2b.leasing",
+                            icon: "bi bi-cart-check",
+                        },
                     ],
                 },
                 {
@@ -79,6 +89,16 @@ export default {
                         {
                             name: "Direct Sale",
                             route: "b2c.sale",
+                            icon: "bi bi-cash-stack",
+                        },
+                        {
+                            name: "Borrowings",
+                            route: "b2c.borrowing",
+                            icon: "bi bi-cash-stack",
+                        },
+                        {
+                            name: "Leasing",
+                            route: "b2c.leasing",
                             icon: "bi bi-cash-stack",
                         },
                     ],

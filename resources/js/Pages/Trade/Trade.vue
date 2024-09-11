@@ -15,6 +15,8 @@ import { useMyBusiness } from "@/Store/MyBusiness";
 import { useCustomerStore } from "@/Store/Customer";
 import { useResourceStore } from "@/Store/Resource";
 
+import Paginator from "primevue/paginator";
+
 export default {
     props: {
         transactionType: {
@@ -36,6 +38,7 @@ export default {
         Outgoing,
         Modal,
         NewTransactionForm,
+        Paginator,
     },
 
     setup() {
@@ -48,7 +51,7 @@ export default {
         const search = ref("");
         const filter = ref("all");
         const isDropdownOpen = ref(false);
-        const incoming = ref(true);
+        const incoming = ref("all");
         const type = ref("");
 
         onMounted(() => {
@@ -62,11 +65,10 @@ export default {
         };
 
         const handleFilter = (filterValue) => {
-            filter.value = filterValue;
+            incoming.value = filterValue;
             transactionStore.getTransaction({
                 type: type.value,
                 incoming: incoming.value,
-                filter: filterValue,
             });
             isDropdownOpen.value = false;
         };
@@ -82,12 +84,6 @@ export default {
             });
         });
 
-        const openIncomming = () => {
-            incoming.value = true;
-        };
-        const openOutgoing = () => {
-            incoming.value = false;
-        };
         const changeType = (transactionType) => {
             type.value = transactionType;
         };
@@ -100,8 +96,6 @@ export default {
             handleFilter,
             openCreateNewPurchase,
             transactionStore,
-            openIncomming,
-            openOutgoing,
             incoming,
             InitiatorBusiness,
             changeType,
@@ -116,6 +110,7 @@ export default {
                 "Initiator Business Name",
                 "Receiver Business Name",
                 "Transaction Status",
+                "Total Amount",
                 "Created Date",
                 "Actions",
             ],
@@ -135,6 +130,7 @@ export default {
             this.modal.open = false;
             this.modal.component = "";
         },
+        fetchTransactions() {},
     },
     mounted() {
         this.changeType(this.transactionType);
@@ -159,7 +155,9 @@ export default {
     <AuthenticatedLayout>
         <div class="flex justify-between items-center mt-1">
             <div class="flex items-center md:gap-6 gap-2">
-                <h1 class="text-slate-900 text-xl font-semibold">Purchases</h1>
+                <h1 class="text-slate-900 text-xl font-semibold capitalize">
+                    {{ transactionType }}
+                </h1>
                 <!-- Filter and Search -->
                 <div class="flex items-center">
                     <div class="mr-4">
@@ -184,15 +182,15 @@ export default {
                             v-if="isDropdownOpen"
                             class="dropdown-content flex flex-col gap-2 bg-white text-slate-900 rounded-box z-[100] w-52 p-2 shadow"
                         >
-                            <li>
+                            <li class="cursor-pointer hover:bg-slate-100 p-1">
                                 <a @click="handleFilter('all')">All</a>
                             </li>
-                            <li>
+                            <li class="cursor-pointer hover:bg-slate-100 p-1">
                                 <a @click="handleFilter('incoming')"
                                     >Incoming</a
                                 >
                             </li>
-                            <li>
+                            <li class="cursor-pointer hover:bg-slate-100 p-1">
                                 <a @click="handleFilter('outgoing')"
                                     >Outgoing</a
                                 >
@@ -201,7 +199,7 @@ export default {
                     </div>
                 </div>
             </div>
-            <div class="flex items-center" v-if="!incoming">
+            <div class="flex items-center">
                 <PrimaryButton
                     @click="() => openModal('NewTransaction')"
                     class="bg-slate-900 text-white"
@@ -211,44 +209,62 @@ export default {
             </div>
         </div>
 
-        <!-- Tabs -->
-        <div class="flex border-b mt-2 mb-2">
-            <button
-                @click="openIncomming"
-                :class="[
-                    'py-2 px-4 rounded-t-lg transition-all ease-linear duration-150',
-                    incoming
-                        ? 'border-b-2 border-blue-600 bg-slate-700 text-white'
-                        : '',
-                ]"
-            >
-                Incomming {{ transactionType }}
-            </button>
-            <button
-                @click="openOutgoing"
-                :class="[
-                    'py-2 px-4 rounded-t-lg transition-all ease-linear duration-150',
-                    !incoming
-                        ? 'border-b-2 border-blue-600 bg-slate-700 text-white'
-                        : '',
-                ]"
-            >
-                Outgoing {{ transactionType }}
-            </button>
-        </div>
-
-        <div id="incomming" v-if="incoming">
-            <Incoming
-                :transactionStore="transactionStore"
-                :tableHeaders="tableHeaders"
-            />
-        </div>
-        <div id="outgoing" v-else>
+        <div id="outgoing">
             <Outgoing
                 :transactionStore="transactionStore"
                 :tableHeaders="tableHeaders"
             />
         </div>
+
+        <div
+            v-if="transactionStore.transactions?.data?.length > 0"
+            class="flex justify-between items-center"
+        >
+            <button
+                :class="[
+                    'py-2 px-4 rounded',
+                    transactionStore.transactions?.prev_page_url == null
+                        ? 'bg-gray-300 text-gray-700 cursor-not-allowed'
+                        : 'bg-slate-900 text-white',
+                ]"
+                :disabled="transactionStore.transactions?.prev_page_url == null"
+                @click="
+                    fetchTransactions(
+                        transactionStore.transactions?.current_page - 1
+                    )
+                "
+            >
+                Previous
+            </button>
+            <span>
+                Page {{ transactionStore.transactions?.current_page }} of
+                {{ transactionStore.transactions?.last_page }}
+            </span>
+            <button
+                :class="[
+                    'py-2 px-4 rounded',
+                    transactionStore.transactions?.next_page_url == null
+                        ? 'bg-gray-300 text-gray-700 cursor-not-allowed'
+                        : 'bg-slate-900 text-white',
+                ]"
+                :disabled="
+                    transactionStore.transactions?.next_page_url === null
+                "
+                @click="
+                    fetchTransactions(
+                        transactionStore.transactions?.current_page + 1
+                    )
+                "
+            >
+                Next
+            </button>
+        </div>
+        <!-- <Paginator
+            class="bg-white"
+            :rows="10"
+            :totalRecords="120"
+            :rowsPerPageOptions="[10, 20, 30]"
+        ></Paginator> -->
     </AuthenticatedLayout>
 </template>
 

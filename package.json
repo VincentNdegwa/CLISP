@@ -21,8 +21,10 @@
     },
     "dependencies": {
         "@fortawesome/vue-fontawesome": "^3.0.8",
+        "@primevue/themes": "^4.0.7",
         "bootstrap-icons": "^1.11.3",
         "pinia": "^2.2.2",
+        "primevue": "^4.0.7",
         "vue-select": "^4.0.0-beta.6",
         "vuetify": "^3.7.1"
     }

@@ -12,6 +12,10 @@ import "vuetify/styles";
 import { createVuetify } from "vuetify";
 import * as components from "vuetify/components";
 import * as directives from "vuetify/directives";
+import PrimeVue from "primevue/config";
+import Aura from "@primevue/themes/aura";
+import { definePreset } from "@primevue/themes";
+
 // import "vue-select/dist/vue-select.css";
 
 const appName = import.meta.env.VITE_APP_NAME || "Laravel";
@@ -20,6 +24,44 @@ const pinia = createPinia();
 const vuetify = createVuetify({
     components,
     directives,
+});
+const MyPreset = definePreset(Aura, {
+    semantic: {
+        colorScheme: {
+            light: {
+                surface: {
+                    0: "#ffffff",
+                    50: "{zinc.50}",
+                    100: "{zinc.100}",
+                    200: "{zinc.200}",
+                    300: "{zinc.300}",
+                    400: "{zinc.400}",
+                    500: "{zinc.500}",
+                    600: "{zinc.600}",
+                    700: "{zinc.700}",
+                    800: "{zinc.800}",
+                    900: "{zinc.900}",
+                    950: "{zinc.950}",
+                },
+            },
+            dark: {
+                surface: {
+                    0: "#ffffff",
+                    50: "{zinc.50}",
+                    100: "{zinc.100}",
+                    200: "{zinc.200}",
+                    300: "{zinc.300}",
+                    400: "{zinc.400}",
+                    500: "{zinc.500}",
+                    600: "{zinc.600}",
+                    700: "{zinc.700}",
+                    800: "{zinc.800}",
+                    900: "{zinc.900}",
+                    950: "{zinc.950}",
+                },
+            },
+        },
+    },
 });
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,
@@ -35,6 +77,11 @@ createInertiaApp({
             .use(ZiggyVue)
             .use(pinia)
             .use(vuetify)
+            .use(PrimeVue, {
+                theme: {
+                    preset: MyPreset,
+                },
+            })
             .component("AlertNotification", AlertNotification)
             .mount(el);
 
