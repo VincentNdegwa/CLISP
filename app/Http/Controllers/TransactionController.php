@@ -94,10 +94,11 @@ class TransactionController extends Controller
                 "incoming" => 'string',
                 "status" => 'nullable|string',
                 "type" => 'required|string',
-                "items_count" => "nullable|integer"
+                "items_count" => "nullable|integer",
+                "page" => 'integer',
             ]);
 
-            $transactionsQuery = Transaction::with('details', 'initiator:business_id,business_name', 'receiver_business:business_id,business_name', 'receiver_customer:full_names', 'items');
+            $transactionsQuery = Transaction::with('details', 'initiator:business_id,business_name', 'receiver_business:business_id,business_name', 'receiver_customer', 'items');
             if ($request->input('status')) {
                 $transactionsQuery->when($request->input('status'), function ($query, $status) {
                     $query->where('status', $status);
@@ -115,12 +116,12 @@ class TransactionController extends Controller
                 });
             }
 
-            $itemsCount = $validatedData['items_count'] ?? 2;
+            $itemsCount = $validatedData['items_count'] ?? 20;
             $transactions = $transactionsQuery
                 ->where('type', $validatedData['type'])
                 ->where('deleted', false)
                 ->orderBy('created_at', 'DESC')
-                ->paginate($itemsCount);
+                ->paginate($itemsCount, ["*"], 'page', $request->input('page', 1));
             foreach ($transactions as $transaction) {
                 $transaction->totalPrice = $transaction->items->sum(function ($item) {
                     return $item->quantity * $item->price;
