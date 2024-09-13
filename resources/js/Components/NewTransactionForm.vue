@@ -461,5 +461,6 @@ export default {
 .p-inputtext {
     background: white !important;
     color: black !important;
+    border: 1px solid rgba(44, 43, 43, 0.644) !important;
 }
 </style>

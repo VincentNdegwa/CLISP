@@ -6,8 +6,7 @@ import PrimaryButton from "@/Components/PrimaryButton.vue";
 import TextInput from "@/Components/TextInput.vue";
 import { useTransactionStore } from "@/Store/TransactionStore";
 import TableDisplay from "@/Layouts/TableDisplay.vue";
-import Incoming from "./Incomming.vue";
-import Outgoing from "./Outgoing.vue";
+import TransactionDisplay from "./TransactionDisplay.vue";
 import Modal from "@/Components/Modal.vue";
 import NewTransactionForm from "@/Components/NewTransactionForm.vue";
 import { useUserStore } from "@/Store/UserStore";
@@ -34,25 +33,28 @@ export default {
         PrimaryButton,
         TextInput,
         TableDisplay,
-        Incoming,
-        Outgoing,
+        TransactionDisplay,
         Modal,
         NewTransactionForm,
         Paginator,
     },
 
-    setup() {
+    setup(props) {
         const transactionStore = useTransactionStore();
         const businessStore = useUserStore();
         const myBusinessStore = useMyBusiness();
         const customerStore = useCustomerStore();
         const resourceStore = useResourceStore();
         const InitiatorBusiness = businessStore.business;
-        const search = ref("");
-        const filter = ref("all");
         const isDropdownOpen = ref(false);
-        const incoming = ref("all");
-        const type = ref("");
+        const filterParams = ref({
+            incoming: "all",
+            status: null,
+            type: "",
+            items_count: 20,
+            page: 0,
+            search: "",
+        });
 
         onMounted(() => {
             myBusinessStore.fetchActiveConnection();
@@ -65,50 +67,51 @@ export default {
         };
 
         const handleFilter = (filterValue) => {
-            incoming.value = filterValue;
-            transactionStore.getTransaction({
-                type: type.value,
-                incoming: incoming.value,
-            });
+            filterParams.value.incoming = filterValue;
+            transactionStore.getTransaction(filterParams.value);
             isDropdownOpen.value = false;
         };
 
         const openCreateNewPurchase = () => {};
 
-        watch([search, filter, incoming, type], () => {
-            transactionStore.getTransaction({
-                type: type.value,
-                incoming: incoming.value,
-                search: search.value,
-                filter: filter.value,
-            });
-        });
+        watch(
+            filterParams,
+            () => {
+                transactionStore.getTransaction(filterParams.value);
+            },
+            { deep: true }
+        );
 
         const changeType = (transactionType) => {
-            type.value = transactionType;
+            filterParams.value.type = transactionType;
+        };
+        const navigatePage = (count) => {
+            filterParams.value.page = count;
         };
 
         return {
-            search,
-            filter,
             isDropdownOpen,
             toggleDropdown,
             handleFilter,
             openCreateNewPurchase,
             transactionStore,
-            incoming,
             InitiatorBusiness,
             changeType,
             myBusinessStore,
             customerStore,
             resourceStore,
+            filterParams,
+            navigatePage,
         };
     },
     data() {
         return {
             tableHeaders: [
+                "Trend",
                 "Initiator Business Name",
-                "Receiver Business Name",
+                this.isB2B
+                    ? "Receiver Business Name"
+                    : "Receiver Customer Name",
                 "Transaction Status",
                 "Total Amount",
                 "Created Date",
@@ -130,7 +133,6 @@ export default {
             this.modal.open = false;
             this.modal.component = "";
         },
-        fetchTransactions() {},
     },
     mounted() {
         this.changeType(this.transactionType);
@@ -210,9 +212,10 @@ export default {
         </div>
 
         <div id="outgoing">
-            <Outgoing
+            <TransactionDisplay
                 :transactionStore="transactionStore"
                 :tableHeaders="tableHeaders"
+                :isB2B="isB2B"
             />
         </div>
 
@@ -229,7 +232,7 @@ export default {
                 ]"
                 :disabled="transactionStore.transactions?.prev_page_url == null"
                 @click="
-                    fetchTransactions(
+                    navigatePage(
                         transactionStore.transactions?.current_page - 1
                     )
                 "
@@ -251,7 +254,7 @@ export default {
                     transactionStore.transactions?.next_page_url === null
                 "
                 @click="
-                    fetchTransactions(
+                    navigatePage(
                         transactionStore.transactions?.current_page + 1
                     )
                 "

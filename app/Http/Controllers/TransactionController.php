@@ -8,6 +8,7 @@ use App\Models\TransactionItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use Inertia\Inertia;
 
 class TransactionController extends Controller
 {
@@ -94,10 +95,11 @@ class TransactionController extends Controller
                 "incoming" => 'string',
                 "status" => 'nullable|string',
                 "type" => 'required|string',
-                "items_count" => "nullable|integer"
+                "items_count" => "nullable|integer",
+                "page" => 'integer',
             ]);
 
-            $transactionsQuery = Transaction::with('details', 'initiator:business_id,business_name', 'receiver_business:business_id,business_name', 'receiver_customer:full_names', 'items');
+            $transactionsQuery = Transaction::with('details', 'initiator:business_id,business_name', 'receiver_business:business_id,business_name', 'receiver_customer', 'items');
             if ($request->input('status')) {
                 $transactionsQuery->when($request->input('status'), function ($query, $status) {
                     $query->where('status', $status);
@@ -115,16 +117,24 @@ class TransactionController extends Controller
                 });
             }
 
-            $itemsCount = $validatedData['items_count'] ?? 2;
+            $itemsCount = $validatedData['items_count'] ?? 20;
             $transactions = $transactionsQuery
                 ->where('type', $validatedData['type'])
                 ->where('deleted', false)
                 ->orderBy('created_at', 'DESC')
-                ->paginate($itemsCount);
+                ->paginate($itemsCount, ["*"], 'page', $request->input('page', 1));
             foreach ($transactions as $transaction) {
                 $transaction->totalPrice = $transaction->items->sum(function ($item) {
                     return $item->quantity * $item->price;
                 });
+
+                if ($transaction->initiator && $transaction->initiator->business_id == $business_id) {
+                    $transaction->transaction_type = 'Outgoing';
+                }
+
+                if ($transaction->receiver_business && $transaction->receiver_business->business_id == $business_id) {
+                    $transaction->transaction_type = "Incoming";
+                }
             }
             return response()->json([
                 "error" => false,
@@ -256,6 +266,32 @@ class TransactionController extends Controller
                 'message' => 'An unexpected error occurred.',
                 'errors' => $e->getMessage(),
             ], 500);
+        }
+    }
+
+    public function viewTransaction($business_id, $transaction_id)
+    {
+        try {
+            $transaction = Transaction::with('details', 'initiator:business_id,business_name', 'receiver_business:business_id,business_name', 'receiver_customer', 'items')
+                ->where(function ($query) use ($business_id) {
+                    $query->where('initiator_id', $business_id)
+                        ->orWhere('receiver_business_id', $business_id);
+                })
+                ->where('deleted', false)
+                ->where('id', $transaction_id)
+                ->first();
+
+            return response()->json([
+                "error" => false,
+                "data" => $transaction
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => true,
+                'message' => 'An unexpected error occurred.',
+                'errors' => $e->getMessage(),
+                "data" => []
+            ]);
         }
     }
 }

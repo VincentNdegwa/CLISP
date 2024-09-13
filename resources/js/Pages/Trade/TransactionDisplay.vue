@@ -11,10 +11,26 @@
                 class="hover:bg-gray-100 transition-colors"
             >
                 <td class="py-2 px-4 border-b">
-                    {{ getBusinessName(transaction.initiator) }}
+                    <span v-if="transaction.transaction_type == 'Outgoing'">
+                        <i class="bi bi-arrow-up-right"></i>
+                    </span>
+                    <span
+                        v-else-if="transaction.transaction_type == 'Incoming'"
+                    >
+                        <i class="bi bi-arrow-down-left"></i>
+                    </span>
+                    <span v-else>
+                        <i class="bi bi-arrow-down-up"></i>
+                    </span>
                 </td>
                 <td class="py-2 px-4 border-b">
+                    {{ getBusinessName(transaction.initiator) }}
+                </td>
+                <td class="py-2 px-4 border-b" v-if="isB2B">
                     {{ getBusinessName(transaction.receiver_business) }}
+                </td>
+                <td class="py-2 px-4 border-b" v-else>
+                    {{ getCustomerName(transaction.receiver_customer) }}
                 </td>
 
                 <td class="px-6 py-4 border-b">
@@ -50,7 +66,7 @@
                             class="dropdown-content menu bg-white rounded-box z-[100] w-52 p-2 shadow"
                         >
                             <li>
-                                <a href="/">View</a>
+                                <a :href="getUrl(transaction.id)">View</a>
                             </li>
                             <li>
                                 <a href="/">Edit</a>
@@ -82,6 +98,11 @@ export default {
             type: Object,
             required: true,
         },
+        isB2B: {
+            required: true,
+            boolead: true,
+            default: true,
+        },
     },
     methods: {
         getBusinessName(business) {
@@ -108,6 +129,12 @@ export default {
             } else {
                 ("0.0");
             }
+        },
+        getCustomerName(customer) {
+            return customer ? customer.full_names : "N/A";
+        },
+        getUrl(id) {
+            return `/transaction/view/` + id;
         },
     },
 };

@@ -10,6 +10,7 @@ export const useTransactionStore = defineStore("transactionStore", {
         error: null,
         success: null,
         loading: false,
+        singleTransaction: {},
     }),
 
     actions: {
@@ -135,6 +136,39 @@ export const useTransactionStore = defineStore("transactionStore", {
                 );
 
                 this.success = "Transaction deleted successfully.";
+            } catch (error) {
+                this.error =
+                    error.response?.data?.message ||
+                    "An error occurred while deleting the transaction.";
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        async getSingleTransaction(transactionId) {
+            const userStore = useUserStore();
+            const businessId = userStore.business;
+
+            if (!businessId) {
+                this.error = "Business ID not found.";
+                return;
+            }
+
+            try {
+                this.loading = true;
+                this.error = null;
+
+                const response = await axios.post(
+                    `/api/transactions/${businessId}/view/${transactionId}`
+                );
+                if (response.data.error) {
+                    this.error = response.data.error;
+                    if (response.data.errors) {
+                        this.error = response.data.errors;
+                    }
+                } else {
+                    this.singleTransaction = response.data.data;
+                }
             } catch (error) {
                 this.error =
                     error.response?.data?.message ||
