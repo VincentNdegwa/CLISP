@@ -6,6 +6,7 @@ use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ResourceCategoryController;
 use App\Http\Controllers\SubscriptionController;
+use App\Http\Controllers\TransactionController;
 use App\Models\Business;
 use App\Models\BusinessUser;
 use App\Models\User;
@@ -118,6 +119,13 @@ Route::middleware(['auth', 'check.business'])->group(function () {
                     'isB2B' => false
                 ]);
             })->name('borrowing');
+        });
+        Route::prefix('transaction')->group(function () {
+            Route::get('/view/{transaction_id}', function ($id) {
+                return Inertia::render("Trade/ViewTransaction", [
+                    'transactionId' => $id
+                ]);
+            })->name('transaction.view');
         });
 
         Route::prefix('customer')->name('customer.')->group(function () {

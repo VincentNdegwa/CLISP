@@ -8,6 +8,7 @@ use App\Models\TransactionItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use Inertia\Inertia;
 
 class TransactionController extends Controller
 {
@@ -265,6 +266,32 @@ class TransactionController extends Controller
                 'message' => 'An unexpected error occurred.',
                 'errors' => $e->getMessage(),
             ], 500);
+        }
+    }
+
+    public function viewTransaction($business_id, $transaction_id)
+    {
+        try {
+            $transaction = Transaction::with('details', 'initiator:business_id,business_name', 'receiver_business:business_id,business_name', 'receiver_customer', 'items')
+                ->where(function ($query) use ($business_id) {
+                    $query->where('initiator_id', $business_id)
+                        ->orWhere('receiver_business_id', $business_id);
+                })
+                ->where('deleted', false)
+                ->where('id', $transaction_id)
+                ->first();
+
+            return response()->json([
+                "error" => false,
+                "data" => $transaction
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => true,
+                'message' => 'An unexpected error occurred.',
+                'errors' => $e->getMessage(),
+                "data" => []
+            ]);
         }
     }
 }

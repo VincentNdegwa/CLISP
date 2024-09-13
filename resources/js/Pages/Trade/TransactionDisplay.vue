@@ -66,7 +66,7 @@
                             class="dropdown-content menu bg-white rounded-box z-[100] w-52 p-2 shadow"
                         >
                             <li>
-                                <a href="/">View</a>
+                                <a :href="getUrl(transaction.id)">View</a>
                             </li>
                             <li>
                                 <a href="/">Edit</a>
@@ -132,6 +132,9 @@ export default {
         },
         getCustomerName(customer) {
             return customer ? customer.full_names : "N/A";
+        },
+        getUrl(id) {
+            return `/transaction/view/` + id;
         },
     },
 };
