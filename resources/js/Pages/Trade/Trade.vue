@@ -6,8 +6,7 @@ import PrimaryButton from "@/Components/PrimaryButton.vue";
 import TextInput from "@/Components/TextInput.vue";
 import { useTransactionStore } from "@/Store/TransactionStore";
 import TableDisplay from "@/Layouts/TableDisplay.vue";
-import Incoming from "./Incomming.vue";
-import Outgoing from "./Outgoing.vue";
+import TransactionDisplay from "./TransactionDisplay.vue";
 import Modal from "@/Components/Modal.vue";
 import NewTransactionForm from "@/Components/NewTransactionForm.vue";
 import { useUserStore } from "@/Store/UserStore";
@@ -34,8 +33,7 @@ export default {
         PrimaryButton,
         TextInput,
         TableDisplay,
-        Incoming,
-        Outgoing,
+        TransactionDisplay,
         Modal,
         NewTransactionForm,
         Paginator,
@@ -214,7 +212,7 @@ export default {
         </div>
 
         <div id="outgoing">
-            <Outgoing
+            <TransactionDisplay
                 :transactionStore="transactionStore"
                 :tableHeaders="tableHeaders"
                 :isB2B="isB2B"
