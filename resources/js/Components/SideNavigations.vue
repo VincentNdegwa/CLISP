@@ -15,7 +15,7 @@ export default {
                     name: "Dashboard",
                     route: "dashboard",
                     open: false,
-                    icon: "bi bi-graph-up-arrow",
+                    icon: "bi bi-speedometer2",
                     subItems: null,
                 },
                 {
@@ -31,7 +31,7 @@ export default {
                         {
                             name: "Categories",
                             route: "inventory.categories",
-                            icon: "bi bi-collection",
+                            icon: "bi bi-tags",
                         },
                     ],
                 },
@@ -48,7 +48,7 @@ export default {
                         {
                             name: "Connections",
                             route: "business.connection",
-                            icon: "bi bi-person-lines-fill",
+                            icon: "bi bi-people-fill",
                         },
                     ],
                 },
@@ -56,7 +56,7 @@ export default {
                     name: "Customer",
                     route: "customer.my-customers",
                     open: false,
-                    icon: "bi bi-people",
+                    icon: "bi bi-person-circle",
                     subItems: null,
                 },
                 {
@@ -67,39 +67,39 @@ export default {
                         {
                             name: "Purchases",
                             route: "b2b.purchase",
-                            icon: "bi bi-cart-check",
+                            icon: "bi bi-cart",
                         },
                         {
                             name: "Borrowings",
                             route: "b2b.borrowing",
-                            icon: "bi bi-cart-check",
+                            icon: "bi bi-arrow-down-up",
                         },
                         {
                             name: "Leasing",
                             route: "b2b.leasing",
-                            icon: "bi bi-cart-check",
+                            icon: "bi bi-file-earmark-text",
                         },
                     ],
                 },
                 {
                     name: "B2C Trade",
-                    icon: "bi bi-person-check-fill",
+                    icon: "bi bi-people",
                     open: false,
                     subItems: [
                         {
                             name: "Direct Sale",
                             route: "b2c.sale",
-                            icon: "bi bi-cash-stack",
+                            icon: "bi bi-currency-dollar",
                         },
                         {
                             name: "Borrowings",
                             route: "b2c.borrowing",
-                            icon: "bi bi-cash-stack",
+                            icon: "bi bi-arrow-repeat",
                         },
                         {
                             name: "Leasing",
                             route: "b2c.leasing",
-                            icon: "bi bi-cash-stack",
+                            icon: "bi bi-file-earmark-text",
                         },
                     ],
                 },
@@ -126,6 +126,7 @@ export default {
                 }
             });
         },
+
         toggleMainNav(item) {
             this.activeMainNav = item.name;
 
