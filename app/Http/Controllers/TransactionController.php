@@ -281,6 +281,17 @@ class TransactionController extends Controller
                 ->where('id', $transaction_id)
                 ->first();
 
+            $transaction->totalPrice = $transaction->items->sum(function ($item) {
+                return $item->quantity * $item->price;
+            });
+            if ($transaction->initiator && $transaction->initiator->business_id == $business_id) {
+                $transaction->transaction_type = 'Outgoing';
+            }
+
+            if ($transaction->receiver_business && $transaction->receiver_business->business_id == $business_id) {
+                $transaction->transaction_type = "Incoming";
+            }
+
             return response()->json([
                 "error" => false,
                 "data" => $transaction

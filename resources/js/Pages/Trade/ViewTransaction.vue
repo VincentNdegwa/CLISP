@@ -27,6 +27,18 @@ export default {
             transactionStore,
         };
     },
+    methods: {
+        convertCurrency(currency) {
+            if (currency) {
+                return Intl.NumberFormat({
+                    style: "currency",
+                    currency: "KES",
+                }).format(currency);
+            } else {
+                ("0.0");
+            }
+        },
+    },
 };
 </script>
 
@@ -34,8 +46,8 @@ export default {
     <Head title="Transaction" />
     <AuthenticatedLayout>
         <!-- Minimalist Transaction Overview -->
-        <div class="bg-white p-6 rounded-lg shadow-sm mb-8">
-            <h1 class="text-2xl font-semibold mb-4">
+        <div class="bg-white px-10 rounded-lg shadow-lg">
+            <h1 class="text-2xl font-semibold mb-1">
                 Transaction #{{ transactionStore.singleTransaction.id }}
             </h1>
             <div class="flex justify-between">
@@ -53,8 +65,11 @@ export default {
                 </div>
                 <div class="text-right">
                     <p>
-                        <strong>Total Price:</strong> ${{
-                            transactionStore.singleTransaction.totalPrice
+                        <strong>Total Price:</strong>
+                        {{
+                            convertCurrency(
+                                transactionStore.singleTransaction.totalPrice
+                            )
                         }}
                     </p>
                     <p>
