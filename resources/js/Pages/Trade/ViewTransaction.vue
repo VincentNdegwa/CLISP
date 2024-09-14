@@ -46,8 +46,8 @@ export default {
     <Head title="Transaction" />
     <AuthenticatedLayout>
         <!-- Minimalist Transaction Overview -->
-        <div class="bg-white px-10 rounded-lg shadow-lg">
-            <h1 class="text-2xl font-semibold mb-1">
+        <div class="bg-white px-4 rounded-lg">
+            <h1 class="text-2xl font-semibold mb-10">
                 Transaction #{{ transactionStore.singleTransaction.id }}
             </h1>
             <div class="flex justify-between">
@@ -83,7 +83,7 @@ export default {
         </div>
 
         <!-- Initiator & Receiver Section -->
-        <div class="flex flex-col md:flex-row gap-6 mb-8">
+        <div class="flex flex-col md:flex-row gap-6 mt-5 mb-3">
             <!-- Initiator Card -->
             <div class="bg-gray-50 p-4 rounded-lg shadow-sm flex-grow">
                 <h2 class="text-lg font-medium mb-2">Initiator</h2>
@@ -122,7 +122,7 @@ export default {
         </div>
 
         <!-- Details Section -->
-        <div class="bg-white p-6 rounded-lg shadow-sm mb-8">
+        <div class="bg-white p-4 rounded-lg shadow-sm mb-8">
             <h2 class="text-lg font-medium mb-4">Details</h2>
             <p>
                 <strong>Shipping Fees:</strong> ${{
@@ -132,11 +132,11 @@ export default {
         </div>
 
         <!-- Items Section -->
-        <div class="bg-white p-6 rounded-lg shadow-sm mb-8">
+        <div class="p-4 max-h-[40vh] h-fit rounded-lg shadow-sm mb-8">
             <h2 class="text-lg font-medium mb-4">Items</h2>
-            <div class="overflow-x-auto">
-                <table class="w-full table-auto text-left">
-                    <thead class="border-b">
+            <div class="relative max-h-[35vh] h-fit overflow-scroll">
+                <table class="w-full table-auto text-left overflow-x-auto">
+                    <thead class="border-b sticky top-0 w-full bg-slate-600">
                         <tr>
                             <th class="px-4 py-2">Item ID</th>
                             <th class="px-4 py-2">Quantity</th>
@@ -154,6 +154,7 @@ export default {
                             <td class="px-4 py-2">{{ item.quantity }}</td>
                             <td class="px-4 py-2">${{ item.price }}</td>
                         </tr>
+                        
                     </tbody>
                 </table>
             </div>
