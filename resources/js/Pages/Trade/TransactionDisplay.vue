@@ -68,11 +68,11 @@
                             <li>
                                 <a :href="getUrl(transaction.id)">View</a>
                             </li>
-                            <li>
-                                <a href="/">Edit</a>
+                            <li @click="() => startUpdate(transaction.id)">
+                                <a>Edit</a>
                             </li>
-                            <li>
-                                <a href="/">Delete</a>
+                            <li @click="() => startDelete(transaction.id)">
+                                <a>Delete</a>
                             </li>
                         </ul>
                     </div>
@@ -80,14 +80,23 @@
             </tr>
         </template>
     </TableDisplay>
+    <ConfirmationModal
+        :isOpen="confirmation.isOpen"
+        :title="confirmation.title"
+        :message="confirmation.message"
+        @confirm="confirmAction"
+        @close="cancelMakingRequest"
+    />
 </template>
 
 <script>
 import TableDisplay from "@/Layouts/TableDisplay.vue";
+import ConfirmationModal from "@/Components/ConfirmationModal.vue";
 
 export default {
     components: {
         TableDisplay,
+        ConfirmationModal,
     },
     props: {
         transactionStore: {
@@ -103,6 +112,16 @@ export default {
             boolead: true,
             default: true,
         },
+    },
+    data() {
+        return {
+            confirmation: {
+                isOpen: false,
+                title: "",
+                message: "",
+                method: null,
+            },
+        };
     },
     methods: {
         getBusinessName(business) {
@@ -130,11 +149,35 @@ export default {
                 ("0.0");
             }
         },
+        confirmAction() {
+            this.confirmation.method();
+            this.confirmation.isOpen = false;
+        },
+        cancelMakingRequest() {
+            this.confirmation.isOpen = false;
+            this.selectedRequest = null;
+            this.confirmation.message = "";
+            this.confirmation.title = "";
+            this.confirmation.method = null;
+        },
         getCustomerName(customer) {
             return customer ? customer.full_names : "N/A";
         },
         getUrl(id) {
             return `/transaction/view/` + id;
+        },
+        confirmDelete(id) {
+            console.log("start deleting");
+        },
+        startUpdate(id) {
+            this.$emit("startUpdate", id);
+        },
+        startDelet(id) {
+            this.confirmation.isOpen = true;
+            this.confirmation.title = "Delete Transaction";
+            this.confirmation.message =
+                "Are you sure you want to delete this transaction?";
+            this.confirmation.method = confirmDelete(id);
         },
     },
 };

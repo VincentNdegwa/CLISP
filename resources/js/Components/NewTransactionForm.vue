@@ -1,6 +1,12 @@
 <template>
     <div class="p-1 h-fit relative">
-        <div class="text-2xl font-bold ms-6 mt-2">New Transaction</div>
+        <div class="text-2xl font-bold ms-6 mt-2">
+            {{
+                newTransaction == "true"
+                    ? "New Transaction"
+                    : "Update Transaction"
+            }}
+        </div>
         <form
             @submit.prevent="submitForm"
             class="space-y-8 p-6 bg-white shadow-lg rounded-lg"
@@ -261,8 +267,9 @@
                     class="flex-1"
                     type="submit"
                     :disabled="transactionStore.loading || loadingClose"
-                    >Submit</PrimaryButton
                 >
+                    {{ newTransaction == "true" ? "Submit" : "Update" }}
+                </PrimaryButton>
                 <PrimaryRoseButton
                     :disabled="transactionStore.loading || loadingClose"
                     @click="closeForm"
@@ -289,7 +296,7 @@
 </template>
 
 <script>
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import InputLabel from "@/Components/InputLabel.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import TextInput from "@/Components/TextInput.vue";
@@ -325,6 +332,15 @@ export default {
             type: Boolean,
             required: true,
         },
+        newTransaction: {
+            type: Boolean,
+            default: true,
+        },
+        transactionData: {
+            type: Object,
+            default: null,
+            required: false,
+        },
     },
     components: {
         InputLabel,
@@ -334,10 +350,12 @@ export default {
         vSelect,
         DatePicker,
     },
+
     setup(props, { emit }) {
         const resourceStore = useResourceStore();
         const transactionStore = useTransactionStore();
         const loadingClose = ref(false);
+
         const form = ref({
             type: props.transactionType,
             status: "pending",
@@ -356,6 +374,71 @@ export default {
             },
         });
 
+        const initializeForm = () => {
+            if (props.newTransaction == true) {
+                form.value = {
+                    type: props.transactionType,
+                    status: "pending",
+                    initiator_id: props.initiatorBusiness,
+                    receiver_business_id: null,
+                    receiver_customer_id: null,
+                    transaction_items: [
+                        { item_id: null, quantity: 1, price: 0 },
+                    ],
+                    lease_start_date: null,
+                    lease_end_date: null,
+                    transaction_details: {
+                        due_date: null,
+                        return_date: null,
+                        late_fees: null,
+                        damage_fees: null,
+                        shipping_fees: null,
+                    },
+                };
+            } else {
+                form.value = {
+                    id: props.transactionData.id,
+                    type: props.transactionType,
+                    status: "pending",
+                    initiator_id: props.initiatorBusiness,
+                    receiver_business_id:
+                        props.transactionData?.receiver_business?.business_id ||
+                        null,
+                    receiver_customer_id:
+                        props.transactionData?.receiver_customer?.id || null,
+                    transaction_items: props.transactionData?.items || [
+                        { item_id: null, quantity: 1, price: 0 },
+                    ],
+                    lease_start_date:
+                        props.transactionData?.lease_start_date || null,
+                    lease_end_date:
+                        props.transactionData?.lease_end_date || null,
+                    transaction_details: {
+                        due_date:
+                            props.transactionData?.details?.due_date || null,
+                        return_date:
+                            props.transactionData?.details?.return_date || null,
+                        late_fees:
+                            props.transactionData?.details?.late_fees || null,
+                        damage_fees:
+                            props.transactionData?.details?.damage_fees || null,
+                        shipping_fees:
+                            props.transactionData?.details?.shipping_fees ||
+                            null,
+                    },
+                };
+            }
+        };
+
+        // Watch for changes in the newTransaction prop or transactionData
+        watch(
+            [() => props.newTransaction, () => props.transactionData],
+            () => {
+                initializeForm();
+            },
+            { deep: true, immediate: true }
+        );
+
         const addItem = () => {
             form.value.transaction_items.push({
                 item_id: null,
@@ -371,7 +454,14 @@ export default {
         };
 
         const submitForm = async () => {
-            await transactionStore.addTransaction(form.value);
+            if (props.newTransaction == true) {
+                await transactionStore.addTransaction(form.value);
+            } else {
+                await transactionStore.updateTransaction(
+                    form.value?.id,
+                    form.value
+                );
+            }
 
             if (transactionStore.success) {
                 loadingClose.value = true;
@@ -383,6 +473,7 @@ export default {
                 }, 3000);
             }
         };
+
         const closeForm = () => {
             emit("close");
         };
@@ -398,6 +489,7 @@ export default {
             loadingClose,
         };
     },
+
     data() {
         return {
             options: this.products,

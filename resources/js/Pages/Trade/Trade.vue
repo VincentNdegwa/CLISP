@@ -89,6 +89,10 @@ export default {
             filterParams.value.page = count;
         };
 
+        const transactionData = (id) => {
+            transactionStore.getSingleTransaction(id);
+        };
+
         return {
             isDropdownOpen,
             toggleDropdown,
@@ -102,6 +106,7 @@ export default {
             resourceStore,
             filterParams,
             navigatePage,
+            transactionData,
         };
     },
     data() {
@@ -133,6 +138,10 @@ export default {
             this.modal.open = false;
             this.modal.component = "";
         },
+        startUpdate(id) {
+            this.transactionData(id);
+            this.openModal("UpdateTransaction");
+        },
     },
     mounted() {
         this.changeType(this.transactionType);
@@ -151,6 +160,20 @@ export default {
             :transactionType="transactionType"
             :isB2B="isB2B"
             :products="resourceStore.items.data"
+            newTransaction="true"
+            transactionData="null"
+            @close="closeModal"
+        />
+        <NewTransactionForm
+            v-if="modal.component == 'UpdateTransaction'"
+            :initiatorBusiness="InitiatorBusiness"
+            :business="myBusinessStore.data"
+            :customer="customerStore.customers"
+            :transactionType="transactionType"
+            :isB2B="isB2B"
+            :products="resourceStore.items.data"
+            newTransaction="false"
+            :transactionData="transactionStore.singleTransaction"
             @close="closeModal"
         />
     </Modal>
@@ -216,6 +239,7 @@ export default {
                 :transactionStore="transactionStore"
                 :tableHeaders="tableHeaders"
                 :isB2B="isB2B"
+                @startUpdate="startUpdate"
             />
         </div>
 
