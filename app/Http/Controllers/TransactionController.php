@@ -272,7 +272,7 @@ class TransactionController extends Controller
     public function viewTransaction($business_id, $transaction_id)
     {
         try {
-            $transaction = Transaction::with('details', 'initiator:business_id,business_name', 'receiver_business:business_id,business_name', 'receiver_customer', 'items')
+            $transaction = Transaction::with('details', 'initiator:business_id,business_name,email,phone_number,location', 'receiver_business:business_id,business_name,email,phone_number,location', 'receiver_customer', 'items')
                 ->where(function ($query) use ($business_id) {
                     $query->where('initiator_id', $business_id)
                         ->orWhere('receiver_business_id', $business_id);
