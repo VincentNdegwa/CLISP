@@ -165,7 +165,7 @@ export default {
                     <div class="mr-4">
                         <TextInput
                             id="search"
-                            v-model="search"
+                            v-model="filterParams.search"
                             class="block mt-1 w-full"
                             placeholder="Search by item"
                         />

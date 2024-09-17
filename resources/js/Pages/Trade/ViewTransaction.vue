@@ -22,9 +22,24 @@ export default {
         onMounted: {
             transactionStore.getSingleTransaction(props.transactionId);
         }
+        const statusClass = () => {
+            switch (transactionStore.singleTransaction.status) {
+                case "pending":
+                    return "text-gray-500";
+                case "processing":
+                    return "text-yellow-500";
+                case "completed":
+                    return "text-green-500";
+                case "failed":
+                    return "text-red-500";
+                default:
+                    return "text-gray-500";
+            }
+        };
 
         return {
             transactionStore,
+            statusClass,
         };
     },
     methods: {
@@ -54,11 +69,13 @@ export default {
                 <div>
                     <p>
                         <strong>Type:</strong>
-                        {{ transactionStore.singleTransaction.type }}
+                        <span class="capitalize">
+                            {{ transactionStore.singleTransaction.type }}
+                        </span>
                     </p>
                     <p>
                         <strong>Status:</strong>
-                        <span :class="statusClass">{{
+                        <span :class="[statusClass, 'capitalize']">{{
                             transactionStore.singleTransaction.status
                         }}</span>
                     </p>
