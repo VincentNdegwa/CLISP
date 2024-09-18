@@ -7,21 +7,20 @@ export default {
     },
     data() {
         return {
-            activeMainNav: null,
-            activeSubNav: "",
-            active: "",
+            activeMainNav: localStorage.getItem("activeMainNav") || null,
+            activeSubNav: localStorage.getItem("activeSubNav") || "",
             navItems: [
                 {
                     name: "Dashboard",
                     route: "dashboard",
-                    open: false,
+                    open: localStorage.getItem("Dashboard-open") === "true",
                     icon: "bi bi-speedometer2",
                     subItems: null,
                 },
                 {
                     name: "Inventory",
                     icon: "bi bi-box-seam",
-                    open: false,
+                    open: localStorage.getItem("Inventory-open") === "true",
                     subItems: [
                         {
                             name: "Resources",
@@ -38,7 +37,7 @@ export default {
                 {
                     name: "Business",
                     icon: "bi bi-briefcase",
-                    open: false,
+                    open: localStorage.getItem("Business-open") === "true",
                     subItems: [
                         {
                             name: "My business",
@@ -55,14 +54,14 @@ export default {
                 {
                     name: "Customer",
                     route: "customer.my-customers",
-                    open: false,
+                    open: localStorage.getItem("Customer-open") === "true",
                     icon: "bi bi-person-circle",
                     subItems: null,
                 },
                 {
                     name: "B2B Trade",
                     icon: "bi bi-arrow-left-right",
-                    open: false,
+                    open: localStorage.getItem("B2B-open") === "true",
                     subItems: [
                         {
                             name: "Purchases",
@@ -84,7 +83,7 @@ export default {
                 {
                     name: "B2C Trade",
                     icon: "bi bi-people",
-                    open: false,
+                    open: localStorage.getItem("B2C-open") === "true",
                     subItems: [
                         {
                             name: "Direct Sale",
@@ -119,32 +118,46 @@ export default {
                         if (this.route(subItem.route) === currentUrl) {
                             this.activeMainNav = item.name;
                             this.activeSubNav = subItem.name;
+                            localStorage.setItem("activeMainNav", item.name);
+                            localStorage.setItem("activeSubNav", subItem.name);
                         }
                     });
                 } else if (this.route(item.route) === currentUrl) {
                     this.activeMainNav = item.name;
+                    localStorage.setItem("activeMainNav", item.name);
                 }
             });
         },
 
         toggleMainNav(item) {
             this.activeMainNav = item.name;
+            localStorage.setItem("activeMainNav", item.name);
 
             this.navItems = this.navItems.map((navItem) => {
                 if (navItem.name === item.name) {
                     navItem.open = !navItem.open;
+                    localStorage.setItem(`${item.name}-open`, navItem.open);
                     return navItem;
                 } else {
                     navItem.open = false;
+                    localStorage.setItem(`${navItem.name}-open`, false);
                     return navItem;
                 }
             });
         },
+
         isActiveMainNav(item) {
             return this.activeMainNav === item.name;
         },
+
         isActiveSubNav(subItem) {
             return this.activeSubNav === subItem.name;
+        },
+
+        isChildActive(subItemsArray) {
+            return subItemsArray.some((subItem) =>
+                this.isActiveSubNav(subItem)
+            );
         },
     },
 };
