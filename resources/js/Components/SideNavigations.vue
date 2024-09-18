@@ -9,18 +9,19 @@ export default {
         return {
             activeMainNav: localStorage.getItem("activeMainNav") || null,
             activeSubNav: localStorage.getItem("activeSubNav") || "",
+            currentUrl: `${window.location.origin + this.$page.url}`,
             navItems: [
                 {
                     name: "Dashboard",
                     route: "dashboard",
-                    open: localStorage.getItem("Dashboard-open") === "true",
+                    open: localStorage.getItem("Dashboard") === "true",
                     icon: "bi bi-speedometer2",
                     subItems: null,
                 },
                 {
                     name: "Inventory",
                     icon: "bi bi-box-seam",
-                    open: localStorage.getItem("Inventory-open") === "true",
+                    open: localStorage.getItem("Inventory") === "true",
                     subItems: [
                         {
                             name: "Resources",
@@ -37,7 +38,7 @@ export default {
                 {
                     name: "Business",
                     icon: "bi bi-briefcase",
-                    open: localStorage.getItem("Business-open") === "true",
+                    open: localStorage.getItem("Business") === "true",
                     subItems: [
                         {
                             name: "My business",
@@ -54,14 +55,14 @@ export default {
                 {
                     name: "Customer",
                     route: "customer.my-customers",
-                    open: localStorage.getItem("Customer-open") === "true",
+                    open: localStorage.getItem("Customer") === "true",
                     icon: "bi bi-person-circle",
                     subItems: null,
                 },
                 {
                     name: "B2B Trade",
                     icon: "bi bi-arrow-left-right",
-                    open: localStorage.getItem("B2B-open") === "true",
+                    open: localStorage.getItem("B2B Trade") === "true",
                     subItems: [
                         {
                             name: "Purchases",
@@ -83,7 +84,7 @@ export default {
                 {
                     name: "B2C Trade",
                     icon: "bi bi-people",
-                    open: localStorage.getItem("B2C-open") === "true",
+                    open: localStorage.getItem("B2C Trade") === "true",
                     subItems: [
                         {
                             name: "Direct Sale",
@@ -108,50 +109,74 @@ export default {
     mounted() {
         this.setActiveLink();
     },
+    watch: {
+        currentUrl: {
+            handler(newValue) {
+                this.currentUrl = newValue;
+            },
+            deep: true,
+            immediate: true,
+        },
+    },
     methods: {
         setActiveLink() {
-            const currentUrl = `${window.location.origin + this.$page.url}`;
-
-            this.navItems.forEach((item) => {
+            this.navItems = this.navItems.map((item) => {
                 if (item.subItems) {
                     item.subItems.forEach((subItem) => {
-                        if (this.route(subItem.route) === currentUrl) {
+                        if (this.route(subItem.route) === this.currentUrl) {
                             this.activeMainNav = item.name;
                             this.activeSubNav = subItem.name;
                             localStorage.setItem("activeMainNav", item.name);
                             localStorage.setItem("activeSubNav", subItem.name);
                         }
                     });
-                } else if (this.route(item.route) === currentUrl) {
+                } else if (this.route(item.route) === this.currentUrl) {
                     this.activeMainNav = item.name;
                     localStorage.setItem("activeMainNav", item.name);
                 }
+                let status = localStorage.getItem(`${item.name}`);
+                if (status) {
+                    let trueOrFalse = JSON.parse(status);
+                    if (trueOrFalse == true) {
+                        item.open = true;
+                        return item;
+                    } else {
+                        item.open = false;
+                        return item;
+                    }
+                }
+                return item;
             });
         },
 
-        toggleMainNav(item) {
-            this.activeMainNav = item.name;
-            localStorage.setItem("activeMainNav", item.name);
+        toggleMainNav(navItem) {
+            this.navItems = this.navItems.map((item) => {
+                if (item.name === navItem.name) {
+                    item.open = !item.open;
+                    localStorage.setItem(`${item.name}`, item.open);
 
-            this.navItems = this.navItems.map((navItem) => {
-                if (navItem.name === item.name) {
-                    navItem.open = !navItem.open;
-                    localStorage.setItem(`${item.name}-open`, navItem.open);
-                    return navItem;
+                    if (item.name != this.activeMainNav) {
+                        this.activeMainNav = item.name;
+                        localStorage.setItem("activeMainNav", item.name);
+                    }
+                    return item;
                 } else {
-                    navItem.open = false;
-                    localStorage.setItem(`${navItem.name}-open`, false);
-                    return navItem;
+                    if (item.open == true) {
+                        item.open = false;
+                        localStorage.setItem(`${item.name}`, false);
+                        return item;
+                    }
                 }
+                return item;
             });
         },
 
         isActiveMainNav(item) {
-            return this.activeMainNav === item.name;
+            return route(item.route) == this.currentUrl;
         },
 
         isActiveSubNav(subItem) {
-            return this.activeSubNav === subItem.name;
+            return route(subItem.route) == this.currentUrl;
         },
 
         isChildActive(subItemsArray) {
@@ -172,19 +197,7 @@ export default {
         >
             <div class="h-full w-full flex flex-col items-start">
                 <div
-                    v-if="!item.subItems"
-                    :class="['hover:bg-gray-100 w-full p-2']"
-                    @click="toggleMainNav(item)"
-                >
-                    <Link :href="route(item.route)" :key="index" class="p-0">
-                        <div class="text-sm flex flex-row gap-2">
-                            <i :class="item.icon"></i>
-                            <div>{{ item.name }}</div>
-                        </div>
-                    </Link>
-                </div>
-                <div
-                    v-else
+                    v-if="item.subItems"
                     :class="[
                         'flex justify-between w-full hover:bg-gray-100 p-2',
                     ]"
@@ -199,10 +212,22 @@ export default {
                         <i class="bi bi-chevron-compact-right" v-else></i>
                     </div>
                 </div>
+                <div
+                    v-else
+                    :class="['hover:bg-gray-100 w-full p-2']"
+                    @click="toggleMainNav(item)"
+                >
+                    <Link :href="route(item.route)" :key="index" class="p-0">
+                        <div class="text-sm flex flex-row gap-2">
+                            <i :class="item.icon"></i>
+                            <div>{{ item.name }}</div>
+                        </div>
+                    </Link>
+                </div>
             </div>
 
             <div
-                v-if="item.subItems && isActiveMainNav(item) && item.open"
+                v-if="item.subItems && item.open"
                 class="h-fit w-full flex flex-col gap-1 items-center transition-all ease-linear duration-1000"
             >
                 <Link

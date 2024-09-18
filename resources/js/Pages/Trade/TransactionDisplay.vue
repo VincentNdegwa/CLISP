@@ -94,6 +94,7 @@ import TableDisplay from "@/Layouts/TableDisplay.vue";
 import ConfirmationModal from "@/Components/ConfirmationModal.vue";
 
 export default {
+    emits: ["startUpdate"],
     components: {
         TableDisplay,
         ConfirmationModal,
