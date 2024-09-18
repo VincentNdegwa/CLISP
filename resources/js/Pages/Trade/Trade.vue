@@ -49,7 +49,6 @@ export default {
         const isDropdownOpen = ref(false);
         const filterParams = ref({
             incoming: "all",
-            status: null,
             type: "",
             items_count: 20,
             page: 0,
@@ -185,14 +184,6 @@ export default {
                 </h1>
                 <!-- Filter and Search -->
                 <div class="flex items-center">
-                    <div class="mr-4">
-                        <TextInput
-                            id="search"
-                            v-model="filterParams.search"
-                            class="block mt-1 w-full"
-                            placeholder="Search by item"
-                        />
-                    </div>
                     <div class="dropdown">
                         <div
                             tabindex="0"

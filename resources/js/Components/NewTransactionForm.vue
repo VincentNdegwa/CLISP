@@ -1,10 +1,10 @@
 <template>
     <div class="p-1 h-fit relative">
-        <div class="text-2xl font-bold ms-6 mt-2">
+        <div class="text-2xl font-bold ms-6 mt-2 capitalize">
             {{
                 newTransaction == "true"
-                    ? "New Transaction"
-                    : "Update Transaction"
+                    ? `New ${transactionType}`
+                    : `Update ${transactionType}`
             }}
         </div>
         <form
@@ -225,37 +225,40 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                <div class="flex flex-col md:flex-row gap-2 mt-8">
                     <!-- Late Fees -->
-                    <div>
+                    <div class="flex-1 w-full">
                         <InputLabel for="late_fees" value="Late Fees" />
                         <TextInput
                             v-model="form.transaction_details.late_fees"
                             type="number"
                             min="0"
                             id="late_fees"
+                            class="w-full"
                         />
                     </div>
 
                     <!-- Damage Fees -->
-                    <div>
+                    <div class="flex-1 w-full">
                         <InputLabel for="damage_fees" value="Damage Fees" />
                         <TextInput
                             v-model="form.transaction_details.damage_fees"
                             type="number"
                             min="0"
                             id="damage_fees"
+                            class="w-full"
                         />
                     </div>
 
                     <!-- Shipping Fees -->
-                    <div>
+                    <div class="flex-1 w-full">
                         <InputLabel for="shipping_fees" value="Shipping Fees" />
                         <TextInput
                             v-model="form.transaction_details.shipping_fees"
                             type="number"
                             min="0"
                             id="shipping_fees"
+                            class="w-full"
                         />
                     </div>
                 </div>
