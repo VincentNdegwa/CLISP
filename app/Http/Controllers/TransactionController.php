@@ -12,7 +12,7 @@ use Inertia\Inertia;
 
 class TransactionController extends Controller
 {
-    public function create(Request $request)
+    public function create($business_id, Request $request)
     {
         DB::beginTransaction();
         try {
@@ -65,6 +65,17 @@ class TransactionController extends Controller
             $actual_transaction = Transaction::where('id', $new_transaction->id)
                 ->with('details', 'initiator', 'receiver_business', 'receiver_customer', 'items')
                 ->first();
+
+            $actual_transaction->totalPrice = $actual_transaction->items->sum(function ($item) {
+                return $item->quantity * $item->price;
+            });
+            if ($actual_transaction->initiator && $actual_transaction->initiator->business_id == $business_id) {
+                $actual_transaction->transaction_type = 'Outgoing';
+            }
+
+            if ($actual_transaction->receiver_business && $actual_transaction->receiver_business->business_id == $business_id) {
+                $actual_transaction->transaction_type = "Incoming";
+            }
 
             return response()->json([
                 "error" => false,

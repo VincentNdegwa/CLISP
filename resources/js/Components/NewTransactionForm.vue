@@ -454,7 +454,9 @@ export default {
         };
 
         const submitForm = async () => {
-            if (props.newTransaction == true) {
+            console.log(props.newTransaction);
+
+            if (props.newTransaction == "true") {
                 await transactionStore.addTransaction(form.value);
             } else {
                 await transactionStore.updateTransaction(
