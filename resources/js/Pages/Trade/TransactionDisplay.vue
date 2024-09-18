@@ -94,7 +94,7 @@ import TableDisplay from "@/Layouts/TableDisplay.vue";
 import ConfirmationModal from "@/Components/ConfirmationModal.vue";
 
 export default {
-    emits: ["startUpdate"],
+    emits: ["startUpdate", "startDelete"],
     components: {
         TableDisplay,
         ConfirmationModal,
@@ -168,17 +168,17 @@ export default {
             return `/transaction/view/` + id;
         },
         confirmDelete(id) {
-            console.log("start deleting");
+            this.$emit("startDelete", id);
         },
         startUpdate(id) {
             this.$emit("startUpdate", id);
         },
-        startDelet(id) {
+        startDelete(id) {
             this.confirmation.isOpen = true;
             this.confirmation.title = "Delete Transaction";
             this.confirmation.message =
                 "Are you sure you want to delete this transaction?";
-            this.confirmation.method = confirmDelete(id);
+            this.confirmation.method = () => this.confirmDelete(id);
         },
     },
 };

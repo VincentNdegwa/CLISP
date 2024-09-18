@@ -125,17 +125,24 @@ export const useTransactionStore = defineStore("transactionStore", {
 
             try {
                 this.loading = true;
-                this.error = null; // Clear any previous error
-                this.success = null; // Clear any previous success message
+                this.error = null;
+                this.success = null;
 
-                await axios.patch(
+                const response = await axios.patch(
                     `/api/transactions/${businessId}/delete-transaction/${transactionId}`
                 );
-                this.transactions = this.transactions.data.filter(
-                    (transaction) => transaction.id !== transactionId
-                );
 
-                this.success = "Transaction deleted successfully.";
+                if (response.data.error) {
+                    this.error = response.data.error;
+                    if (response.data.errors) {
+                        this.error = response.data.errors;
+                    }
+                } else {
+                    this.transactions.data = this.transactions.data.filter(
+                        (transaction) => transaction.id != transactionId
+                    );
+                    this.success = response.data.message;
+                }
             } catch (error) {
                 this.error =
                     error.response?.data?.message ||

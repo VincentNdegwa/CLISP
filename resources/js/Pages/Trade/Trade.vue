@@ -91,6 +91,9 @@ export default {
         const transactionData = (id) => {
             transactionStore.getSingleTransaction(id);
         };
+        const deleteTransaction = async (id) => {
+            await transactionStore.deleteTransaction(id);
+        };
 
         return {
             isDropdownOpen,
@@ -106,6 +109,7 @@ export default {
             filterParams,
             navigatePage,
             transactionData,
+            deleteTransaction,
         };
     },
     data() {
@@ -141,6 +145,9 @@ export default {
             this.transactionData(id);
             this.openModal("UpdateTransaction");
         },
+        startDelete(id) {
+            this.deleteTransaction(id);
+        },
     },
     mounted() {
         this.changeType(this.transactionType);
@@ -150,6 +157,19 @@ export default {
 
 <template>
     <Head :title="transactionType" />
+    <AlertNotification
+        :open="
+            transactionStore.success != null || transactionStore.error != null
+        "
+        :message="
+            transactionStore.success != null
+                ? transactionStore.success
+                : '' || transactionStore.error != null
+                ? transactionStore.error
+                : ''
+        "
+        :status="transactionStore.success ? 'success' : 'error'"
+    />
     <Modal :show="modal.open" :maxWidth="modal.maxWidth" @close="closeModal">
         <NewTransactionForm
             v-if="modal.component == 'NewTransaction'"
@@ -231,6 +251,7 @@ export default {
                 :tableHeaders="tableHeaders"
                 :isB2B="isB2B"
                 @startUpdate="startUpdate"
+                @startDelete="startDelete"
             />
         </div>
 
@@ -277,12 +298,6 @@ export default {
                 Next
             </button>
         </div>
-        <!-- <Paginator
-            class="bg-white"
-            :rows="10"
-            :totalRecords="120"
-            :rowsPerPageOptions="[10, 20, 30]"
-        ></Paginator> -->
     </AuthenticatedLayout>
 </template>
 
