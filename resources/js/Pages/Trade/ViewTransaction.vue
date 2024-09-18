@@ -22,9 +22,24 @@ export default {
         onMounted: {
             transactionStore.getSingleTransaction(props.transactionId);
         }
+        const statusClass = () => {
+            switch (transactionStore.singleTransaction.status) {
+                case "pending":
+                    return "text-gray-500";
+                case "processing":
+                    return "text-yellow-500";
+                case "completed":
+                    return "text-green-500";
+                case "failed":
+                    return "text-red-500";
+                default:
+                    return "text-gray-500";
+            }
+        };
 
         return {
             transactionStore,
+            statusClass,
         };
     },
     methods: {
@@ -54,11 +69,13 @@ export default {
                 <div>
                     <p>
                         <strong>Type:</strong>
-                        {{ transactionStore.singleTransaction.type }}
+                        <span class="capitalize">
+                            {{ transactionStore.singleTransaction.type }}
+                        </span>
                     </p>
                     <p>
                         <strong>Status:</strong>
-                        <span :class="statusClass">{{
+                        <span :class="[statusClass, 'capitalize']">{{
                             transactionStore.singleTransaction.status
                         }}</span>
                     </p>
@@ -91,31 +108,56 @@ export default {
                     <strong>Business Name:</strong>
                     {{
                         transactionStore.singleTransaction.initiator
-                            .business_name
+                            ?.business_name
                     }}
                 </p>
                 <p>
-                    <strong>Business ID:</strong>
+                    <strong>Business Email:</strong>
+                    {{ transactionStore.singleTransaction.initiator?.email }}
+                </p>
+                <p>
+                    <strong>Phone Number:</strong>
                     {{
-                        transactionStore.singleTransaction.initiator.business_id
+                        transactionStore.singleTransaction.initiator
+                            ?.phone_number
                     }}
                 </p>
             </div>
 
             <!-- Receiver Card -->
-            <div class="bg-gray-50 p-4 rounded-lg shadow-sm flex-grow">
+            <div
+                class="bg-gray-50 p-4 rounded-lg shadow-sm flex-grow"
+                v-if="transactionStore.singleTransaction.receiver_business"
+            >
                 <h2 class="text-lg font-medium mb-2">Receiver</h2>
-                <p v-if="transactionStore.singleTransaction.receiver_business">
+                <p>
                     <strong>Business Name:</strong>
                     {{
                         transactionStore.singleTransaction.receiver_business
-                            .business_name
+                            ?.business_name
                     }}
                 </p>
+
+                <p>
+                    <strong>Business Email:</strong>
+                    {{
+                        transactionStore.singleTransaction.receiver_business
+                            ?.email
+                    }}
+                </p>
+
+                <p>
+                    <strong>Phone Number:</strong>
+                    {{
+                        transactionStore.singleTransaction.receiver_business
+                            ?.phone_number
+                    }}
+                </p>
+
                 <p v-if="transactionStore.singleTransaction.receiver_customer">
                     <strong>Customer ID:</strong>
                     {{
-                        transactionStore.singleTransaction.receiver_customer.id
+                        transactionStore.singleTransaction.receiver_customer?.id
                     }}
                 </p>
             </div>
@@ -126,7 +168,7 @@ export default {
             <h2 class="text-lg font-medium mb-4">Details</h2>
             <p>
                 <strong>Shipping Fees:</strong> ${{
-                    transactionStore.singleTransaction.details.shipping_fees
+                    transactionStore.singleTransaction.details?.shipping_fees
                 }}
             </p>
         </div>
@@ -154,7 +196,6 @@ export default {
                             <td class="px-4 py-2">{{ item.quantity }}</td>
                             <td class="px-4 py-2">${{ item.price }}</td>
                         </tr>
-                        
                     </tbody>
                 </table>
             </div>

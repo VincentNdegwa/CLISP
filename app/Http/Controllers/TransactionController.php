@@ -12,7 +12,7 @@ use Inertia\Inertia;
 
 class TransactionController extends Controller
 {
-    public function create(Request $request)
+    public function create($business_id, Request $request)
     {
         DB::beginTransaction();
         try {
@@ -65,6 +65,17 @@ class TransactionController extends Controller
             $actual_transaction = Transaction::where('id', $new_transaction->id)
                 ->with('details', 'initiator', 'receiver_business', 'receiver_customer', 'items')
                 ->first();
+
+            $actual_transaction->totalPrice = $actual_transaction->items->sum(function ($item) {
+                return $item->quantity * $item->price;
+            });
+            if ($actual_transaction->initiator && $actual_transaction->initiator->business_id == $business_id) {
+                $actual_transaction->transaction_type = 'Outgoing';
+            }
+
+            if ($actual_transaction->receiver_business && $actual_transaction->receiver_business->business_id == $business_id) {
+                $actual_transaction->transaction_type = "Incoming";
+            }
 
             return response()->json([
                 "error" => false,
@@ -156,7 +167,7 @@ class TransactionController extends Controller
         }
     }
 
-    public function updateTransaction($transaction_id, Request $request)
+    public function updateTransaction($business_id, $transaction_id, Request $request)
     {
         DB::beginTransaction();
 
@@ -168,7 +179,7 @@ class TransactionController extends Controller
                 "receiver_business_id" => 'nullable|exists:business,business_id',
                 "receiver_customer_id" => 'nullable|exists:customers,id',
                 "transaction_items" => 'nullable|array',
-                "transaction_items.*.item_id" => 'required_with:transaction_items|exists:items,id',
+                "transaction_items.*.item_id" => 'required_with:transaction_items|exists:resource_item,id',
                 "transaction_items.*.quantity" => 'required_with:transaction_items|numeric|min:0',
                 "transaction_items.*.price" => 'required_with:transaction_items|numeric|min:0',
                 "lease_start_date" => 'nullable|date',
@@ -218,6 +229,16 @@ class TransactionController extends Controller
             $updatedTransaction = Transaction::where('id', $transaction->id)
                 ->with('details', 'initiator', 'receiver_business', 'receiver_customer', 'items')
                 ->first();
+            $updatedTransaction->totalPrice = $updatedTransaction->items->sum(function ($item) {
+                return $item->quantity * $item->price;
+            });
+            if ($updatedTransaction->initiator && $updatedTransaction->initiator->business_id == $business_id) {
+                $updatedTransaction->transaction_type = 'Outgoing';
+            }
+
+            if ($updatedTransaction->receiver_business && $updatedTransaction->receiver_business->business_id == $business_id) {
+                $updatedTransaction->transaction_type = "Incoming";
+            }
 
             return response()->json([
                 "error" => false,
@@ -272,7 +293,7 @@ class TransactionController extends Controller
     public function viewTransaction($business_id, $transaction_id)
     {
         try {
-            $transaction = Transaction::with('details', 'initiator:business_id,business_name', 'receiver_business:business_id,business_name', 'receiver_customer', 'items')
+            $transaction = Transaction::with('details', 'initiator:business_id,business_name,email,phone_number,location', 'receiver_business:business_id,business_name,email,phone_number,location', 'receiver_customer', 'items')
                 ->where(function ($query) use ($business_id) {
                     $query->where('initiator_id', $business_id)
                         ->orWhere('receiver_business_id', $business_id);
