@@ -1,0 +1,4 @@
+TRANSACTIONS
+>Leasing =After creating a new purchase, the receiver should approve and make payment or reject and note down the reason for reject.
+After complete payment add the item to logistics.
+
