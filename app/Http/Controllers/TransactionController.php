@@ -130,7 +130,6 @@ class TransactionController extends Controller
             $itemsCount = $validatedData['items_count'] ?? 20;
             $transactions = $transactionsQuery
                 ->where('type', $validatedData['type'])
-                ->where('deleted', 'false')
                 ->orderBy('created_at', 'DESC')
                 ->paginate($itemsCount, ["*"], 'page', $request->input('page', 1));
             foreach ($transactions as $transaction) {
@@ -262,24 +261,23 @@ class TransactionController extends Controller
             ], 500);
         }
     }
-    public function deleteTransaction($transaction_id)
+    public function deleteTransaction($business_id, $transaction_id)
     {
         try {
-            $transaction = Transaction::where('id', $transaction_id)->update([
-                'deleted' => "true"
-            ]);
+            $to_delete = Transaction::find($transaction_id)->delete();
 
+            if ($to_delete) {
+                $transaction = Transaction::find($transaction_id);
 
-            if ($transaction) {
                 return response()->json([
                     'error' => false,
-                    'message' => 'Transaction deleted successfully',
+                    'message' => 'Transaction idDeleted successfully',
                     'trans' => $transaction
                 ], 200);
             } else {
                 return response()->json([
                     "error" => true,
-                    "message" => "An unexpected error occurred"
+                    "message" => "No transaction was updated or found"
                 ]);
             }
         } catch (\Exception $e) {
@@ -299,7 +297,6 @@ class TransactionController extends Controller
                     $query->where('initiator_id', $business_id)
                         ->orWhere('receiver_business_id', $business_id);
                 })
-                ->where('deleted', 'false')
                 ->where('id', $transaction_id)
                 ->first();
 

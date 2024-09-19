@@ -53,7 +53,7 @@
                         class="select w-full max-w-xs bg-white text-slate-950 ring-1 ring-slate-300 hover:ring-slate-300"
                     >
                         <option disabled selected>
-                            Select Connected Business
+                            Select Connected Customer
                         </option>
                         <option
                             :value="item.id"
@@ -457,7 +457,29 @@ export default {
         };
 
         const submitForm = async () => {
-            console.log(props.newTransaction);
+            // Convert the dates to YYYY-MM-DD before submitting
+            if (form.value.lease_start_date) {
+                form.value.lease_start_date = form.value.lease_start_date
+                    .toISOString()
+                    .slice(0, 10);
+            }
+            if (form.value.lease_end_date) {
+                form.value.lease_end_date = form.value.lease_end_date
+                    .toISOString()
+                    .slice(0, 10);
+            }
+            if (form.value.transaction_details.due_date) {
+                form.value.transaction_details.due_date =
+                    form.value.transaction_details.due_date
+                        .toISOString()
+                        .slice(0, 10);
+            }
+            if (form.value.transaction_details.return_date) {
+                form.value.transaction_details.return_date =
+                    form.value.transaction_details.return_date
+                        .toISOString()
+                        .slice(0, 10);
+            }
 
             if (props.newTransaction == "true") {
                 await transactionStore.addTransaction(form.value);

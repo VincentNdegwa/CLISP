@@ -128,7 +128,7 @@ export const useTransactionStore = defineStore("transactionStore", {
                 this.error = null;
                 this.success = null;
 
-                const response = await axios.patch(
+                const response = await axios.delete(
                     `/api/transactions/${businessId}/delete-transaction/${transactionId}`
                 );
 
