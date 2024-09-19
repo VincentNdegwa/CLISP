@@ -49,7 +49,6 @@ export default {
         const isDropdownOpen = ref(false);
         const filterParams = ref({
             incoming: "all",
-            status: null,
             type: "",
             items_count: 20,
             page: 0,
@@ -92,6 +91,9 @@ export default {
         const transactionData = (id) => {
             transactionStore.getSingleTransaction(id);
         };
+        const deleteTransaction = async (id) => {
+            await transactionStore.deleteTransaction(id);
+        };
 
         return {
             isDropdownOpen,
@@ -107,6 +109,7 @@ export default {
             filterParams,
             navigatePage,
             transactionData,
+            deleteTransaction,
         };
     },
     data() {
@@ -142,6 +145,9 @@ export default {
             this.transactionData(id);
             this.openModal("UpdateTransaction");
         },
+        startDelete(id) {
+            this.deleteTransaction(id);
+        },
     },
     mounted() {
         this.changeType(this.transactionType);
@@ -151,6 +157,19 @@ export default {
 
 <template>
     <Head :title="transactionType" />
+    <AlertNotification
+        :open="
+            transactionStore.success != null || transactionStore.error != null
+        "
+        :message="
+            transactionStore.success != null
+                ? transactionStore.success
+                : '' || transactionStore.error != null
+                ? transactionStore.error
+                : ''
+        "
+        :status="transactionStore.success ? 'success' : 'error'"
+    />
     <Modal :show="modal.open" :maxWidth="modal.maxWidth" @close="closeModal">
         <NewTransactionForm
             v-if="modal.component == 'NewTransaction'"
@@ -185,14 +204,6 @@ export default {
                 </h1>
                 <!-- Filter and Search -->
                 <div class="flex items-center">
-                    <div class="mr-4">
-                        <TextInput
-                            id="search"
-                            v-model="filterParams.search"
-                            class="block mt-1 w-full"
-                            placeholder="Search by item"
-                        />
-                    </div>
                     <div class="dropdown">
                         <div
                             tabindex="0"
@@ -240,6 +251,7 @@ export default {
                 :tableHeaders="tableHeaders"
                 :isB2B="isB2B"
                 @startUpdate="startUpdate"
+                @startDelete="startDelete"
             />
         </div>
 
@@ -286,12 +298,6 @@ export default {
                 Next
             </button>
         </div>
-        <!-- <Paginator
-            class="bg-white"
-            :rows="10"
-            :totalRecords="120"
-            :rowsPerPageOptions="[10, 20, 30]"
-        ></Paginator> -->
     </AuthenticatedLayout>
 </template>
 

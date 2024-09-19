@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Transaction extends Model
 {
     use HasFactory;
+    use SoftDeletes;
 
     protected $table = 'transactions';
 
@@ -19,6 +21,7 @@ class Transaction extends Model
         "receiver_customer_id",
         "lease_start_date",
         "lease_end_date",
+        // "idDeleted"
     ];
 
     public function details()

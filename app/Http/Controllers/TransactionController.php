@@ -8,7 +8,6 @@ use App\Models\TransactionItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
-use Inertia\Inertia;
 
 class TransactionController extends Controller
 {
@@ -131,7 +130,6 @@ class TransactionController extends Controller
             $itemsCount = $validatedData['items_count'] ?? 20;
             $transactions = $transactionsQuery
                 ->where('type', $validatedData['type'])
-                ->where('deleted', false)
                 ->orderBy('created_at', 'DESC')
                 ->paginate($itemsCount, ["*"], 'page', $request->input('page', 1));
             foreach ($transactions as $transaction) {
@@ -263,24 +261,25 @@ class TransactionController extends Controller
             ], 500);
         }
     }
-    public function deleteTransaction($transaction_id)
+    public function deleteTransaction($business_id, $transaction_id)
     {
         try {
-            $transaction = Transaction::findOrFail($transaction_id);
+            $to_delete = Transaction::find($transaction_id)->delete();
 
-            $transaction->update([
-                'deleted' => true
-            ]);
+            if ($to_delete) {
+                $transaction = Transaction::find($transaction_id);
 
-            return response()->json([
-                'error' => false,
-                'message' => 'Transaction deleted successfully',
-            ], 200);
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json([
-                'error' => true,
-                'message' => 'Transaction not found.',
-            ], 404);
+                return response()->json([
+                    'error' => false,
+                    'message' => 'Transaction idDeleted successfully',
+                    'trans' => $transaction
+                ], 200);
+            } else {
+                return response()->json([
+                    "error" => true,
+                    "message" => "No transaction was updated or found"
+                ]);
+            }
         } catch (\Exception $e) {
             return response()->json([
                 'error' => true,
@@ -298,7 +297,6 @@ class TransactionController extends Controller
                     $query->where('initiator_id', $business_id)
                         ->orWhere('receiver_business_id', $business_id);
                 })
-                ->where('deleted', false)
                 ->where('id', $transaction_id)
                 ->first();
 

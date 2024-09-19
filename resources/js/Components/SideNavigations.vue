@@ -108,6 +108,7 @@ export default {
     },
     mounted() {
         this.setActiveLink();
+        this.checkActiveAfterMount();
     },
     watch: {
         currentUrl: {
@@ -128,11 +129,17 @@ export default {
                             this.activeSubNav = subItem.name;
                             localStorage.setItem("activeMainNav", item.name);
                             localStorage.setItem("activeSubNav", subItem.name);
+                        } else {
+                            item.open = false;
+                            return item;
                         }
                     });
                 } else if (this.route(item.route) === this.currentUrl) {
                     this.activeMainNav = item.name;
                     localStorage.setItem("activeMainNav", item.name);
+                } else {
+                    item.open = false;
+                    return item;
                 }
                 let status = localStorage.getItem(`${item.name}`);
                 if (status) {
@@ -145,6 +152,7 @@ export default {
                         return item;
                     }
                 }
+
                 return item;
             });
         },
@@ -180,9 +188,33 @@ export default {
         },
 
         isChildActive(subItemsArray) {
-            return subItemsArray.some((subItem) =>
-                this.isActiveSubNav(subItem)
-            );
+            if (subItemsArray) {
+                return subItemsArray.some((subItem) =>
+                    this.isActiveSubNav(subItem)
+                );
+            }
+            return false;
+        },
+        checkActiveAfterMount() {
+            this.navItems = this.navItems.map((navItem) => {
+                if (navItem.subItems) {
+                    let isSubItemActive = false;
+
+                    navItem.subItems = navItem.subItems.map((subItem) => {
+                        if (route(subItem.route) === this.currentUrl) {
+                            isSubItemActive = true;
+                        }
+                        return subItem;
+                    });
+
+                    navItem.open = isSubItemActive;
+                }
+                if (route(navItem.route) === this.currentUrl) {
+                    navItem.open = true;
+                    return navItem;
+                }
+                return navItem;
+            });
         },
     },
 };
@@ -193,14 +225,15 @@ export default {
         <div
             v-for="(item, index) in navItems"
             :key="index"
-            :class="['w-full h-fit p-0 cursor-pointer']"
+            :class="[
+                'w-full h-fit rounded-md p-2 mt-1 cursor-pointer transition-none ease-linear duration-1000',
+                item.open ? 'bg-gray-100' : '',
+            ]"
         >
             <div class="h-full w-full flex flex-col items-start">
                 <div
                     v-if="item.subItems"
-                    :class="[
-                        'flex justify-between w-full hover:bg-gray-100 p-2',
-                    ]"
+                    :class="['flex justify-between w-full p-0']"
                     @click="toggleMainNav(item)"
                 >
                     <div class="text-sm flex flex-row gap-2">
@@ -214,7 +247,7 @@ export default {
                 </div>
                 <div
                     v-else
-                    :class="['hover:bg-gray-100 w-full p-2']"
+                    :class="[' w-full p-0']"
                     @click="toggleMainNav(item)"
                 >
                     <Link :href="route(item.route)" :key="index" class="p-0">
@@ -228,7 +261,7 @@ export default {
 
             <div
                 v-if="item.subItems && item.open"
-                class="h-fit w-full flex flex-col gap-1 items-center transition-all ease-linear duration-1000"
+                class="w-full flex flex-col gap-1 items-center"
             >
                 <Link
                     v-for="(subItem, subIndex) in item.subItems"
