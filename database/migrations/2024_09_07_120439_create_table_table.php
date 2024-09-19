@@ -20,7 +20,7 @@ return new class extends Migration
             $table->unsignedBigInteger('receiver_customer_id')->nullable();
             $table->date('lease_start_date')->nullable();
             $table->date('lease_end_date')->nullable();
-            $table->boolean('deleted')->default(false);
+            $table->enum('deleted', ["true", "false"])->default("false");
             $table->timestamps();
         });
     }
