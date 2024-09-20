@@ -60,9 +60,6 @@ export default {
                 this.transactionStore.singleTransaction.transaction_type;
             const transaction_status =
                 this.transactionStore.singleTransaction.status;
-            console.log(
-                "type: " + transaction_type + " status: " + transaction_status
-            );
 
             switch (action) {
                 case "Approve_and_Pay":

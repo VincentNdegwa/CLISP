@@ -64,4 +64,10 @@ Route::prefix('transactions/{business_id}')->group(function () {
     Route::patch('/update-transaction/{transaction_id}', [TransactionController::class, 'updateTransaction']);
     Route::delete('/delete-transaction/{transaction_id}', [TransactionController::class, 'deleteTransaction']);
     Route::post('/view/{transaction_id}', [TransactionController::class, "viewTransaction"]);
+
+    Route::post('/accept-transaction/{transaction}', [TransactionController::class, 'acceptTransaction']);
+    Route::post('/reject-transaction/{transaction}', [TransactionController::class, 'rejectTransaction']);
+    Route::post('/accept-and-pay-transaction/{transaction}', [TransactionController::class, 'acceptAndPayTransaction']);
+    Route::post('/pay-transaction/{transaction}', [TransactionController::class, 'payTransaction']);
+    Route::post('/close-transaction/{transaction}', [TransactionController::class, 'closeTransaction']);
 });

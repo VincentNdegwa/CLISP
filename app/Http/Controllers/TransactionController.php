@@ -5,9 +5,15 @@ namespace App\Http\Controllers;
 use App\Models\Transaction;
 use App\Models\TransactionDetail;
 use App\Models\TransactionItem;
+use App\Services\BorrowingWorkflow;
+use App\Services\LeasingWorkflow;
+use App\Services\NormalSaleWorkflow;
+use App\Services\PurchaseWorkflow;
+use App\Services\TransactionFlow;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use PhpParser\Node\Stmt\Switch_;
 
 class TransactionController extends Controller
 {
@@ -323,5 +329,59 @@ class TransactionController extends Controller
                 "data" => []
             ]);
         }
+    }
+
+    public function acceptTransaction($business_id, $transaction, Request $request)
+    {
+        $transaction_type = $request->input('type');
+        $workflow = $this->getWorkflow($transaction, $transaction_type);
+        $workflow->acceptTransaction();
+    }
+
+    public function rejectTransaction($business_id, $transaction, Request $request)
+    {
+        $transaction_type = $request->input('type');
+        $workflow = $this->getWorkflow($transaction, $transaction_type);
+        $workflow->rejectTransaction("reason");
+    }
+    public function payTransaction($business_id, $transaction, Request $request)
+    {
+        $transaction_type = $request->input('type');
+        $workflow = $this->getWorkflow($transaction, $transaction_type);
+        $workflow->payTransaction();
+    }
+    public function acceptAndPayTransaction($business_id, $transaction, Request $request)
+    {
+        $transaction_type = $request->input('type');
+        $workflow = $this->getWorkflow($transaction, $transaction_type);
+        $workflow->payTransaction();
+    }
+    public function closeTransaction($business_id, $transaction, Request $request)
+    {
+        $transaction_type = $request->input('type');
+        $workflow = $this->getWorkflow($transaction, $transaction_type);
+        $workflow->closeTransaction();
+    }
+
+    private function getWorkflow($transaction, $transaction_type): TransactionFlow
+    {
+        $workflow = new NormalSaleWorkflow($transaction);
+        $transaction_type = $transaction_type;
+
+        switch ($transaction_type) {
+            case 'leasing':
+                $workflow = new LeasingWorkflow($transaction);
+                break;
+            case 'purchase':
+                $workflow = new PurchaseWorkflow($transaction);
+                break;
+            case 'borrowing':
+                $workflow = new BorrowingWorkflow($transaction);
+                break;
+            default:
+                $workflow = new NormalSaleWorkflow($transaction);
+                break;
+        }
+        return $workflow;
     }
 }
