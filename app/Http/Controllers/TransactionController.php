@@ -13,7 +13,6 @@ use App\Services\TransactionFlow;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
-use PhpParser\Node\Stmt\Switch_;
 
 class TransactionController extends Controller
 {
@@ -335,32 +334,32 @@ class TransactionController extends Controller
     {
         $transaction_type = $request->input('type');
         $workflow = $this->getWorkflow($transaction, $transaction_type);
-        $workflow->acceptTransaction();
+        return $workflow->acceptTransaction();
     }
 
     public function rejectTransaction($business_id, $transaction, Request $request)
     {
         $transaction_type = $request->input('type');
         $workflow = $this->getWorkflow($transaction, $transaction_type);
-        $workflow->rejectTransaction("reason");
+        return $workflow->rejectTransaction("reason");
     }
     public function payTransaction($business_id, $transaction, Request $request)
     {
         $transaction_type = $request->input('type');
         $workflow = $this->getWorkflow($transaction, $transaction_type);
-        $workflow->payTransaction();
+        return $workflow->payTransaction();
     }
     public function acceptAndPayTransaction($business_id, $transaction, Request $request)
     {
         $transaction_type = $request->input('type');
         $workflow = $this->getWorkflow($transaction, $transaction_type);
-        $workflow->payTransaction();
+        return $workflow->payTransaction();
     }
     public function closeTransaction($business_id, $transaction, Request $request)
     {
         $transaction_type = $request->input('type');
         $workflow = $this->getWorkflow($transaction, $transaction_type);
-        $workflow->closeTransaction();
+        return $workflow->closeTransaction();
     }
 
     private function getWorkflow($transaction, $transaction_type): TransactionFlow

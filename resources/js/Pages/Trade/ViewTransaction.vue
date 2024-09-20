@@ -1,4 +1,5 @@
 <script>
+import ConfirmationModal from "@/Components/ConfirmationModal.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import PrimaryRoseButton from "@/Components/PrimaryRoseButton.vue";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
@@ -11,6 +12,17 @@ export default {
         PrimaryButton,
         Head,
         PrimaryRoseButton,
+        ConfirmationModal,
+    },
+    data() {
+        return {
+            confirmation: {
+                isOpen: false,
+                title: "",
+                message: "",
+                method: null,
+            },
+        };
     },
     props: {
         transactionId: {
@@ -39,9 +51,37 @@ export default {
             }
         };
 
+        const acceptTransaction = async () => {
+            await transactionStore.acceptTransaction(props.transactionId);
+        };
+
+        const rejectTransaction = async (reason) => {
+            await transactionStore.rejectTransaction(
+                props.transactionId,
+                reason
+            );
+        };
+
+        const acceptAndPayTransaction = async () => {
+            await transactionStore.acceptAndPayTransaction(props.transactionId);
+        };
+
+        const payTransaction = async () => {
+            await transactionStore.payTransaction(props.transactionId);
+        };
+
+        const closeTransaction = async () => {
+            await transactionStore.closeTransaction(props.transactionId);
+        };
+
         return {
             transactionStore,
             statusClass,
+            acceptTransaction,
+            rejectTransaction,
+            acceptAndPayTransaction,
+            payTransaction,
+            closeTransaction,
         };
     },
     methods: {
@@ -90,12 +130,81 @@ export default {
                     break;
             }
         },
+        startMakingRequestChanges(method) {
+            switch (method) {
+                case "Approve_and_Pay":
+                    this.confirmation.isOpen = true;
+                    this.confirmation.message =
+                        "Are you sure you want to approve and pay for this transaction?";
+                    this.confirmation.title = "Approve and Pay Transaction";
+                    this.confirmation.method = () =>
+                        this.acceptAndPayTransaction();
+                    break;
+
+                case "Approve":
+                    this.confirmation.isOpen = true;
+                    this.confirmation.message =
+                        "Are you sure you want to approve this transaction?";
+                    this.confirmation.title = "Approve Transaction";
+                    this.confirmation.method = () => this.acceptTransaction();
+                    break;
+
+                case "Cancel":
+                    this.confirmation.isOpen = true;
+                    this.confirmation.message =
+                        "Are you sure you want to cancel this transaction?";
+                    this.confirmation.title = "Cancel Transaction";
+                    this.confirmation.method = () => {
+                        const reason = "User decided to cancel";
+                        this.rejectTransaction(reason);
+                    };
+                    break;
+
+                case "Pay":
+                    this.confirmation.isOpen = true;
+                    this.confirmation.message =
+                        "Are you sure you want to complete the payment for this transaction?";
+                    this.confirmation.title = "Pay Transaction";
+                    this.confirmation.method = () => {
+                        this.payTransaction();
+                    };
+                    break;
+
+                default:
+                    this.confirmation.isOpen = false;
+                    this.confirmation.message = "";
+                    this.confirmation.title = "";
+                    this.confirmation.method = null;
+                    break;
+            }
+
+            this.confirmation.isOpen = true;
+        },
+        confirmAction() {
+            if (this.confirmation.method) {
+                this.confirmation.method();
+            }
+            this.confirmation.isOpen = false;
+        },
+        cancelMakingRequest() {
+            this.confirmation.isOpen = false;
+            this.confirmation.message = "";
+            this.confirmation.title = "";
+            this.confirmation.method = null;
+        },
     },
 };
 </script>
 
 <template>
     <Head title="Transaction" />
+    <ConfirmationModal
+        :isOpen="confirmation.isOpen"
+        :title="confirmation.title"
+        :message="confirmation.message"
+        @confirm="confirmAction"
+        @close="cancelMakingRequest"
+    />
     <AuthenticatedLayout>
         <!-- Minimalist Transaction Overview -->
         <div class="bg-white px-4 rounded-lg">
@@ -240,22 +349,28 @@ export default {
 
         <!-- Action Buttons -->
         <div class="flex justify-end space-x-4">
+            <!--  -->
             <PrimaryButton
                 v-if="buttonDisplay('Approve_and_Pay')"
+                @click="startMakingRequestChanges('Approve_and_Pay')"
                 class="bg-orange-600 hover:bg-orange-500 active:bg-orange-500 focus:bg-orange-500"
                 >Approve and Pay</PrimaryButton
             >
             <PrimaryButton
                 v-if="buttonDisplay('Approve')"
+                @click="startMakingRequestChanges('Approve')"
                 class="bg-yellow-500 hover:bg-yellow-600 focus:bg-yellow-600 active:bg-yellow-600"
                 >Approve</PrimaryButton
             >
-            <PrimaryRoseButton v-if="buttonDisplay('Cancel')"
+            <PrimaryRoseButton
+                v-if="buttonDisplay('Cancel')"
+                @click="startMakingRequestChanges('Cancel')"
                 >Cancel</PrimaryRoseButton
             >
 
             <PrimaryButton
                 v-if="buttonDisplay('Pay')"
+                @click="startMakingRequestChanges('Pay')"
                 class="bg-green-600 hover:bg-green-800 active:bg-green-600 focus:bg-green-600"
             >
                 Pay
