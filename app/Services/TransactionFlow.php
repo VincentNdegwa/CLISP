@@ -40,7 +40,7 @@ abstract class TransactionFlow
     {
         try {
             $this->transaction->status = 'canceled';
-            $this->transaction->rejection_reason = $reason;
+            // $this->transaction->rejection_reason = $reason;
             $this->transaction->save();
             return $this->createResponse(false, 'Transaction rejected successfully.', $this->transaction);
         } catch (\Exception $e) {

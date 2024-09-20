@@ -198,6 +198,19 @@ export default {
 
 <template>
     <Head title="Transaction" />
+    <AlertNotification
+        :open="
+            transactionStore.success != null || transactionStore.error != null
+        "
+        :message="
+            transactionStore.success != null
+                ? transactionStore.success
+                : '' || transactionStore.error != null
+                ? transactionStore.error
+                : ''
+        "
+        :status="transactionStore.success ? 'success' : 'error'"
+    />
     <ConfirmationModal
         :isOpen="confirmation.isOpen"
         :title="confirmation.title"

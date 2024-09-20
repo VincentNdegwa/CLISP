@@ -243,6 +243,7 @@ export const useTransactionStore = defineStore("transactionStore", {
                 this.transactions.data[index] = updatedTransaction;
             }
             this.singleTransaction = updatedTransaction;
+            console.log(this.singleTransaction);
         },
 
         // Accept transaction
