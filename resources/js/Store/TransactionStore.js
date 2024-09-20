@@ -184,5 +184,130 @@ export const useTransactionStore = defineStore("transactionStore", {
                 this.loading = false;
             }
         },
+
+        async handleTransactionRequest(
+            url,
+            transactionId,
+            payload = null,
+            successMessage
+        ) {
+            const userStore = useUserStore();
+            const businessId = userStore.business;
+
+            if (!businessId) {
+                this.error = "Business ID not found.";
+                return;
+            }
+
+            try {
+                this.loading = true;
+                this.error = null;
+                this.success = null;
+
+                let response;
+                if (payload) {
+                    response = await axios.post(url, payload);
+                } else {
+                    console.log("making response");
+                    response = await axios.post(url);
+                }
+
+                if (response.data.error) {
+                    this.error = response.data.error;
+                    if (response.data.errors) {
+                        this.error = response.data.errors;
+                    }
+                } else {
+                    this.updateTransactionState(
+                        transactionId,
+                        response.data.data
+                    );
+
+                    this.success = response.data.message;
+                }
+            } catch (error) {
+                this.error =
+                    error.response?.data?.message ||
+                    "An error occurred while processing the transaction.";
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        // Helper method to update transaction state
+        updateTransactionState(transactionId, updatedTransaction) {
+            const index = this.transactions.data.findIndex(
+                (transaction) => transaction.id === transactionId
+            );
+            if (index !== -1) {
+                this.transactions.data[index] = updatedTransaction;
+            }
+            this.singleTransaction = updatedTransaction;
+        },
+
+        // Accept transaction
+        async acceptTransaction(transactionId) {
+            const url = `/api/transactions/${
+                useUserStore().business
+            }/accept-transaction/${transactionId}`;
+            await this.handleTransactionRequest(
+                url,
+                transactionId,
+                null,
+                "Transaction accepted successfully."
+            );
+        },
+
+        // Reject transaction with a reason
+        async rejectTransaction(transactionId, reason) {
+            const url = `/api/transactions/${
+                useUserStore().business
+            }/reject-transaction/${transactionId}`;
+            await this.handleTransactionRequest(
+                url,
+                transactionId,
+                { reason },
+                "Transaction rejected successfully."
+            );
+        },
+
+        // Accept and pay transaction
+        async acceptAndPayTransaction(transactionId) {
+            const url = `/api/transactions/${
+                useUserStore().business
+            }/accept-and-pay-transaction/${transactionId}`;
+            await this.handleTransactionRequest(
+                url,
+                transactionId,
+                null,
+                "Transaction accepted and paid successfully."
+            );
+        },
+
+        // Pay transaction
+        async payTransaction(transactionId) {
+            const url = `/api/transactions/${
+                useUserStore().business
+            }/pay-transaction/${transactionId}`;
+            await this.handleTransactionRequest(
+                url,
+                transactionId,
+                null,
+                "Transaction paid successfully."
+            );
+        },
+
+        // Close transaction
+        async closeTransaction(transactionId) {
+            const url = `/api/transactions/${
+                useUserStore().business
+            }/close-transaction/${transactionId}`;
+            await this.handleTransactionRequest(
+                url,
+                transactionId,
+                null,
+                "Transaction closed successfully."
+            );
+        },
     },
 });
