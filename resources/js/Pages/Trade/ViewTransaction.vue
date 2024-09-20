@@ -1,5 +1,6 @@
 <script>
 import PrimaryButton from "@/Components/PrimaryButton.vue";
+import PrimaryRoseButton from "@/Components/PrimaryRoseButton.vue";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import { useTransactionStore } from "@/Store/TransactionStore";
 import { Head } from "@inertiajs/vue3";
@@ -9,6 +10,7 @@ export default {
         AuthenticatedLayout,
         PrimaryButton,
         Head,
+        PrimaryRoseButton,
     },
     props: {
         transactionId: {
@@ -51,6 +53,44 @@ export default {
                 }).format(currency);
             } else {
                 ("0.0");
+            }
+        },
+        buttonDisplay(action) {
+            const transaction_type =
+                this.transactionStore.singleTransaction.transaction_type;
+            const transaction_status =
+                this.transactionStore.singleTransaction.status;
+            console.log(
+                "type: " + transaction_type + " status: " + transaction_status
+            );
+
+            switch (action) {
+                case "Approve_and_Pay":
+                    return (
+                        transaction_type == "Incoming" &&
+                        (transaction_status == "pending" ||
+                            transaction_status == "pending_payments")
+                    );
+                case "Approve":
+                    return (
+                        transaction_type == "Incoming" &&
+                        (transaction_status == "pending" ||
+                            transaction_status == "pending_payments")
+                    );
+                case "Cancel":
+                    return (
+                        (transaction_type == "Incoming" ||
+                            transaction_type == "Outgoing") &&
+                        (transaction_status == "pending" ||
+                            transaction_status == "pending_payments")
+                    );
+                case "Pay":
+                    return (
+                        transaction_type == "Incoming" &&
+                        transaction_status == "pending_payments"
+                    );
+                default:
+                    break;
             }
         },
     },
@@ -204,13 +244,25 @@ export default {
         <!-- Action Buttons -->
         <div class="flex justify-end space-x-4">
             <PrimaryButton
-                class="bg-gray-800 text-white px-6 py-2 rounded hover:bg-gray-700"
-                >Approve</PrimaryButton
+                v-if="buttonDisplay('Approve_and_Pay')"
+                class="bg-orange-600 hover:bg-orange-500 active:bg-orange-500 focus:bg-orange-500"
+                >Approve and Pay</PrimaryButton
             >
             <PrimaryButton
-                class="bg-gray-500 text-white px-6 py-2 rounded hover:bg-gray-400"
-                >Cancel</PrimaryButton
+                v-if="buttonDisplay('Approve')"
+                class="bg-yellow-500 hover:bg-yellow-600 focus:bg-yellow-600 active:bg-yellow-600"
+                >Approve</PrimaryButton
             >
+            <PrimaryRoseButton v-if="buttonDisplay('Cancel')"
+                >Cancel</PrimaryRoseButton
+            >
+
+            <PrimaryButton
+                v-if="buttonDisplay('Pay')"
+                class="bg-green-600 hover:bg-green-800 active:bg-green-600 focus:bg-green-600"
+            >
+                Pay
+            </PrimaryButton>
         </div>
     </AuthenticatedLayout>
 </template>

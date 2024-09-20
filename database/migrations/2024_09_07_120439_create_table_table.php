@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
             $table->enum('type', ['purchase', 'sale', 'leasing', 'borrowing']);
-            $table->enum('status', ['pending', 'completed', 'canceled'])->default('pending');
+            $table->enum('status', ['pending', 'pending_payments', 'payment_complete', 'item_dispatched', 'completed', 'canceled', 'return_pending'])->default('pending');
             $table->unsignedBigInteger('initiator_id');
             $table->unsignedBigInteger('receiver_business_id')->nullable();
             $table->unsignedBigInteger('receiver_customer_id')->nullable();
