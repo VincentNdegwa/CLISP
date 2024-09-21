@@ -2,7 +2,9 @@
 
 namespace App\Services;
 
+use App\Models\ResourceItem;
 use App\Models\Transaction;
+use App\Models\TransactionItem;
 
 abstract class TransactionFlow
 {
@@ -28,9 +30,15 @@ abstract class TransactionFlow
     public function acceptTransaction()
     {
         try {
-            $this->transaction->status = 'pending_payments';
+            $this->transaction->status = 'approved';
             $this->transaction->save();
-            return $this->createResponse(false, 'Transaction accepted successfully.', $this->transaction);
+
+            TransactionItem::where('transaction_id', $this->transactionId)->update([
+                'status' => 'transit'
+            ]);
+
+
+            return $this->createResponse(false, 'Transaction approved successfully.', $this->transaction);
         } catch (\Exception $e) {
             return $this->createResponse(true, 'Failed to accept transaction.', null, $e->getMessage());
         }
@@ -40,9 +48,20 @@ abstract class TransactionFlow
     {
         try {
             $this->transaction->status = 'canceled';
-            $this->transaction->rejection_reason = $reason;
+            // $this->transaction->rejection_reason = $reason;
             $this->transaction->save();
-            return $this->createResponse(false, 'Transaction rejected successfully.', $this->transaction);
+            TransactionItem::where('transaction_id', $this->transactionId)->update([
+                'status' => 'cancelled'
+            ]);
+            $transactionItems = TransactionItem::where('transaction_id', $this->transactionId)->get();
+            foreach ($transactionItems as $transactionItem) {
+                $item = ResourceItem::find($transactionItem->item_id);
+                $newQuantity = $transactionItem->quantity + $item->quantity;
+                $item->update([
+                    'quantity' => $newQuantity
+                ]);
+            }
+            return $this->createResponse(false, 'Transaction cancelled successfully.', $this->transaction);
         } catch (\Exception $e) {
             return $this->createResponse(true, 'Failed to reject transaction.', null, $e->getMessage());
         }
@@ -51,7 +70,7 @@ abstract class TransactionFlow
     public function payTransaction()
     {
         try {
-            $this->transaction->status = 'payment_complete';
+            $this->transaction->status = 'paid';
             $this->transaction->save();
             return $this->createResponse(false, 'Payment completed successfully.', $this->transaction);
         } catch (\Exception $e) {

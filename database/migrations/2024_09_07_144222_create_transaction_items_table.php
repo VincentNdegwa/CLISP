@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('transaction_items', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('transaction_id');
+            $table->enum('status', ['pending', 'transit', 'completed', 'received', 'returned', 'cancelled'])->default('pending');
             $table->unsignedBigInteger('item_id');
             $table->string('quantity');
             $table->decimal('price', 10, 2);

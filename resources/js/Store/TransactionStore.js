@@ -226,9 +226,10 @@ export const useTransactionStore = defineStore("transactionStore", {
                     this.success = response.data.message;
                 }
             } catch (error) {
-                this.error =
-                    error.response?.data?.message ||
-                    "An error occurred while processing the transaction.";
+                this.error = error.response?.data?.message || error;
+                console.log(error);
+
+                // ("An error occurred while processing the transaction.");
             } finally {
                 this.loading = false;
             }
@@ -236,37 +237,50 @@ export const useTransactionStore = defineStore("transactionStore", {
 
         // Helper method to update transaction state
         updateTransactionState(transactionId, updatedTransaction) {
-            const index = this.transactions.data.findIndex(
-                (transaction) => transaction.id === transactionId
-            );
-            if (index !== -1) {
-                this.transactions.data[index] = updatedTransaction;
-            }
-            this.singleTransaction = updatedTransaction;
+            this.singleTransaction = {
+                ...this.singleTransaction,
+                status: updatedTransaction.status,
+            };
+            this.transactions?.data?.map((transaction) => {
+                if (transaction.id == transactionId) {
+                    return {
+                        ...transaction,
+                        status: updatedTransaction.status,
+                    };
+                }
+                return transaction;
+            });
+            console.log(this.singleTransaction);
         },
 
         // Accept transaction
-        async acceptTransaction(transactionId) {
+        async acceptTransaction(transactionId, type = null) {
             const url = `/api/transactions/${
                 useUserStore().business
             }/accept-transaction/${transactionId}`;
+            const transactionType = {
+                type: type || this.singleTransaction.type,
+            };
             await this.handleTransactionRequest(
                 url,
                 transactionId,
-                null,
+                transactionType,
                 "Transaction accepted successfully."
             );
         },
 
         // Reject transaction with a reason
-        async rejectTransaction(transactionId, reason) {
+        async rejectTransaction(transactionId, reason, type = null) {
             const url = `/api/transactions/${
                 useUserStore().business
             }/reject-transaction/${transactionId}`;
+            const transactionType = {
+                type: type || this.singleTransaction.type,
+            };
             await this.handleTransactionRequest(
                 url,
                 transactionId,
-                { reason },
+                { reason, ...transactionType },
                 "Transaction rejected successfully."
             );
         },
@@ -276,10 +290,13 @@ export const useTransactionStore = defineStore("transactionStore", {
             const url = `/api/transactions/${
                 useUserStore().business
             }/accept-and-pay-transaction/${transactionId}`;
+            const transactionType = {
+                type: type || this.singleTransaction.type,
+            };
             await this.handleTransactionRequest(
                 url,
                 transactionId,
-                null,
+                transactionType,
                 "Transaction accepted and paid successfully."
             );
         },
@@ -289,10 +306,13 @@ export const useTransactionStore = defineStore("transactionStore", {
             const url = `/api/transactions/${
                 useUserStore().business
             }/pay-transaction/${transactionId}`;
+            const transactionType = {
+                type: type || this.singleTransaction.type,
+            };
             await this.handleTransactionRequest(
                 url,
                 transactionId,
-                null,
+                transactionType,
                 "Transaction paid successfully."
             );
         },
@@ -302,10 +322,13 @@ export const useTransactionStore = defineStore("transactionStore", {
             const url = `/api/transactions/${
                 useUserStore().business
             }/close-transaction/${transactionId}`;
+            const transactionType = {
+                type: type || this.singleTransaction.type,
+            };
             await this.handleTransactionRequest(
                 url,
                 transactionId,
-                null,
+                transactionType,
                 "Transaction closed successfully."
             );
         },

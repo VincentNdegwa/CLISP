@@ -67,7 +67,7 @@ export default {
                         >
                             <span class="font-medium">Category:</span>
                             <span class="font-bold text-lg">{{
-                                item.category.name
+                                item.category ? item.category?.name : "--"
                             }}</span>
                         </div>
                         <div

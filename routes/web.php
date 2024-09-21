@@ -18,6 +18,10 @@ use Inertia\Inertia;
 
 Route::get('/', function () {
 
+    if (Auth::check()) {
+        return redirect()->route('dashboard');
+    }
+
     return Inertia::render('Welcome/Welcome', [
         'canLogin' => Route::has('login'),
         'canRegister' => Route::has('register'),
@@ -132,6 +136,12 @@ Route::middleware(['auth', 'check.business'])->group(function () {
             Route::get('/my-customers', function () {
                 return Inertia::render('Customers/MyCustomers');
             })->name('my-customers');
+        });
+
+        Route::prefix('logistics')->name('logistics.')->group(function () {
+            Route::get('shipmets', function () {
+                return Inertia::render('Logistics/Shipments');
+            })->name('shipments');
         });
     });
 });

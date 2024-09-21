@@ -2,9 +2,11 @@
 import ConfirmationModal from "@/Components/ConfirmationModal.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import PrimaryRoseButton from "@/Components/PrimaryRoseButton.vue";
+import SplitButtonSelectCustom from "@/Components/SplitButtonSelectCustom.vue";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import { useTransactionStore } from "@/Store/TransactionStore";
 import { Head } from "@inertiajs/vue3";
+import Badge from "primevue/badge";
 
 export default {
     components: {
@@ -13,6 +15,8 @@ export default {
         Head,
         PrimaryRoseButton,
         ConfirmationModal,
+        Badge,
+        SplitButtonSelectCustom,
     },
     data() {
         return {
@@ -21,6 +25,24 @@ export default {
                 title: "",
                 message: "",
                 method: null,
+            },
+            SelectItems: [
+                {
+                    label: "Print Agreement",
+                    method: () => this.startAgreementPdf("print"),
+                },
+                {
+                    label: "View Agreement",
+                    method: () => this.startAgreementPdf("view"),
+                },
+                {
+                    label: "Share Agreement",
+                    method: () => this.startAgreementPdf("share"),
+                },
+            ],
+            defaulItem: {
+                label: "Print Agreement",
+                method: () => this.startAgreementPdf("print"),
             },
         };
     },
@@ -87,10 +109,12 @@ export default {
     methods: {
         convertCurrency(currency) {
             if (currency) {
-                return Intl.NumberFormat({
-                    style: "currency",
-                    currency: "KES",
-                }).format(currency);
+                return (
+                    Intl.NumberFormat({
+                        style: "currency",
+                        currency: "KES",
+                    }).format(currency) || "0.0"
+                );
             } else {
                 ("0.0");
             }
@@ -105,26 +129,24 @@ export default {
                 case "Approve_and_Pay":
                     return (
                         transaction_type == "Incoming" &&
-                        (transaction_status == "pending" ||
-                            transaction_status == "pending_payments")
+                        transaction_status == "pending"
                     );
                 case "Approve":
                     return (
                         transaction_type == "Incoming" &&
-                        (transaction_status == "pending" ||
-                            transaction_status == "pending_payments")
+                        transaction_status == "pending"
                     );
                 case "Cancel":
                     return (
                         (transaction_type == "Incoming" ||
                             transaction_type == "Outgoing") &&
                         (transaction_status == "pending" ||
-                            transaction_status == "pending_payments")
+                            transaction_status == "approved")
                     );
                 case "Pay":
                     return (
                         transaction_type == "Incoming" &&
-                        transaction_status == "pending_payments"
+                        transaction_status == "approved"
                     );
                 default:
                     break;
@@ -192,12 +214,28 @@ export default {
             this.confirmation.title = "";
             this.confirmation.method = null;
         },
+        startAgreementPdf() {
+            console.log("print");
+        },
     },
 };
 </script>
 
 <template>
     <Head title="Transaction" />
+    <AlertNotification
+        :open="
+            transactionStore.success != null || transactionStore.error != null
+        "
+        :message="
+            transactionStore.success != null
+                ? transactionStore.success
+                : '' || transactionStore.error != null
+                ? transactionStore.error
+                : ''
+        "
+        :status="transactionStore.success ? 'success' : 'error'"
+    />
     <ConfirmationModal
         :isOpen="confirmation.isOpen"
         :title="confirmation.title"
@@ -206,11 +244,49 @@ export default {
         @close="cancelMakingRequest"
     />
     <AuthenticatedLayout>
-        <!-- Minimalist Transaction Overview -->
         <div class="bg-white px-4 rounded-lg">
-            <h1 class="text-2xl font-semibold mb-10">
-                Transaction #{{ transactionStore.singleTransaction.id }}
-            </h1>
+            <div class="flex justify-between">
+                <h1 class="text-2xl font-semibold mb-10">
+                    Transaction #{{ transactionStore.singleTransaction.id }}
+                </h1>
+
+                <div class="flex gap-1">
+                    <SplitButtonSelectCustom
+                        class="flex h-fit"
+                        :SelectItems="SelectItems"
+                        :defaulItem="defaulItem"
+                    />
+                    <div class="flex gap-1">
+                        <!--  -->
+                        <!-- <PrimaryButton
+                v-if="buttonDisplay('Approve_and_Pay')"
+                @click="startMakingRequestChanges('Approve_and_Pay')"
+                class="bg-orange-600 hover:bg-orange-500 active:bg-orange-500 focus:bg-orange-500 h-10"
+                >Approve and Pay</PrimaryButton
+            > -->
+                        <PrimaryButton
+                            v-if="buttonDisplay('Approve')"
+                            @click="startMakingRequestChanges('Approve')"
+                            class="bg-yellow-500 hover:bg-yellow-600 focus:bg-yellow-600 active:bg-yellow-600 h-10"
+                            >Approve</PrimaryButton
+                        >
+                        <PrimaryRoseButton
+                            v-if="buttonDisplay('Cancel')"
+                            @click="startMakingRequestChanges('Cancel')"
+                            class="h-10"
+                            >Cancel
+                        </PrimaryRoseButton>
+
+                        <PrimaryButton
+                            v-if="buttonDisplay('Pay')"
+                            @click="startMakingRequestChanges('Pay')"
+                            class="bg-green-600 hover:bg-green-800 active:bg-green-600 focus:bg-green-600 h-10"
+                        >
+                            Pay
+                        </PrimaryButton>
+                    </div>
+                </div>
+            </div>
             <div class="flex justify-between">
                 <div>
                     <p>
@@ -249,7 +325,11 @@ export default {
         <div class="flex flex-col md:flex-row gap-6 mt-5 mb-3">
             <!-- Initiator Card -->
             <div class="bg-gray-50 p-4 rounded-lg shadow-sm flex-grow">
-                <h2 class="text-lg font-medium mb-2">Initiator</h2>
+                <span
+                    class="flex items-center gap-3 mb-3 w-full border border-t-0 border-s-0 border-e-0"
+                >
+                    <h2 class="text-lg font-medium">Initiator</h2>
+                </span>
                 <p>
                     <strong>Business Name:</strong>
                     {{
@@ -275,7 +355,12 @@ export default {
                 class="bg-gray-50 p-4 rounded-lg shadow-sm flex-grow"
                 v-if="transactionStore.singleTransaction.receiver_business"
             >
-                <h2 class="text-lg font-medium mb-2">Receiver</h2>
+                <span
+                    class="flex items-center gap-3 mb-3 w-full border border-t-0 border-s-0 border-e-0"
+                >
+                    <h2 class="text-lg font-medium">Receiver</h2>
+                    <Badge severity="warn" size="small">Business</Badge>
+                </span>
                 <p>
                     <strong>Business Name:</strong>
                     {{
@@ -299,11 +384,39 @@ export default {
                             ?.phone_number
                     }}
                 </p>
+            </div>
 
-                <p v-if="transactionStore.singleTransaction.receiver_customer">
-                    <strong>Customer ID:</strong>
+            <div
+                class="bg-gray-50 p-4 rounded-lg shadow-sm flex-grow"
+                v-if="transactionStore.singleTransaction.receiver_customer"
+            >
+                <span
+                    class="flex items-center gap-3 mb-3 w-full border border-t-0 border-s-0 border-e-0"
+                >
+                    <h2 class="text-lg font-medium">Receiver</h2>
+                    <Badge severity="info" size="small">Customer</Badge>
+                </span>
+                <p>
+                    <strong>Full Name:</strong>
                     {{
-                        transactionStore.singleTransaction.receiver_customer?.id
+                        transactionStore.singleTransaction.receiver_customer
+                            ?.full_names
+                    }}
+                </p>
+
+                <p>
+                    <strong>Customer Email:</strong>
+                    {{
+                        transactionStore.singleTransaction.receiver_customer
+                            ?.email
+                    }}
+                </p>
+
+                <p>
+                    <strong>Phone Number:</strong>
+                    {{
+                        transactionStore.singleTransaction.receiver_customer
+                            ?.phone_number
                     }}
                 </p>
             </div>
@@ -326,7 +439,7 @@ export default {
                 <table class="w-full table-auto text-left overflow-x-auto">
                     <thead class="border-b sticky top-0 w-full bg-slate-600">
                         <tr>
-                            <th class="px-4 py-2">Item ID</th>
+                            <th class="px-4 py-2">Item Name</th>
                             <th class="px-4 py-2">Quantity</th>
                             <th class="px-4 py-2">Price</th>
                         </tr>
@@ -338,9 +451,13 @@ export default {
                             :key="item.id"
                             class="hover:bg-gray-50"
                         >
-                            <td class="px-4 py-2">{{ item.item_id }}</td>
+                            <td class="px-4 py-2">
+                                {{ item.item?.item_name }}
+                            </td>
                             <td class="px-4 py-2">{{ item.quantity }}</td>
-                            <td class="px-4 py-2">${{ item.price }}</td>
+                            <td class="px-4 py-2">
+                                {{ convertCurrency(item.price) }}
+                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -348,34 +465,6 @@ export default {
         </div>
 
         <!-- Action Buttons -->
-        <div class="flex justify-end space-x-4">
-            <!--  -->
-            <PrimaryButton
-                v-if="buttonDisplay('Approve_and_Pay')"
-                @click="startMakingRequestChanges('Approve_and_Pay')"
-                class="bg-orange-600 hover:bg-orange-500 active:bg-orange-500 focus:bg-orange-500"
-                >Approve and Pay</PrimaryButton
-            >
-            <PrimaryButton
-                v-if="buttonDisplay('Approve')"
-                @click="startMakingRequestChanges('Approve')"
-                class="bg-yellow-500 hover:bg-yellow-600 focus:bg-yellow-600 active:bg-yellow-600"
-                >Approve</PrimaryButton
-            >
-            <PrimaryRoseButton
-                v-if="buttonDisplay('Cancel')"
-                @click="startMakingRequestChanges('Cancel')"
-                >Cancel</PrimaryRoseButton
-            >
-
-            <PrimaryButton
-                v-if="buttonDisplay('Pay')"
-                @click="startMakingRequestChanges('Pay')"
-                class="bg-green-600 hover:bg-green-800 active:bg-green-600 focus:bg-green-600"
-            >
-                Pay
-            </PrimaryButton>
-        </div>
     </AuthenticatedLayout>
 </template>
 
