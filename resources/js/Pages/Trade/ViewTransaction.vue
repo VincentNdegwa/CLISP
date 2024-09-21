@@ -2,6 +2,7 @@
 import ConfirmationModal from "@/Components/ConfirmationModal.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import PrimaryRoseButton from "@/Components/PrimaryRoseButton.vue";
+import SplitButtonSelectCustom from "@/Components/SplitButtonSelectCustom.vue";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import { useTransactionStore } from "@/Store/TransactionStore";
 import { Head } from "@inertiajs/vue3";
@@ -15,6 +16,7 @@ export default {
         PrimaryRoseButton,
         ConfirmationModal,
         Badge,
+        SplitButtonSelectCustom,
     },
     data() {
         return {
@@ -23,6 +25,24 @@ export default {
                 title: "",
                 message: "",
                 method: null,
+            },
+            SelectItems: [
+                {
+                    label: "Print Agreement",
+                    method: () => this.startAgreementPdf("print"),
+                },
+                {
+                    label: "View Agreement",
+                    method: () => this.startAgreementPdf("view"),
+                },
+                {
+                    label: "Share Agreement",
+                    method: () => this.startAgreementPdf("share"),
+                },
+            ],
+            defaulItem: {
+                label: "Print Agreement",
+                method: () => this.startAgreementPdf("print"),
             },
         };
     },
@@ -194,6 +214,9 @@ export default {
             this.confirmation.title = "";
             this.confirmation.method = null;
         },
+        startAgreementPdf() {
+            console.log("print");
+        },
     },
 };
 </script>
@@ -221,11 +244,49 @@ export default {
         @close="cancelMakingRequest"
     />
     <AuthenticatedLayout>
-        <!-- Minimalist Transaction Overview -->
         <div class="bg-white px-4 rounded-lg">
-            <h1 class="text-2xl font-semibold mb-10">
-                Transaction #{{ transactionStore.singleTransaction.id }}
-            </h1>
+            <div class="flex justify-between">
+                <h1 class="text-2xl font-semibold mb-10">
+                    Transaction #{{ transactionStore.singleTransaction.id }}
+                </h1>
+
+                <div class="flex gap-1">
+                    <SplitButtonSelectCustom
+                        class="flex h-fit"
+                        :SelectItems="SelectItems"
+                        :defaulItem="defaulItem"
+                    />
+                    <div class="flex gap-1">
+                        <!--  -->
+                        <!-- <PrimaryButton
+                v-if="buttonDisplay('Approve_and_Pay')"
+                @click="startMakingRequestChanges('Approve_and_Pay')"
+                class="bg-orange-600 hover:bg-orange-500 active:bg-orange-500 focus:bg-orange-500 h-10"
+                >Approve and Pay</PrimaryButton
+            > -->
+                        <PrimaryButton
+                            v-if="buttonDisplay('Approve')"
+                            @click="startMakingRequestChanges('Approve')"
+                            class="bg-yellow-500 hover:bg-yellow-600 focus:bg-yellow-600 active:bg-yellow-600 h-10"
+                            >Approve</PrimaryButton
+                        >
+                        <PrimaryRoseButton
+                            v-if="buttonDisplay('Cancel')"
+                            @click="startMakingRequestChanges('Cancel')"
+                            class="h-10"
+                            >Cancel
+                        </PrimaryRoseButton>
+
+                        <PrimaryButton
+                            v-if="buttonDisplay('Pay')"
+                            @click="startMakingRequestChanges('Pay')"
+                            class="bg-green-600 hover:bg-green-800 active:bg-green-600 focus:bg-green-600 h-10"
+                        >
+                            Pay
+                        </PrimaryButton>
+                    </div>
+                </div>
+            </div>
             <div class="flex justify-between">
                 <div>
                     <p>
@@ -404,34 +465,6 @@ export default {
         </div>
 
         <!-- Action Buttons -->
-        <div class="flex justify-end space-x-4">
-            <!--  -->
-            <!-- <PrimaryButton
-                v-if="buttonDisplay('Approve_and_Pay')"
-                @click="startMakingRequestChanges('Approve_and_Pay')"
-                class="bg-orange-600 hover:bg-orange-500 active:bg-orange-500 focus:bg-orange-500"
-                >Approve and Pay</PrimaryButton
-            > -->
-            <PrimaryButton
-                v-if="buttonDisplay('Approve')"
-                @click="startMakingRequestChanges('Approve')"
-                class="bg-yellow-500 hover:bg-yellow-600 focus:bg-yellow-600 active:bg-yellow-600"
-                >Approve</PrimaryButton
-            >
-            <PrimaryRoseButton
-                v-if="buttonDisplay('Cancel')"
-                @click="startMakingRequestChanges('Cancel')"
-                >Cancel</PrimaryRoseButton
-            >
-
-            <PrimaryButton
-                v-if="buttonDisplay('Pay')"
-                @click="startMakingRequestChanges('Pay')"
-                class="bg-green-600 hover:bg-green-800 active:bg-green-600 focus:bg-green-600"
-            >
-                Pay
-            </PrimaryButton>
-        </div>
     </AuthenticatedLayout>
 </template>
 
