@@ -89,10 +89,12 @@ export default {
     methods: {
         convertCurrency(currency) {
             if (currency) {
-                return Intl.NumberFormat({
-                    style: "currency",
-                    currency: "KES",
-                }).format(currency);
+                return (
+                    Intl.NumberFormat({
+                        style: "currency",
+                        currency: "KES",
+                    }).format(currency) || "0.0"
+                );
             } else {
                 ("0.0");
             }
@@ -107,14 +109,12 @@ export default {
                 case "Approve_and_Pay":
                     return (
                         transaction_type == "Incoming" &&
-                        (transaction_status == "pending" ||
-                            transaction_status == "approved")
+                        transaction_status == "pending"
                     );
                 case "Approve":
                     return (
                         transaction_type == "Incoming" &&
-                        (transaction_status == "pending" ||
-                            transaction_status == "approved")
+                        transaction_status == "pending"
                     );
                 case "Cancel":
                     return (
@@ -264,7 +264,11 @@ export default {
         <div class="flex flex-col md:flex-row gap-6 mt-5 mb-3">
             <!-- Initiator Card -->
             <div class="bg-gray-50 p-4 rounded-lg shadow-sm flex-grow">
-                <h2 class="text-lg font-medium mb-2">Initiator</h2>
+                <span
+                    class="flex items-center gap-3 mb-3 w-full border border-t-0 border-s-0 border-e-0"
+                >
+                    <h2 class="text-lg font-medium">Initiator</h2>
+                </span>
                 <p>
                     <strong>Business Name:</strong>
                     {{
@@ -374,7 +378,7 @@ export default {
                 <table class="w-full table-auto text-left overflow-x-auto">
                     <thead class="border-b sticky top-0 w-full bg-slate-600">
                         <tr>
-                            <th class="px-4 py-2">Item ID</th>
+                            <th class="px-4 py-2">Item Name</th>
                             <th class="px-4 py-2">Quantity</th>
                             <th class="px-4 py-2">Price</th>
                         </tr>
@@ -386,9 +390,13 @@ export default {
                             :key="item.id"
                             class="hover:bg-gray-50"
                         >
-                            <td class="px-4 py-2">{{ item.item_id }}</td>
+                            <td class="px-4 py-2">
+                                {{ item.item?.item_name }}
+                            </td>
                             <td class="px-4 py-2">{{ item.quantity }}</td>
-                            <td class="px-4 py-2">${{ item.price }}</td>
+                            <td class="px-4 py-2">
+                                {{ convertCurrency(item.price) }}
+                            </td>
                         </tr>
                     </tbody>
                 </table>

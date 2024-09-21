@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ResourceItem;
 use App\Models\Transaction;
 use App\Models\TransactionDetail;
 use App\Models\TransactionItem;
@@ -56,6 +57,11 @@ class TransactionController extends Controller
                     'item_id' => $item['item_id'],
                     'quantity' => $item['quantity'],
                     'price' => $item['price'],
+                ]);
+                $transactionModel = ResourceItem::find($item['item_id']);
+                $newQuantity = $transactionModel->quantity - $item['quantity'];
+                $transactionModel->update([
+                    'quantity' => $newQuantity,
                 ]);
             }
 
@@ -308,7 +314,12 @@ class TransactionController extends Controller
     public function viewTransaction($business_id, $transaction_id)
     {
         try {
-            $transaction = Transaction::with('details', 'initiator:business_id,business_name,email,phone_number,location', 'receiver_business:business_id,business_name,email,phone_number,location', 'receiver_customer', 'items')
+            $transaction = Transaction::with('details', 'initiator:business_id,business_name,email,phone_number,location', 'receiver_business:business_id,business_name,email,phone_number,location', 'receiver_customer')
+                ->with([
+                    'items' => function ($query) {
+                        $query->with('item');
+                    }
+                ])
                 ->where(function ($query) use ($business_id) {
                     $query->where('initiator_id', $business_id)
                         ->orWhere('receiver_business_id', $business_id);
