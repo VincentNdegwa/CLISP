@@ -106,25 +106,25 @@ export default {
                     return (
                         transaction_type == "Incoming" &&
                         (transaction_status == "pending" ||
-                            transaction_status == "pending_payments")
+                            transaction_status == "approved")
                     );
                 case "Approve":
                     return (
                         transaction_type == "Incoming" &&
                         (transaction_status == "pending" ||
-                            transaction_status == "pending_payments")
+                            transaction_status == "approved")
                     );
                 case "Cancel":
                     return (
                         (transaction_type == "Incoming" ||
                             transaction_type == "Outgoing") &&
                         (transaction_status == "pending" ||
-                            transaction_status == "pending_payments")
+                            transaction_status == "approved")
                     );
                 case "Pay":
                     return (
                         transaction_type == "Incoming" &&
-                        transaction_status == "pending_payments"
+                        transaction_status == "approved"
                     );
                 default:
                     break;
@@ -363,12 +363,12 @@ export default {
         <!-- Action Buttons -->
         <div class="flex justify-end space-x-4">
             <!--  -->
-            <PrimaryButton
+            <!-- <PrimaryButton
                 v-if="buttonDisplay('Approve_and_Pay')"
                 @click="startMakingRequestChanges('Approve_and_Pay')"
                 class="bg-orange-600 hover:bg-orange-500 active:bg-orange-500 focus:bg-orange-500"
                 >Approve and Pay</PrimaryButton
-            >
+            > -->
             <PrimaryButton
                 v-if="buttonDisplay('Approve')"
                 @click="startMakingRequestChanges('Approve')"

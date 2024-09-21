@@ -5,9 +5,9 @@ After complete payment add the item to logistics.
 transaction status
 
 'pending' -> approve if icomming,
-'pending_payments' -> pay if icomming,
-'payment_complete'-> add items to logistics,
-'item_dispatched'-> if outgoing and paid dispatch items,
+'approved' -> pay if icomming,
+'paid'-> add items to logistics,
+'dispatched'-> if outgoing and paid dispatch items,
 'completed',
 'canceled' -> cancel in all incomming and outgoing before payment,
-'return_pending' -> return after using
+'return' -> return after using
