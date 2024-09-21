@@ -70,7 +70,7 @@ export default {
         };
 
         const handleFilter = (filterValue) => {
-            filterParams.value.incoming = filterValue;
+            filterParams.value.incoming = filterValue.value;
             transactionStore.getTransaction(filterParams.value);
             isDropdownOpen.value = false;
         };
@@ -135,6 +135,7 @@ export default {
                 component: "",
             },
             statuses: [
+                { label: "All", value: "all" },
                 { label: "Pending", value: "pending" },
                 { label: "Approved", value: "approved" },
                 { label: "Paid", value: "paid" },
@@ -142,6 +143,11 @@ export default {
                 { label: "Completed", value: "completed" },
                 { label: "Canceled", value: "canceled" },
                 { label: "Return", value: "return" },
+            ],
+            transaction_types: [
+                { label: "All", value: "all" },
+                { label: "Incomming", value: "incoming" },
+                { label: "Outgoing", value: "outgoing" },
             ],
         };
     },
@@ -163,10 +169,33 @@ export default {
         },
         searchStatus(value) {
             this.filterParams.status = value.value;
-            console.log(value);
+        },
+        searchIncoming(value) {
+            this.filterParams.incoming = value.value;
+        },
+        clearFilters() {
+            this.filterParams.incoming = "all";
+            this.filterParams.search = "";
+            this.filterParams.status = null;
+        },
+        handleClickOutside(event) {
+            console.log(event);
+
+            const dropdown = this.$refs.dropdown;
+            if (dropdown && !dropdown.contains(event.target)) {
+                this.isDropdownOpen = false;
+                this.removeClickOutsideListener();
+            }
+        },
+        addClickOutsideListener() {
+            document.addEventListener("click", this.handleClickOutside);
+        },
+        removeClickOutsideListener() {
+            document.removeEventListener("click", this.handleClickOutside);
         },
     },
     mounted() {
+        this.addClickOutsideListener();
         this.changeType(this.transactionType);
     },
 };
@@ -220,16 +249,7 @@ export default {
                     {{ transactionType }}
                 </h1>
                 <!-- Filter and Search -->
-                <div class="flex items-center">
-                    <Select
-                        @update:model-value="searchStatus"
-                        :options="statuses"
-                        v-model="filterParams.search"
-                        optionLabel="label"
-                        placeholder="Select Status"
-                        class="w-full md:w-56"
-                    />
-
+                <div class="flex items-center" ref="dropdown">
                     <div class="dropdown">
                         <div
                             tabindex="0"
@@ -242,23 +262,42 @@ export default {
                         <ul
                             tabindex="0"
                             v-if="isDropdownOpen"
-                            class="dropdown-content flex flex-col gap-2 bg-white text-slate-900 rounded-box z-[100] w-52 p-2 shadow"
+                            class="dropdown-content flex flex-col gap-2 bg-white text-slate-900 rounded-t-none rounded-b-md z-[100] min-w-52 p-2 shadow"
                         >
-                            <li class="cursor-pointer hover:bg-slate-100 p-1">
-                                <a @click="handleFilter('all')">All</a>
+                            <li class="flex flex-col">
+                                <span>Transaction Status</span>
+                                <Select
+                                    @change="toggleDropdown"
+                                    :options="statuses"
+                                    v-model="filterParams.status"
+                                    optionLabel="label"
+                                    optionValue="value"
+                                    placeholder="Select Status"
+                                    class="w-full"
+                                />
                             </li>
-                            <li class="cursor-pointer hover:bg-slate-100 p-1">
-                                <a @click="handleFilter('incoming')"
-                                    >Incoming</a
-                                >
-                            </li>
-                            <li class="cursor-pointer hover:bg-slate-100 p-1">
-                                <a @click="handleFilter('outgoing')"
-                                    >Outgoing</a
-                                >
+
+                            <li class="flex flex-col">
+                                <span>Transaction Type</span>
+                                <Select
+                                    @change="toggleDropdown"
+                                    :options="transaction_types"
+                                    v-model="filterParams.incoming"
+                                    optionLabel="label"
+                                    optionValue="value"
+                                    placeholder="Select Status"
+                                    class="w-full"
+                                />
                             </li>
                         </ul>
                     </div>
+
+                    <PrimaryButton
+                        @click="clearFilters"
+                        class="flex gap-1 bg-slate-900"
+                    >
+                        <span>Clear Filters</span> <i class="bi bi-x-lg"></i>
+                    </PrimaryButton>
                 </div>
             </div>
             <div class="flex items-center">

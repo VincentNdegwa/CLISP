@@ -132,7 +132,7 @@ class TransactionController extends Controller
                 $transactionsQuery->whereNotNull('receiver_customer_id')
                     ->whereNull('receiver_business_id');
             }
-            if ($request->input('status')) {
+            if ($request->input('status') != 'all') {
                 $transactionsQuery->when($request->input('status'), function ($query, $status) {
                     $query->where('status', $status);
                 });
