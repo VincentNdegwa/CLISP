@@ -15,6 +15,7 @@ import { useCustomerStore } from "@/Store/Customer";
 import { useResourceStore } from "@/Store/Resource";
 
 import Paginator from "primevue/paginator";
+import Select from "primevue/select";
 
 export default {
     props: {
@@ -37,6 +38,7 @@ export default {
         Modal,
         NewTransactionForm,
         Paginator,
+        Select,
     },
 
     setup(props) {
@@ -54,6 +56,7 @@ export default {
             items_count: 20,
             page: 0,
             search: "",
+            status: null,
         });
 
         onMounted(() => {
@@ -131,6 +134,15 @@ export default {
                 maxWidth: "4xl",
                 component: "",
             },
+            statuses: [
+                { label: "Pending", value: "pending" },
+                { label: "Approved", value: "approved" },
+                { label: "Paid", value: "paid" },
+                { label: "Dispatched", value: "dispatched" },
+                { label: "Completed", value: "completed" },
+                { label: "Canceled", value: "canceled" },
+                { label: "Return", value: "return" },
+            ],
         };
     },
     methods: {
@@ -148,6 +160,10 @@ export default {
         },
         startDelete(id) {
             this.deleteTransaction(id);
+        },
+        searchStatus(value) {
+            this.filterParams.status = value.value;
+            console.log(value);
         },
     },
     mounted() {
@@ -205,6 +221,15 @@ export default {
                 </h1>
                 <!-- Filter and Search -->
                 <div class="flex items-center">
+                    <Select
+                        @update:model-value="searchStatus"
+                        :options="statuses"
+                        v-model="filterParams.search"
+                        optionLabel="label"
+                        placeholder="Select Status"
+                        class="w-full md:w-56"
+                    />
+
                     <div class="dropdown">
                         <div
                             tabindex="0"
@@ -302,6 +327,4 @@ export default {
     </AuthenticatedLayout>
 </template>
 
-<style scoped>
-/* Add any specific styles here */
-</style>
+<style scoped></style>

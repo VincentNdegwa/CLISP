@@ -137,6 +137,12 @@ Route::middleware(['auth', 'check.business'])->group(function () {
                 return Inertia::render('Customers/MyCustomers');
             })->name('my-customers');
         });
+
+        Route::prefix('logistics')->name('logistics.')->group(function () {
+            Route::get('shipmets', function () {
+                return Inertia::render('Logistics/Shipments');
+            })->name('shipments');
+        });
     });
 });
 

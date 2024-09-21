@@ -34,16 +34,10 @@
                 </td>
 
                 <td class="px-6 py-4 border-b">
-                    <span
-                        :class="{
-                            'text-yellow-500': transaction.status === 'pending',
-                            'text-green-500':
-                                transaction.status === 'completed',
-                            'text-red-500': transaction.status === 'canceled',
-                        }"
-                    >
+                    <!-- 'pending','approved','paid','dispatched','completed','canceled','return' -->
+                    <Badge :severity="getBadgeSeverity(transaction.status)">
                         {{ transaction.status }}
-                    </span>
+                    </Badge>
                 </td>
 
                 <td class="py-2 px-4 border-b">
@@ -92,12 +86,14 @@
 <script>
 import TableDisplay from "@/Layouts/TableDisplay.vue";
 import ConfirmationModal from "@/Components/ConfirmationModal.vue";
+import Badge from "primevue/badge";
 
 export default {
     emits: ["startUpdate", "startDelete"],
     components: {
         TableDisplay,
         ConfirmationModal,
+        Badge,
     },
     props: {
         transactionStore: {
@@ -179,6 +175,26 @@ export default {
             this.confirmation.message =
                 "Are you sure you want to delete this transaction?";
             this.confirmation.method = () => this.confirmDelete(id);
+        },
+        getBadgeSeverity(status) {
+            switch (status) {
+                case "pending":
+                    return "info";
+                case "approved":
+                    return "primary";
+                case "paid":
+                    return "success";
+                case "dispatched":
+                    return "warning";
+                case "completed":
+                    return "success";
+                case "canceled":
+                    return "danger";
+                case "return":
+                    return "danger";
+                default:
+                    return "secondary"; // Default fallback
+            }
         },
     },
 };

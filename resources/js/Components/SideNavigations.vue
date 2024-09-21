@@ -103,6 +103,13 @@ export default {
                         },
                     ],
                 },
+                {
+                    name: "Logistics",
+                    route: "logistics.shipments",
+                    open: localStorage.getItem("Logistics") === "true",
+                    icon: "bi bi-truck",
+                    subItems: null,
+                },
             ],
         };
     },

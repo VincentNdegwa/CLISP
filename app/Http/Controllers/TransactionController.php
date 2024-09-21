@@ -138,6 +138,8 @@ class TransactionController extends Controller
                 });
             }
 
+
+
             if ($validatedData['incoming'] == 'incoming') {
                 $transactionsQuery->where('receiver_business_id', $business_id);
             } else if ($validatedData['incoming'] == 'outgoing') {
