@@ -5,6 +5,7 @@ import PrimaryRoseButton from "@/Components/PrimaryRoseButton.vue";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import { useTransactionStore } from "@/Store/TransactionStore";
 import { Head } from "@inertiajs/vue3";
+import Badge from "primevue/badge";
 
 export default {
     components: {
@@ -13,6 +14,7 @@ export default {
         Head,
         PrimaryRoseButton,
         ConfirmationModal,
+        Badge,
     },
     data() {
         return {
@@ -288,7 +290,12 @@ export default {
                 class="bg-gray-50 p-4 rounded-lg shadow-sm flex-grow"
                 v-if="transactionStore.singleTransaction.receiver_business"
             >
-                <h2 class="text-lg font-medium mb-2">Receiver</h2>
+                <span
+                    class="flex items-center gap-3 mb-3 w-full border border-t-0 border-s-0 border-e-0"
+                >
+                    <h2 class="text-lg font-medium">Receiver</h2>
+                    <Badge severity="warn" size="small">Business</Badge>
+                </span>
                 <p>
                     <strong>Business Name:</strong>
                     {{
@@ -312,11 +319,39 @@ export default {
                             ?.phone_number
                     }}
                 </p>
+            </div>
 
-                <p v-if="transactionStore.singleTransaction.receiver_customer">
-                    <strong>Customer ID:</strong>
+            <div
+                class="bg-gray-50 p-4 rounded-lg shadow-sm flex-grow"
+                v-if="transactionStore.singleTransaction.receiver_customer"
+            >
+                <span
+                    class="flex items-center gap-3 mb-3 w-full border border-t-0 border-s-0 border-e-0"
+                >
+                    <h2 class="text-lg font-medium">Receiver</h2>
+                    <Badge severity="info" size="small">Customer</Badge>
+                </span>
+                <p>
+                    <strong>Full Name:</strong>
                     {{
-                        transactionStore.singleTransaction.receiver_customer?.id
+                        transactionStore.singleTransaction.receiver_customer
+                            ?.full_names
+                    }}
+                </p>
+
+                <p>
+                    <strong>Customer Email:</strong>
+                    {{
+                        transactionStore.singleTransaction.receiver_customer
+                            ?.email
+                    }}
+                </p>
+
+                <p>
+                    <strong>Phone Number:</strong>
+                    {{
+                        transactionStore.singleTransaction.receiver_customer
+                            ?.phone_number
                     }}
                 </p>
             </div>

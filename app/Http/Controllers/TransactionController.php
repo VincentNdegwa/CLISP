@@ -109,12 +109,23 @@ class TransactionController extends Controller
             $validatedData = $request->validate([
                 "incoming" => 'string',
                 "status" => 'nullable|string',
+                "isB2B" => 'required|boolean',
                 "type" => 'required|string',
                 "items_count" => "nullable|integer",
                 "page" => 'integer',
             ]);
 
             $transactionsQuery = Transaction::with('details', 'initiator:business_id,business_name', 'receiver_business:business_id,business_name', 'receiver_customer', 'items');
+
+            if ($validatedData['isB2B'] === true) {
+                // B2B transactions: where receiver_business exists and receiver_customer is null
+                $transactionsQuery->whereNotNull('receiver_business_id')
+                    ->whereNull('receiver_customer_id');
+            } elseif ($validatedData['isB2B'] === false) {
+                // B2C transactions: where receiver_customer exists and receiver_business is null
+                $transactionsQuery->whereNotNull('receiver_customer_id')
+                    ->whereNull('receiver_business_id');
+            }
             if ($request->input('status')) {
                 $transactionsQuery->when($request->input('status'), function ($query, $status) {
                     $query->where('status', $status);
@@ -314,6 +325,12 @@ class TransactionController extends Controller
 
             if ($transaction->receiver_business && $transaction->receiver_business->business_id == $business_id) {
                 $transaction->transaction_type = "Incoming";
+            }
+
+            if ($transaction->receiver_business != null && $transaction->receiver_customer == null) {
+                $transaction->isB2B = true;
+            } else if ($transaction->receiver_business == null && $transaction->receiver_customer != null) {
+                $transaction->isB2B = false;
             }
 
             return response()->json([

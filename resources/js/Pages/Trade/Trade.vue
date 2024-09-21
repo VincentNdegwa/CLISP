@@ -49,6 +49,7 @@ export default {
         const isDropdownOpen = ref(false);
         const filterParams = ref({
             incoming: "all",
+            isB2B: props.isB2B,
             type: "",
             items_count: 20,
             page: 0,
