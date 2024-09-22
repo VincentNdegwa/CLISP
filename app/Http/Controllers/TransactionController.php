@@ -14,6 +14,7 @@ use App\Services\TransactionFlow;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class TransactionController extends Controller
 {
@@ -412,5 +413,33 @@ class TransactionController extends Controller
                 break;
         }
         return $workflow;
+    }
+
+    public function generateAgreement($transactionId)
+    {
+
+        $transaction = Transaction::where('id', $transactionId)->with('initiator:business_id,business_name,email,phone_number,location', 'receiver_business:business_id,business_name,email,phone_number,location', 'receiver_customer', 'details')->with([
+            'items' => function ($query) {
+                $query->with('item');
+            }
+        ])->first();
+
+        return $transaction;
+    }
+
+    public function downloadAgreement($transactionId)
+    {
+        $transaction = $this->generateAgreement($transactionId);
+
+
+        $pdf = Pdf::loadView('agreement', compact('transaction'));
+        return $pdf->download('agreement.pdf');
+    }
+
+    public function previewAgreement($transactionId)
+    {
+        $transaction = $this->generateAgreement($transactionId);
+
+        return view('agreement', compact('transaction'));
     }
 }

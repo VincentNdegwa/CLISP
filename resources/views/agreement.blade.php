@@ -97,17 +97,17 @@
         <div class="header">
             <img class="company-logo" src="{{ asset('path-to-your-logo.png') }}" alt="Company Logo">
             <h1>Lease/Borrow Agreement</h1>
-            <p>{{ $company_name }}<br>
-                {{ $company_address }}<br>
-                {{ $company_phone }} | {{ $company_email }}</p>
+            <p>{{ $transaction->initiator->business_name }}<br>
+                {{ $transaction->initiator->location }}<br>
+                {{ $transaction->initiator->phone_number }} | {{ $transaction->initiator->email }}</p>
         </div>
 
         <!-- Agreement Content -->
         <div class="content">
             <h3>Agreement Details</h3>
             <p>This Agreement (the "Agreement") is entered into on {{ date('F j, Y') }} between:</p>
-            <strong>Lessor/Borrower:</strong> {{ $lessor_name }}<br>
-            <strong>Lessee/Borrowee:</strong> {{ $lessee_name }}<br><br>
+            <strong>Initiator:</strong> {{ $transaction->initiator->business_name }}<br>
+            <strong>Receiver:</strong> {{ $transaction->receiver_business->business_name }}<br><br>
 
             <h3>Terms and Conditions</h3>
             <p>
@@ -120,23 +120,22 @@
                 <tr>
                     <th>Item Description</th>
                     <th>Quantity</th>
-                    <th>Duration</th>
-                    <th>Amount (if any)</th>
+                    <th>Unit Price (Only If)</th>
                 </tr>
-                @foreach ($items as $item)
+                @foreach ($transaction->items as $item)
                     <tr>
-                        <td>{{ $item['description'] }}</td>
-                        <td>{{ $item['quantity'] }}</td>
-                        <td>{{ $item['duration'] }}</td>
-                        <td>{{ $item['amount'] }}</td>
+                        <td>{{ $item->item->item_name }} - {{ $item->item->description }}</td>
+                        <td>{{ $item->quantity }}</td>
+                        <td>KSh {{ number_format($item->price, 2) }}</td>
                     </tr>
                 @endforeach
             </table>
 
             <h3>Responsibilities</h3>
-            <p>The {{ $lessee_name }} agrees to return the item(s) in the same condition as provided, on or before
-                {{ $return_date }}. Any damages or losses will be compensated as per the agreed terms. The
-                {{ $lessor_name }} reserves the right to charge fees or penalties as defined in the agreement.</p>
+            <p>The {{ $transaction->receiver_business->business_name }} agrees to return the item(s) in the same
+                condition as provided, on or before the agreed return date. Any damages or losses will be compensated as
+                per the agreed terms. The {{ $transaction->initiator->business_name }} reserves the right to charge
+                fees or penalties as defined in the agreement.</p>
 
             <h3>Termination of Agreement</h3>
             <p>This agreement will be terminated upon the return of all leased/borrowed items or upon written
@@ -150,19 +149,19 @@
         <div class="signatures">
             <div class="signature-block">
                 <div class="signature-line"></div>
-                <p>Signature of Lessor/Borrower</p>
-                <p>{{ $lessor_name }}</p>
+                <p>Signature of Initiator</p>
+                <p>{{ $transaction->initiator->business_name }}</p>
             </div>
             <div class="signature-block">
                 <div class="signature-line"></div>
-                <p>Signature of Lessee/Borrowee</p>
-                <p>{{ $lessee_name }}</p>
+                <p>Signature of Receiver</p>
+                <p>{{ $transaction->receiver_business->business_name }}</p>
             </div>
         </div>
 
         <!-- Footer -->
         <div class="footer">
-            <p>Generated on {{ date('F j, Y') }} by {{ $company_name }}.</p>
+            <p>Generated on {{ date('F j, Y') }} by {{ $transaction->initiator->business_name }}.</p>
         </div>
     </div>
 

@@ -197,8 +197,7 @@
             >
                 <h3 class="text-lg font-bold mb-4">Transaction Details</h3>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- Due Date -->
+                <!-- <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <InputLabel for="due_date" value="Due Date" />
 
@@ -211,7 +210,6 @@
                         />
                     </div>
 
-                    <!-- Return Date -->
                     <div>
                         <InputLabel for="return_date" value="Return Date" />
 
@@ -223,7 +221,7 @@
                             id="return_date"
                         />
                     </div>
-                </div>
+                </div> -->
 
                 <div class="flex flex-col md:flex-row gap-2 mt-8">
                     <!-- Late Fees -->
@@ -234,6 +232,7 @@
                             type="number"
                             min="0"
                             id="late_fees"
+                            value="0"
                             class="w-full"
                         />
                     </div>
@@ -246,6 +245,7 @@
                             type="number"
                             min="0"
                             id="damage_fees"
+                            value="0"
                             class="w-full"
                         />
                     </div>
@@ -258,6 +258,7 @@
                             type="number"
                             min="0"
                             id="shipping_fees"
+                            value="0"
                             class="w-full"
                         />
                     </div>

@@ -130,41 +130,23 @@ Route::middleware(['auth', 'check.business'])->group(function () {
                     'transactionId' => $id
                 ]);
             })->name('transaction.view');
-            Route::get('/view-agreement/{transaction_id}', function ($id) {
-                return view('agreement', [
-                    'company_name' => 'Your Business Name',
-                    'company_address' => '1234 Business St, City, Country',
-                    'company_phone' => '123-456-7890',
-                    'company_email' => 'info@yourbusiness.com',
-                    'lessor_name' => 'John Doe',
-                    'lessee_name' => 'Jane Smith',
-                    'return_date' => 'December 31, 2024',
-                    'items' => [
-                        [
-                            'description' => 'Office Chair',
-                            'quantity' => 10,
-                            'duration' => '6 months',
-                            'amount' => '$500',
-                        ],
-                        // Add more items as necessary
-                    ],
-                ]);
-            });
-        });
-
-        Route::prefix('customer')->name('customer.')->group(function () {
-            Route::get('/my-customers', function () {
-                return Inertia::render('Customers/MyCustomers');
-            })->name('my-customers');
-        });
-
-        Route::prefix('logistics')->name('logistics.')->group(function () {
-            Route::get('shipmets', function () {
-                return Inertia::render('Logistics/Shipments');
-            })->name('shipments');
+            Route::get('/view-agreement/{transaction_id}', [TransactionController::class, 'previewAgreement']);
         });
     });
+
+    Route::prefix('customer')->name('customer.')->group(function () {
+        Route::get('/my-customers', function () {
+            return Inertia::render('Customers/MyCustomers');
+        })->name('my-customers');
+    });
+
+    Route::prefix('logistics')->name('logistics.')->group(function () {
+        Route::get('shipmets', function () {
+            return Inertia::render('Logistics/Shipments');
+        })->name('shipments');
+    });
 });
+
 
 
 

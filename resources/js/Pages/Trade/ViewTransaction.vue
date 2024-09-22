@@ -36,6 +36,10 @@ export default {
                     method: () => this.startAgreementPdf("view"),
                 },
                 {
+                    label: "Download Agreement",
+                    method: () => this.startAgreementPdf("download"),
+                },
+                {
                     label: "Share Agreement",
                     method: () => this.startAgreementPdf("share"),
                 },
@@ -214,7 +218,7 @@ export default {
             this.confirmation.title = "";
             this.confirmation.method = null;
         },
-        startAgreementPdf() {
+        startAgreementPdf(action) {
             console.log("print");
         },
     },
