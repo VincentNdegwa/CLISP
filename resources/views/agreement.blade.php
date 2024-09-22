@@ -106,7 +106,8 @@
     <div class="agreement-container">
         <!-- Header with Business Information -->
         <div class="header">
-            <img class="company-logo" src="{{ asset('/images/CLISP-logo.png') }}" alt="Company Logo">
+            <img class="company-logo" src="{{ $transaction->logo }}" alt="Company Logo">
+
             <h1>Lease/Borrow Agreement</h1>
             <p>{{ $transaction->initiator->business_name }}<br>
                 {{ $transaction->initiator->location }}<br>

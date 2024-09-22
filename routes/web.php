@@ -131,7 +131,9 @@ Route::middleware(['auth', 'check.business'])->group(function () {
                 ]);
             })->name('transaction.view');
             Route::get('/view-agreement/{transaction_id}', [TransactionController::class, 'previewAgreement']);
-            
+            Route::get('/view-agreement/print/{transaction_id}', [TransactionController::class, 'printPreviewAgreement']);
+            Route::get('/download-agreement/{transaction_id}', [TransactionController::class, 'downloadAgreement']);
+            Route::get('/pdf-preview/{transaction_id}', [TransactionController::class, 'pdfPreviewAgreement']);
         });
     });
 
@@ -146,6 +148,10 @@ Route::middleware(['auth', 'check.business'])->group(function () {
             return Inertia::render('Logistics/Shipments');
         })->name('shipments');
     });
+
+    Route::get('not-found', function () {
+        return Inertia::render('NotFound');
+    })->name('not-found');
 });
 
 
