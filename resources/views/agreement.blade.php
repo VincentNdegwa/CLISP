@@ -41,6 +41,14 @@
             color: #333;
         }
 
+        .resposibilities-header {
+            margin-top: 20px;
+        }
+
+        .agreement-terms {
+            margin-top: 20px;
+        }
+
         .content h3 {
             color: #555;
         }
@@ -85,17 +93,20 @@
 
         .company-logo {
             width: 150px;
+            height: 150px;
             margin-bottom: 20px;
         }
     </style>
 </head>
+
+
 
 <body>
 
     <div class="agreement-container">
         <!-- Header with Business Information -->
         <div class="header">
-            <img class="company-logo" src="{{ asset('path-to-your-logo.png') }}" alt="Company Logo">
+            <img class="company-logo" src="{{ asset('/images/CLISP-logo.png') }}" alt="Company Logo">
             <h1>Lease/Borrow Agreement</h1>
             <p>{{ $transaction->initiator->business_name }}<br>
                 {{ $transaction->initiator->location }}<br>
@@ -107,7 +118,7 @@
             <h3>Agreement Details</h3>
             <p>This Agreement (the "Agreement") is entered into on {{ date('F j, Y') }} between:</p>
             <strong>Initiator:</strong> {{ $transaction->initiator->business_name }}<br>
-            <strong>Receiver:</strong> {{ $transaction->receiver_business->business_name }}<br><br>
+            <strong>Receiver:</strong> {{ $transaction->receiver_business?->business_name }}<br><br>
 
             <h3>Terms and Conditions</h3>
             <p>
@@ -131,15 +142,17 @@
                 @endforeach
             </table>
 
-            <h3>Responsibilities</h3>
-            <p>The {{ $transaction->receiver_business->business_name }} agrees to return the item(s) in the same
+            <h3 class="resposibilities-header">Responsibilities</h3>
+            <p>The {{ $transaction->receiver_business?->business_name }} agrees to return the item(s) in the same
                 condition as provided, on or before the agreed return date. Any damages or losses will be compensated as
                 per the agreed terms. The {{ $transaction->initiator->business_name }} reserves the right to charge
                 fees or penalties as defined in the agreement.</p>
 
-            <h3>Termination of Agreement</h3>
+
+            <h3 class="agreement-terms">Termination of Agreement</h3>
             <p>This agreement will be terminated upon the return of all leased/borrowed items or upon written
                 notification by either party, subject to the conditions outlined in this document.</p>
+
 
             <h3>Signatures</h3>
             <p>The parties hereby agree to the terms and conditions stated above.</p>
@@ -155,7 +168,7 @@
             <div class="signature-block">
                 <div class="signature-line"></div>
                 <p>Signature of Receiver</p>
-                <p>{{ $transaction->receiver_business->business_name }}</p>
+                <p>{{ $transaction->receiver_business?->business_name }}</p>
             </div>
         </div>
 

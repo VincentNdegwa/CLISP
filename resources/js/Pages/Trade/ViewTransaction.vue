@@ -6,6 +6,7 @@ import SplitButtonSelectCustom from "@/Components/SplitButtonSelectCustom.vue";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import { useTransactionStore } from "@/Store/TransactionStore";
 import { Head } from "@inertiajs/vue3";
+import axios from "axios";
 import Badge from "primevue/badge";
 
 export default {
@@ -218,7 +219,19 @@ export default {
             this.confirmation.title = "";
             this.confirmation.method = null;
         },
-        startAgreementPdf(action) {
+        async startAgreementPdf(action) {
+            switch (action) {
+                case "print":
+                    break;
+                case "view":
+                    window.location.href = `/transaction/view-agreement/${this.transactionStore.singleTransaction.id}`;
+
+                    break;
+                case "download":
+                    break;
+                case "share":
+                    break;
+            }
             console.log("print");
         },
     },

@@ -131,6 +131,7 @@ Route::middleware(['auth', 'check.business'])->group(function () {
                 ]);
             })->name('transaction.view');
             Route::get('/view-agreement/{transaction_id}', [TransactionController::class, 'previewAgreement']);
+            
         });
     });
 

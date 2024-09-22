@@ -440,6 +440,6 @@ class TransactionController extends Controller
     {
         $transaction = $this->generateAgreement($transactionId);
 
-        return view('agreement', compact('transaction'));
+        return view('PreviewAgreement', compact('transaction'));
     }
 }

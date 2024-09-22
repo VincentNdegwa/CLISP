@@ -232,7 +232,6 @@
                             type="number"
                             min="0"
                             id="late_fees"
-                            value="0"
                             class="w-full"
                         />
                     </div>
@@ -245,7 +244,6 @@
                             type="number"
                             min="0"
                             id="damage_fees"
-                            value="0"
                             class="w-full"
                         />
                     </div>
@@ -258,7 +256,6 @@
                             type="number"
                             min="0"
                             id="shipping_fees"
-                            value="0"
                             class="w-full"
                         />
                     </div>
@@ -372,9 +369,9 @@ export default {
             transaction_details: {
                 due_date: null,
                 return_date: null,
-                late_fees: null,
-                damage_fees: null,
-                shipping_fees: null,
+                late_fees: 0,
+                damage_fees: 0,
+                shipping_fees: 0,
             },
         });
 
