@@ -47,10 +47,11 @@ class HandleInertiaRequests extends Middleware
 
             $default_business = $user_businesses->business_user->first()->business ?? null;
             $user_businesses->default_business = $default_business;
-
-            $role = BusinessUser::where('user_id', $user->id)
-                ->where('business_id', $default_business->business_id)
-                ->first();
+            if ($default_business) {
+                $role = BusinessUser::where('user_id', $user->id)
+                    ->where('business_id', $default_business->business_id)
+                    ->first();
+            }
         }
 
 

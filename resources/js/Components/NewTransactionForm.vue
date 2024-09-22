@@ -197,8 +197,7 @@
             >
                 <h3 class="text-lg font-bold mb-4">Transaction Details</h3>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- Due Date -->
+                <!-- <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <InputLabel for="due_date" value="Due Date" />
 
@@ -211,7 +210,6 @@
                         />
                     </div>
 
-                    <!-- Return Date -->
                     <div>
                         <InputLabel for="return_date" value="Return Date" />
 
@@ -223,7 +221,7 @@
                             id="return_date"
                         />
                     </div>
-                </div>
+                </div> -->
 
                 <div class="flex flex-col md:flex-row gap-2 mt-8">
                     <!-- Late Fees -->
@@ -371,9 +369,9 @@ export default {
             transaction_details: {
                 due_date: null,
                 return_date: null,
-                late_fees: null,
-                damage_fees: null,
-                shipping_fees: null,
+                late_fees: 0,
+                damage_fees: 0,
+                shipping_fees: 0,
             },
         });
 

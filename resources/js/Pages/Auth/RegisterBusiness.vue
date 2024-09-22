@@ -19,7 +19,7 @@ export default {
             business_type_id: "",
             location: "",
             phone_number: "",
-            email: this.user.email,
+            email: "",
             website: "",
             industry_id: "",
             registration_number: "",
@@ -101,6 +101,25 @@ export default {
                         class="mt-2"
                         :message="form.errors.business_name"
                     />
+                </div>
+                <div class="mt-4">
+                    <InputLabel
+                        for="email"
+                        value="Business Email"
+                        required="true"
+                    />
+
+                    <TextInput
+                        id="email"
+                        type="email"
+                        class="mt-1 block w-full border"
+                        v-model="form.email"
+                        required
+                        autofocus
+                        autocomplete="email"
+                    />
+
+                    <InputError class="mt-2" :message="form.errors.email" />
                 </div>
 
                 <div class="mt-4">

@@ -14,6 +14,7 @@ use App\Services\TransactionFlow;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class TransactionController extends Controller
 {
@@ -412,5 +413,78 @@ class TransactionController extends Controller
                 break;
         }
         return $workflow;
+    }
+
+    public function generateAgreement($transactionId)
+    {
+
+        $transaction = Transaction::where('id', $transactionId)
+            ->whereIn('type', ['leasing', 'borrowing'])
+            ->with([
+                'initiator:business_id,business_name,email,phone_number,location',
+                'receiver_business:business_id,business_name,email,phone_number,location',
+                'receiver_customer',
+                'details',
+                'items' => function ($query) {
+                    $query->with('item');
+                }
+            ])->first();
+        $imagePath = public_path('images/CLISP-logo.png');
+
+        // Read the image file and encode it to base64
+        $imageData = base64_encode(file_get_contents($imagePath));
+
+        // Create the base64 image source
+        $imageBase64 = 'data:image/png;base64,' . $imageData;
+        $transaction->logo = $imageBase64;
+
+
+        return $transaction;
+    }
+
+    public function downloadAgreement($transactionId)
+    {
+        $transaction = $this->generateAgreement($transactionId);
+
+
+        $pdf = Pdf::loadView('agreement', compact('transaction'));
+        if (!$transaction) {
+            return redirect()->route('not-found');
+        }
+        return $pdf->download('agreement.pdf');
+    }
+
+    public function previewAgreement($transactionId)
+    {
+        $transaction = $this->generateAgreement($transactionId);
+        if (!$transaction) {
+            return redirect()->route('not-found');
+        }
+
+        return view('PreviewAgreement', compact('transaction'));
+    }
+
+    public function printPreviewAgreement($transactionId)
+    {
+        $transaction = $this->generateAgreement($transactionId);
+        if (!$transaction) {
+            return redirect()->route('not-found');
+        }
+        $pdf = Pdf::loadView('agreement', compact('transaction'));
+
+        // return $pdf->stream('agreement.pdf');
+
+        return view('agreement', compact('transaction'));
+    }
+
+    public function pdfPreviewAgreement($transactionId)
+    {
+        $transaction = $this->generateAgreement($transactionId);
+        if (!$transaction) {
+            return redirect()->route('not-found');
+        }
+        $pdf = Pdf::loadView('agreement', compact('transaction'));
+
+        return $pdf->stream('agreement.pdf');
     }
 }

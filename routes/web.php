@@ -130,21 +130,30 @@ Route::middleware(['auth', 'check.business'])->group(function () {
                     'transactionId' => $id
                 ]);
             })->name('transaction.view');
-        });
-
-        Route::prefix('customer')->name('customer.')->group(function () {
-            Route::get('/my-customers', function () {
-                return Inertia::render('Customers/MyCustomers');
-            })->name('my-customers');
-        });
-
-        Route::prefix('logistics')->name('logistics.')->group(function () {
-            Route::get('shipmets', function () {
-                return Inertia::render('Logistics/Shipments');
-            })->name('shipments');
+            Route::get('/view-agreement/{transaction_id}', [TransactionController::class, 'previewAgreement']);
+            Route::get('/view-agreement/print/{transaction_id}', [TransactionController::class, 'printPreviewAgreement']);
+            Route::get('/download-agreement/{transaction_id}', [TransactionController::class, 'downloadAgreement']);
+            Route::get('/pdf-preview/{transaction_id}', [TransactionController::class, 'pdfPreviewAgreement']);
         });
     });
+
+    Route::prefix('customer')->name('customer.')->group(function () {
+        Route::get('/my-customers', function () {
+            return Inertia::render('Customers/MyCustomers');
+        })->name('my-customers');
+    });
+
+    Route::prefix('logistics')->name('logistics.')->group(function () {
+        Route::get('shipmets', function () {
+            return Inertia::render('Logistics/Shipments');
+        })->name('shipments');
+    });
+
+    Route::get('not-found', function () {
+        return Inertia::render('NotFound');
+    })->name('not-found');
 });
+
 
 
 

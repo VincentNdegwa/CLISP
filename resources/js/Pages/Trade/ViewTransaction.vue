@@ -6,6 +6,7 @@ import SplitButtonSelectCustom from "@/Components/SplitButtonSelectCustom.vue";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import { useTransactionStore } from "@/Store/TransactionStore";
 import { Head } from "@inertiajs/vue3";
+import axios from "axios";
 import Badge from "primevue/badge";
 
 export default {
@@ -28,12 +29,20 @@ export default {
             },
             SelectItems: [
                 {
+                    label: "PDF Preview Agreement",
+                    method: () => this.startAgreementPdf("pdf-view"),
+                },
+                {
                     label: "Print Agreement",
                     method: () => this.startAgreementPdf("print"),
                 },
                 {
                     label: "View Agreement",
                     method: () => this.startAgreementPdf("view"),
+                },
+                {
+                    label: "Download Agreement",
+                    method: () => this.startAgreementPdf("download"),
                 },
                 {
                     label: "Share Agreement",
@@ -214,8 +223,44 @@ export default {
             this.confirmation.title = "";
             this.confirmation.method = null;
         },
-        startAgreementPdf() {
-            console.log("print");
+        async startAgreementPdf(action) {
+            switch (action) {
+                case "print":
+                    const printWindow = window.open(
+                        `/transaction/view-agreement/print/${this.transactionStore.singleTransaction.id}`,
+                        "_blank"
+                    );
+                    printWindow.addEventListener("load", () => {
+                        printWindow.print();
+                    });
+                    break;
+                case "view":
+                    window.location.href = `/transaction/view-agreement/${this.transactionStore.singleTransaction.id}`;
+                    break;
+                case "download":
+                    window.location.href = `/transaction/download-agreement/${this.transactionStore.singleTransaction.id}`;
+                    break;
+                case "share":
+                    if (navigator.share) {
+                        try {
+                            await navigator.share({
+                                title: "Agreement Preview",
+                                text: "Check out this agreement.",
+                                url: `/transaction/view-agreement/${this.transactionStore.singleTransaction.id}`,
+                            });
+                            console.log("Shared successfully");
+                        } catch (error) {
+                            console.error("Error sharing", error);
+                        }
+                    } else {
+                        console.log(
+                            "Web Share API is not supported in your browser."
+                        );
+                    }
+                    break;
+                case "pdf-view":
+                    window.location.href = `/transaction/pdf-preview/${this.transactionStore.singleTransaction.id}`;
+            }
         },
     },
 };

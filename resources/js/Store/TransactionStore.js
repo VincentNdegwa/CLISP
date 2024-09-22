@@ -332,5 +332,38 @@ export const useTransactionStore = defineStore("transactionStore", {
                 "Transaction closed successfully."
             );
         },
+
+        async handleRequest(url, transactionType, payload = null) {
+            try {
+                let response;
+
+                switch (transactionType) {
+                    case "get":
+                        response = await axios.get(url);
+                        break;
+                    case "post":
+                        response = await axios.post(url, payload);
+                        break;
+                    case "update":
+                        response = await axios.patch(url, payload);
+                        break;
+                    case "delete":
+                        response = await axios.delete(url);
+                        break;
+                    default:
+                        throw new Error("Invalid transaction type");
+                }
+
+                return response.data;
+            } catch (error) {
+                console.error(`Request failed: ${error.message}`);
+                return null;
+            }
+        },
+
+        async viewAgreement(transactionId) {
+            const url = `/transaction/view-agreement/${transactionId}`;
+            const response = await this.handleRequest(url, "get");
+        },
     },
 });
