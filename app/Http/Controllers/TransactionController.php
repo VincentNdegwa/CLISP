@@ -498,9 +498,9 @@ class TransactionController extends Controller
     public function printPreviewReceipt($transactionId)
     {
         $transaction = $this->retrieveTransaction($transactionId, false);
-        // if (!$transaction) {
-        //     return redirect()->route('not-found');
-        // }
+        if (!$transaction) {
+            return redirect()->route('not-found');
+        }
         $pdf = Pdf::loadView('receipt', compact('transaction'));
 
         // return $pdf->stream('agreement.pdf');
