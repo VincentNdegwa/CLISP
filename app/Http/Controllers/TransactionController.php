@@ -416,20 +416,26 @@ class TransactionController extends Controller
         return $workflow;
     }
 
-    public function generateAgreement($transactionId)
+    public function retrieveTransaction($transactionId, $isAgreemet)
     {
+        $transactionsQuery = Transaction::where('id', $transactionId);
 
-        $transaction = Transaction::where('id', $transactionId)
-            ->whereIn('type', ['leasing', 'borrowing'])
-            ->with([
-                'initiator:business_id,business_name,email,phone_number,location',
-                'receiver_business:business_id,business_name,email,phone_number,location',
-                'receiver_customer',
-                'details',
-                'items' => function ($query) {
-                    $query->with('item');
-                }
-            ])->first();
+        if ($isAgreemet) {
+            $transactionsQuery->whereIn('type', ['leasing', 'borrowing']);
+        } else {
+            $transactionsQuery->whereIn('type', ['purchase', 'sale']);
+        }
+
+
+        $transaction = $transactionsQuery->with([
+            'initiator:business_id,business_name,email,phone_number,location',
+            'receiver_business:business_id,business_name,email,phone_number,location',
+            'receiver_customer',
+            'details',
+            'items' => function ($query) {
+                $query->with('item');
+            }
+        ])->first();
         $imagePath = public_path('images/CLISP-logo.png');
 
         // Read the image file and encode it to base64
@@ -445,7 +451,7 @@ class TransactionController extends Controller
 
     public function downloadAgreement($transactionId)
     {
-        $transaction = $this->generateAgreement($transactionId);
+        $transaction = $this->retrieveTransaction($transactionId, true);
 
 
         $pdf = Pdf::loadView('agreement', compact('transaction'));
@@ -457,7 +463,7 @@ class TransactionController extends Controller
 
     public function previewAgreement($transactionId)
     {
-        $transaction = $this->generateAgreement($transactionId);
+        $transaction = $this->retrieveTransaction($transactionId, true);
         if (!$transaction) {
             return redirect()->route('not-found');
         }
@@ -467,7 +473,7 @@ class TransactionController extends Controller
 
     public function printPreviewAgreement($transactionId)
     {
-        $transaction = $this->generateAgreement($transactionId);
+        $transaction = $this->retrieveTransaction($transactionId, true);
         if (!$transaction) {
             return redirect()->route('not-found');
         }
@@ -480,12 +486,25 @@ class TransactionController extends Controller
 
     public function pdfPreviewAgreement($transactionId)
     {
-        $transaction = $this->generateAgreement($transactionId);
+        $transaction = $this->retrieveTransaction($transactionId, true);
         if (!$transaction) {
             return redirect()->route('not-found');
         }
         $pdf = Pdf::loadView('agreement', compact('transaction'));
 
         return $pdf->stream('agreement.pdf');
+    }
+
+    public function printPreviewReceipt($transactionId)
+    {
+        $transaction = $this->retrieveTransaction($transactionId, false);
+        // if (!$transaction) {
+        //     return redirect()->route('not-found');
+        // }
+        $pdf = Pdf::loadView('receipt', compact('transaction'));
+
+        // return $pdf->stream('agreement.pdf');
+
+        return view('receipt', compact('transaction'));
     }
 }

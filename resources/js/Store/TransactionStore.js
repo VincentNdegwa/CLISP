@@ -249,7 +249,6 @@ export const useTransactionStore = defineStore("transactionStore", {
                 }
                 return transaction;
             });
-            console.log(this.singleTransaction);
         },
 
         // Accept transaction
@@ -306,7 +305,7 @@ export const useTransactionStore = defineStore("transactionStore", {
                 useUserStore().business
             }/pay-transaction/${transactionId}`;
             const transactionType = {
-                type: type || this.singleTransaction.type,
+                type: this.singleTransaction.type,
             };
             await this.handleTransactionRequest(
                 url,

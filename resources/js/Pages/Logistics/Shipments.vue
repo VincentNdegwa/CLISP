@@ -143,7 +143,13 @@
                         <Button
                             label="Dispatch All"
                             size="small"
-                            v-if="slotProps.data.transaction_type == 'Outgoing'"
+                            v-if="
+                                (slotProps.data.transaction_type ==
+                                    'Outgoing' &&
+                                    slotProps.data.status == 'paid') ||
+                                slotProps.data.status == 'approved'
+                            "
+                            :disabled="slotProps.data.status == 'approved'"
                         />
                         <Button
                             label="Return All"
@@ -314,14 +320,23 @@ export default {
             switch (status) {
                 case "pending":
                     return "info";
+                case "approved":
+                    return "secondary";
+                case "paid":
+                    return "success";
+                case "dispatched":
+                    return "warn";
                 case "completed":
                     return "success";
                 case "canceled":
                     return "danger";
+                case "return":
+                    return "warning";
                 default:
                     return null;
             }
         },
+
         getItemSeverity(status) {
             return this.getStatusSeverity(status);
         },

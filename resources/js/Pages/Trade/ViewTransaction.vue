@@ -53,6 +53,16 @@ export default {
                 label: "Print Agreement",
                 method: () => this.startAgreementPdf("print"),
             },
+            selectedReceiptItems: [
+                {
+                    label: "Print Receipt",
+                    method: () => this.startReceipt("print"),
+                },
+            ],
+            defaultSelectedReceiptItem: {
+                label: "Print Receipt",
+                method: () => this.startReceipt("print"),
+            },
         };
     },
     props: {
@@ -262,6 +272,21 @@ export default {
                     window.location.href = `/transaction/pdf-preview/${this.transactionStore.singleTransaction.id}`;
             }
         },
+        async startReceipt(action) {
+            switch (action) {
+                case "print":
+                    const printWindow = window.open(
+                        `/transaction/view-receipt/print/${this.transactionStore.singleTransaction.id}`,
+                        "_blank"
+                    );
+                    printWindow.addEventListener("load", () => {
+                        printWindow.print();
+                    });
+                    break;
+                default:
+                    break;
+            }
+        },
     },
 };
 </script>
@@ -305,6 +330,12 @@ export default {
                         class="flex h-fit"
                         :SelectItems="SelectItems"
                         :defaulItem="defaulItem"
+                    />
+                    <SplitButtonSelectCustom
+                        v-else
+                        class="flex h-fit"
+                        :SelectItems="selectedReceiptItems"
+                        :defaulItem="defaultSelectedReceiptItem"
                     />
                     <div class="flex gap-1">
                         <!--  -->
