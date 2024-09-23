@@ -11,9 +11,14 @@ export const useTransactionStore = defineStore("transactionStore", {
         success: null,
         loading: false,
         singleTransaction: {},
+        shipments: {},
     }),
 
     actions: {
+        refreshState() {
+            this.error = null;
+            this.success = null;
+        },
         async addTransaction(transactionData) {
             const userStore = useUserStore();
             const businessId = userStore.business;
@@ -25,8 +30,7 @@ export const useTransactionStore = defineStore("transactionStore", {
 
             try {
                 this.loading = true;
-                this.error = null;
-                this.success = null;
+                this.refreshState();
 
                 const response = await axios.post(
                     `/api/transactions/${businessId}/add-transaction`,
@@ -52,6 +56,7 @@ export const useTransactionStore = defineStore("transactionStore", {
         async getTransaction(filters) {
             const userStore = useUserStore();
             const businessId = userStore.business;
+            this.refreshState();
 
             if (!businessId) {
                 this.error = "Business ID not found.";
@@ -60,14 +65,11 @@ export const useTransactionStore = defineStore("transactionStore", {
 
             try {
                 this.loading = true;
-                this.error = null; // Clear any previous error
-                this.success = null; // Clear any previous success message
 
                 const response = await axios.post(
                     `/api/transactions/${businessId}/get-transaction`,
                     filters
                 );
-                // console.log(response.data.data.data);
 
                 this.transactions = response.data.data;
             } catch (error) {
@@ -90,8 +92,7 @@ export const useTransactionStore = defineStore("transactionStore", {
 
             try {
                 this.loading = true;
-                this.error = null; // Clear any previous error
-                this.success = null; // Clear any previous success message
+                this.refreshState();
 
                 const response = await axios.patch(
                     `/api/transactions/${businessId}/update-transaction/${transactionId}`,
@@ -125,8 +126,7 @@ export const useTransactionStore = defineStore("transactionStore", {
 
             try {
                 this.loading = true;
-                this.error = null;
-                this.success = null;
+                this.refreshState();
 
                 const response = await axios.delete(
                     `/api/transactions/${businessId}/delete-transaction/${transactionId}`
@@ -163,7 +163,7 @@ export const useTransactionStore = defineStore("transactionStore", {
 
             try {
                 this.loading = true;
-                this.error = null;
+                this.refreshState();
 
                 const response = await axios.post(
                     `/api/transactions/${businessId}/view/${transactionId}`
@@ -201,8 +201,7 @@ export const useTransactionStore = defineStore("transactionStore", {
 
             try {
                 this.loading = true;
-                this.error = null;
-                this.success = null;
+                this.refreshState();
 
                 let response;
                 if (payload) {
@@ -250,7 +249,6 @@ export const useTransactionStore = defineStore("transactionStore", {
                 }
                 return transaction;
             });
-            console.log(this.singleTransaction);
         },
 
         // Accept transaction
@@ -307,7 +305,7 @@ export const useTransactionStore = defineStore("transactionStore", {
                 useUserStore().business
             }/pay-transaction/${transactionId}`;
             const transactionType = {
-                type: type || this.singleTransaction.type,
+                type: this.singleTransaction.type,
             };
             await this.handleTransactionRequest(
                 url,
@@ -334,6 +332,7 @@ export const useTransactionStore = defineStore("transactionStore", {
         },
 
         async handleRequest(url, transactionType, payload = null) {
+            this.refreshState();
             try {
                 let response;
 
@@ -354,16 +353,39 @@ export const useTransactionStore = defineStore("transactionStore", {
                         throw new Error("Invalid transaction type");
                 }
 
-                return response.data;
+                return response;
             } catch (error) {
+                this.error = error.response?.data?.message || error.message;
+
                 console.error(`Request failed: ${error.message}`);
                 return null;
+            }
+        },
+        updateUiResponse(response) {
+            this.refreshState();
+            if (response.data.error) {
+                this.error = response.data.error;
+                if (response.data.errors) {
+                    this.error = response.data.errors;
+                }
+            } else {
+                this.success = response.data.message;
             }
         },
 
         async viewAgreement(transactionId) {
             const url = `/transaction/view-agreement/${transactionId}`;
             const response = await this.handleRequest(url, "get");
+        },
+
+        async getTransactionLogistics(params) {
+            const url = `/api/transactions/${
+                useUserStore().business
+            }/logistics`;
+            const response = await this.handleRequest(url, "post", params);
+            if (!response.data.error) {
+                this.shipments = response.data;
+            }
         },
     },
 });

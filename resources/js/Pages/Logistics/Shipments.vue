@@ -2,31 +2,89 @@
     <Head title="Logistic Shipments" />
     <AuthenticatedLayout>
         <h2 class="text-2xl font-bold mb-3">Logistic Shipments</h2>
-        <DataTable
-            v-model:expandedRows="expandedRows"
-            :value="shipments"
-            dataKey="id"
-            @rowExpand="onRowExpand"
-            @rowCollapse="onRowCollapse"
-            tableStyle="min-width: 60rem"
-        >
-            <template #header>
-                <div class="flex justify-end gap-2">
-                    <Button
-                        text
-                        icon="pi pi-plus"
-                        label="Expand All"
-                        @click="expandAll"
-                    />
-                    <Button
-                        text
-                        icon="pi pi-minus"
-                        label="Collapse All"
-                        @click="collapseAll"
-                    />
+        <Toolbar class="bg-slate-900" style="padding: 0rem 1rem">
+            <template #start>
+                <div class="flex gap-">
+                    <div class="flex items-center" ref="dropdown">
+                        <div class="dropdown">
+                            <div
+                                tabindex="0"
+                                role="button"
+                                class="btn m-1 bg-slate-900 text-white"
+                                @click="toggleDropdown"
+                            >
+                                Filters <i class="bi bi-funnel"></i>
+                            </div>
+                            <ul
+                                tabindex="0"
+                                v-if="isDropdownOpen"
+                                class="dropdown-content flex flex-col gap-2 bg-white text-slate-900 rounded-t-none rounded-b-md z-[100] min-w-52 p-2 shadow"
+                            >
+                                <li class="flex flex-col">
+                                    <span>Transaction Status</span>
+                                    <Select
+                                        @change="toggleDropdown"
+                                        :options="statuses"
+                                        v-model="filterParams.status"
+                                        optionLabel="label"
+                                        optionValue="value"
+                                        placeholder="Select Status"
+                                        class="w-full"
+                                    />
+                                </li>
+
+                                <li class="flex flex-col">
+                                    <span>Transaction Type</span>
+                                    <Select
+                                        @change="toggleDropdown"
+                                        :options="transaction_types"
+                                        v-model="filterParams.incoming"
+                                        optionLabel="label"
+                                        optionValue="value"
+                                        placeholder="Select Status"
+                                        class="w-full"
+                                    />
+                                </li>
+                            </ul>
+                        </div>
+
+                        <PrimaryButton
+                            @click="clearFilters"
+                            class="flex gap-1 bg-slate-900"
+                        >
+                            <span>Clear Filters</span>
+                            <i class="bi bi-x-lg"></i>
+                        </PrimaryButton>
+                    </div>
                 </div>
             </template>
-
+            <template #end>
+                <div class="flex gap-1">
+                    <PrimaryButton
+                        @click="collapseAll"
+                        class="flex gap-2 max:h-fit"
+                    >
+                        <span> Callapse All </span> <i class="pi pi-minus"></i>
+                    </PrimaryButton>
+                    <PrimaryButton
+                        @click="exportCSV"
+                        class="flex gap-2 max:h-fit"
+                    >
+                        <span> Export </span>
+                        <i class="pi pi-external-link"></i>
+                    </PrimaryButton>
+                </div>
+            </template>
+        </Toolbar>
+        <TableSkeleton v-if="transactionStore.loading" />
+        <DataTable
+            v-else
+            v-model:expandedRows="expandedRows"
+            :value="transactionStore.shipments.data?.data"
+            dataKey="id"
+            ref="dt"
+            tableStyle="min-width: 60rem"
+        >
             <!-- Expander Column -->
             <Column expander style="width: 1rem" />
 
@@ -46,7 +104,10 @@
                     <span v-if="slotProps.data.receiver_business">
                         {{ slotProps.data.receiver_business.business_name }}
                     </span>
-                    <span v-else> Customer </span>
+                    <span v-else-if="slotProps.data.receiver_customer">
+                        {{ slotProps.data.receiver_customer.full_names }}
+                    </span>
+                    <span v-else> --- </span>
                 </template>
             </Column>
 
@@ -64,6 +125,7 @@
                     <Tag
                         :value="slotProps.data.status"
                         :severity="getStatusSeverity(slotProps.data.status)"
+                        style="text-transform: capitalize"
                     />
                 </template>
             </Column>
@@ -75,11 +137,34 @@
                 </template>
             </Column>
 
+            <Column header="Actions">
+                <template #body="slotProps">
+                    <div class="flex gap-1">
+                        <Button
+                            label="Dispatch All"
+                            size="small"
+                            v-if="
+                                (slotProps.data.transaction_type ==
+                                    'Outgoing' &&
+                                    slotProps.data.status == 'paid') ||
+                                slotProps.data.status == 'approved'
+                            "
+                            :disabled="slotProps.data.status == 'approved'"
+                        />
+                        <Button
+                            label="Return All"
+                            size="small"
+                            severity="info"
+                            v-if="slotProps.data.transaction_type == 'Incoming'"
+                        />
+                    </div>
+                </template>
+            </Column>
+
             <!-- Row Expansion Template -->
             <template #expansion="slotProps">
-                <div class="p-1">
-                    <span class="m-0 p-0 text-sm">Items in Shipment</span>
-                    <DataTable :value="slotProps.data.items">
+                <div class="p-0 -mt-3">
+                    <DataTable :value="slotProps.data.items" tableStyle="">
                         <Column field="id" header="Item ID"></Column>
                         <Column field="quantity" header="Quantity"></Column>
 
@@ -92,12 +177,36 @@
                                             itemSlotProps.data.status
                                         )
                                     "
+                                    style="text-transform: capitalize"
                                 />
                             </template>
                         </Column>
                         <Column field="price" header="Price">
                             <template #body="itemSlotProps">
                                 {{ formatCurrency(itemSlotProps.data.price) }}
+                            </template>
+                        </Column>
+                        <Column header="Actions">
+                            <template #body="itemSlotProps">
+                                <div class="flex gap-1">
+                                    <Button
+                                        label="Dispatch"
+                                        size="small"
+                                        v-if="
+                                            slotProps.data.transaction_type ==
+                                            'Outgoing'
+                                        "
+                                    />
+                                    <Button
+                                        label="Return"
+                                        size="small"
+                                        severity="info"
+                                        v-if="
+                                            slotProps.data.transaction_type ==
+                                            'Incoming'
+                                        "
+                                    />
+                                </div>
                             </template>
                         </Column>
                     </DataTable>
@@ -109,12 +218,20 @@
 </template>
 
 <script>
+import PrimaryButton from "@/Components/PrimaryButton.vue";
+import TableSkeleton from "@/Components/TableSkeleton.vue";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
+import { useTransactionStore } from "@/Store/TransactionStore";
 import { Head } from "@inertiajs/vue3";
 import Button from "primevue/button";
 import Column from "primevue/column";
 import DataTable from "primevue/datatable";
+import Select from "primevue/select";
 import Tag from "primevue/tag";
+import Toast from "primevue/toast";
+import Toolbar from "primevue/toolbar";
+import { watch } from "vue";
+import { onMounted, ref } from "vue";
 
 export default {
     components: {
@@ -124,60 +241,67 @@ export default {
         Tag,
         AuthenticatedLayout,
         Head,
+        PrimaryButton,
+        Toolbar,
+        TableSkeleton,
+        Toast,
+        Select,
+    },
+    setup() {
+        const transactionStore = useTransactionStore();
+        const filterParams = ref({
+            incoming: "all",
+            type: "",
+            items_count: 20,
+            isB2B: "all",
+            page: 0,
+            search: "",
+            status: null,
+        });
+        onMounted(() => {
+            transactionStore.getTransactionLogistics(filterParams.value);
+        });
+        watch(
+            filterParams,
+            () => {
+                transactionStore.getTransactionLogistics(filterParams.value);
+            },
+            { deep: true }
+        );
+        return {
+            filterParams,
+            transactionStore,
+        };
     },
     data() {
         return {
-            shipments: [
-                {
-                    id: 5,
-                    type: "borrowing",
-                    status: "pending",
-                    initiator: { business_name: "BipLee" },
-                    receiver_business: { business_name: "LeoVibe" },
-                    lease_start_date: "2024-09-22",
-                    lease_end_date: "2024-11-22",
-                    totalPrice: 20002000,
-                    items: [
-                        {
-                            id: 6,
-                            status: "pending",
-                            quantity: "1",
-                            price: "20000000.00",
-                        },
-                        {
-                            id: 7,
-                            status: "pending",
-                            quantity: "1",
-                            price: "2000.00",
-                        },
-                    ],
-                },
-            ],
             expandedRows: {},
+            transaction_types: [
+                { label: "All", value: "all" },
+                { label: "Incomming", value: "incoming" },
+                { label: "Outgoing", value: "outgoing" },
+            ],
+            statuses: [
+                { label: "All", value: "all" },
+                { label: "Pending", value: "pending" },
+                { label: "Approved", value: "approved" },
+                { label: "Paid", value: "paid" },
+                { label: "Dispatched", value: "dispatched" },
+                { label: "Completed", value: "completed" },
+                { label: "Canceled", value: "canceled" },
+                { label: "Return", value: "return" },
+            ],
+            isDropdownOpen: false,
         };
     },
     methods: {
-        onRowExpand(event) {
-            this.$toast.add({
-                severity: "info",
-                summary: "Shipment Expanded",
-                detail: `Shipment ID: ${event.data.id}`,
-                life: 3000,
-            });
+        toggleDropdown() {
+            this.isDropdownOpen = !this.isDropdownOpen;
         },
-        onRowCollapse(event) {
-            this.$toast.add({
-                severity: "success",
-                summary: "Shipment Collapsed",
-                detail: `Shipment ID: ${event.data.id}`,
-                life: 3000,
-            });
-        },
-        expandAll() {
-            this.expandedRows = this.shipments.reduce(
-                (acc, p) => (acc[p.id] = true) && acc,
-                {}
-            );
+        clearFilters() {
+            this.filterParams.incoming = "all";
+            this.filterParams.search = "";
+            this.filterParams.status = null;
         },
         collapseAll() {
             this.expandedRows = null;
@@ -189,23 +313,35 @@ export default {
         formatCurrency(value) {
             return Number(value).toLocaleString("en-US", {
                 style: "currency",
-                currency: "USD",
+                currency: "KES",
             });
         },
         getStatusSeverity(status) {
             switch (status) {
                 case "pending":
                     return "info";
+                case "approved":
+                    return "secondary";
+                case "paid":
+                    return "success";
+                case "dispatched":
+                    return "warn";
                 case "completed":
                     return "success";
                 case "canceled":
                     return "danger";
+                case "return":
+                    return "warning";
                 default:
                     return null;
             }
         },
+
         getItemSeverity(status) {
             return this.getStatusSeverity(status);
+        },
+        exportCSV() {
+            this.$refs.dt.exportCSV();
         },
     },
 };
