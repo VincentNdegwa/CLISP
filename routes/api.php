@@ -4,6 +4,7 @@ use App\Http\Controllers\BusinessConnectionController;
 use App\Http\Controllers\BusinessController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\FileSystemController;
+use App\Http\Controllers\LogisticController;
 use App\Http\Controllers\ResourceCategoryController;
 use App\Http\Controllers\ResourceItemController;
 use App\Http\Controllers\SubscriptionController;
@@ -70,4 +71,6 @@ Route::prefix('transactions/{business_id}')->group(function () {
     Route::post('/accept-and-pay-transaction/{transaction}', [TransactionController::class, 'acceptAndPayTransaction']);
     Route::post('/pay-transaction/{transaction}', [TransactionController::class, 'payTransaction']);
     Route::post('/close-transaction/{transaction}', [TransactionController::class, 'closeTransaction']);
+
+    Route::post('/logistics', [LogisticController::class, 'getLogistics']);
 });

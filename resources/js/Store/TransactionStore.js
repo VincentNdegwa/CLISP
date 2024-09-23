@@ -11,6 +11,7 @@ export const useTransactionStore = defineStore("transactionStore", {
         success: null,
         loading: false,
         singleTransaction: {},
+        shipments: {},
     }),
 
     actions: {
@@ -353,17 +354,40 @@ export const useTransactionStore = defineStore("transactionStore", {
                     default:
                         throw new Error("Invalid transaction type");
                 }
+                this.updateUiResponse(response);
 
                 return response.data;
             } catch (error) {
+                this.error = error.response?.data?.message || error.message;
+
                 console.error(`Request failed: ${error.message}`);
                 return null;
+            }
+        },
+        updateUiResponse(response) {
+            if (response.data.error) {
+                this.error = response.data.error;
+                if (response.data.errors) {
+                    this.error = response.data.errors;
+                }
+            } else {
+                this.success = response.data.message;
             }
         },
 
         async viewAgreement(transactionId) {
             const url = `/transaction/view-agreement/${transactionId}`;
-            const response = await this.handleRequest(url, "get");
+            const data = await this.handleRequest(url, "get");
+        },
+
+        async getTransactionLogistics(params) {
+            const url = `/api/transactions/${
+                useUserStore().business
+            }/logistics`;
+            const data = await this.handleRequest(url, "post", params);
+            if (!data.error) {
+                this.shipments = data;
+            }
         },
     },
 });

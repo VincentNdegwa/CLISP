@@ -153,6 +153,7 @@ class TransactionController extends Controller
             }
 
             $itemsCount = $validatedData['items_count'] ?? 20;
+
             $transactions = $transactionsQuery
                 ->where('type', $validatedData['type'])
                 ->orderBy('created_at', 'DESC')

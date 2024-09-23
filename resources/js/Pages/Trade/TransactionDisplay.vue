@@ -137,14 +137,10 @@ export default {
             return new Date(date).toLocaleDateString(undefined, options);
         },
         convertCurrency(currency) {
-            if (currency) {
-                return Intl.NumberFormat({
-                    style: "currency",
-                    currency: "KES",
-                }).format(currency);
-            } else {
-                ("0.0");
-            }
+            return Number(currency).toLocaleString("en-US", {
+                style: "currency",
+                currency: "KES",
+            });
         },
         confirmAction() {
             this.confirmation.method();

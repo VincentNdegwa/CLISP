@@ -18,6 +18,7 @@ import { definePreset } from "@primevue/themes";
 
 import "primeicons/primeicons.css";
 import AuraTheme from "./Themes/AuraTheme";
+import ToastService from "primevue/toastservice";
 
 const appName = import.meta.env.VITE_APP_NAME || "Laravel";
 const pinia = createPinia();
@@ -44,6 +45,7 @@ createInertiaApp({
             .use(ZiggyVue)
             .use(pinia)
             .use(vuetify)
+            .use(ToastService)
             .use(PrimeVue, {
                 theme: {
                     preset: MyPreset,

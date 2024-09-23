@@ -2,31 +2,45 @@
     <Head title="Logistic Shipments" />
     <AuthenticatedLayout>
         <h2 class="text-2xl font-bold mb-3">Logistic Shipments</h2>
-        <DataTable
-            v-model:expandedRows="expandedRows"
-            :value="shipments"
-            dataKey="id"
-            @rowExpand="onRowExpand"
-            @rowCollapse="onRowCollapse"
-            tableStyle="min-width: 60rem"
-        >
-            <template #header>
-                <div class="flex justify-end gap-2">
-                    <Button
-                        text
-                        icon="pi pi-plus"
-                        label="Expand All"
-                        @click="expandAll"
-                    />
-                    <Button
-                        text
-                        icon="pi pi-minus"
-                        label="Collapse All"
-                        @click="collapseAll"
-                    />
+        <Toolbar class="bg-slate-900" style="padding: 0rem 1rem">
+            <template #start>
+                <div class="flex gap-">
+                    <PrimaryButton
+                        @click="exportCSV"
+                        class="flex gap-2 max:h-fit h-[1rem]"
+                    >
+                        <span> Export </span>
+                        <i class="pi pi-external-link"></i>
+                    </PrimaryButton>
                 </div>
             </template>
+            <template #end>
+                <div class="flex gap-1">
+                    <PrimaryButton
+                        @click="expandAll"
+                        class="flex gap-2 max:h-fit h-[1rem]"
+                    >
+                        <span> Expand All </span> <i class="pi pi-plus"></i>
+                    </PrimaryButton>
 
+                    <PrimaryButton
+                        @click="collapseAll"
+                        class="flex gap-2 max:h-fit h-[1rem]"
+                    >
+                        <span> Callapse All </span> <i class="pi pi-minus"></i>
+                    </PrimaryButton>
+                </div>
+            </template>
+        </Toolbar>
+        <TableSkeleton v-if="transactionStore.loading" />
+        <DataTable
+            v-else
+            v-model:expandedRows="expandedRows"
+            :value="transactionStore.shipments.data?.data"
+            dataKey="id"
+            ref="dt"
+            tableStyle="min-width: 60rem"
+        >
             <!-- Expander Column -->
             <Column expander style="width: 1rem" />
 
@@ -77,9 +91,8 @@
 
             <!-- Row Expansion Template -->
             <template #expansion="slotProps">
-                <div class="p-1">
-                    <span class="m-0 p-0 text-sm">Items in Shipment</span>
-                    <DataTable :value="slotProps.data.items">
+                <div class="p-0 -mt-3">
+                    <DataTable :value="slotProps.data.items" tableStyle="">
                         <Column field="id" header="Item ID"></Column>
                         <Column field="quantity" header="Quantity"></Column>
 
@@ -109,12 +122,18 @@
 </template>
 
 <script>
+import PrimaryButton from "@/Components/PrimaryButton.vue";
+import TableSkeleton from "@/Components/TableSkeleton.vue";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
+import { useTransactionStore } from "@/Store/TransactionStore";
 import { Head } from "@inertiajs/vue3";
 import Button from "primevue/button";
 import Column from "primevue/column";
 import DataTable from "primevue/datatable";
 import Tag from "primevue/tag";
+import Toast from "primevue/toast";
+import Toolbar from "primevue/toolbar";
+import { onMounted, ref } from "vue";
 
 export default {
     components: {
@@ -124,60 +143,42 @@ export default {
         Tag,
         AuthenticatedLayout,
         Head,
+        PrimaryButton,
+        Toolbar,
+        TableSkeleton,
+        Toast,
+    },
+    setup() {
+        const transactionStore = useTransactionStore();
+        const filterParams = ref({
+            incoming: "all",
+            type: "",
+            items_count: 20,
+            isB2B: false,
+            page: 0,
+            search: "",
+            status: null,
+        });
+        onMounted(() => {
+            transactionStore.getTransactionLogistics(filterParams.value);
+        });
+        return {
+            filterParams,
+            transactionStore,
+        };
     },
     data() {
         return {
-            shipments: [
-                {
-                    id: 5,
-                    type: "borrowing",
-                    status: "pending",
-                    initiator: { business_name: "BipLee" },
-                    receiver_business: { business_name: "LeoVibe" },
-                    lease_start_date: "2024-09-22",
-                    lease_end_date: "2024-11-22",
-                    totalPrice: 20002000,
-                    items: [
-                        {
-                            id: 6,
-                            status: "pending",
-                            quantity: "1",
-                            price: "20000000.00",
-                        },
-                        {
-                            id: 7,
-                            status: "pending",
-                            quantity: "1",
-                            price: "2000.00",
-                        },
-                    ],
-                },
-            ],
             expandedRows: {},
         };
     },
     methods: {
-        onRowExpand(event) {
-            this.$toast.add({
-                severity: "info",
-                summary: "Shipment Expanded",
-                detail: `Shipment ID: ${event.data.id}`,
-                life: 3000,
-            });
-        },
-        onRowCollapse(event) {
-            this.$toast.add({
-                severity: "success",
-                summary: "Shipment Collapsed",
-                detail: `Shipment ID: ${event.data.id}`,
-                life: 3000,
-            });
-        },
         expandAll() {
-            this.expandedRows = this.shipments.reduce(
-                (acc, p) => (acc[p.id] = true) && acc,
-                {}
-            );
+            this.expandedRows =
+                this.transactionStore.shipments.data?.data.reduce(
+                    (acc, p) => (acc[p.id] = true) && acc,
+                    {}
+                );
         },
         collapseAll() {
             this.expandedRows = null;
@@ -189,7 +190,7 @@ export default {
         formatCurrency(value) {
             return Number(value).toLocaleString("en-US", {
                 style: "currency",
-                currency: "USD",
+                currency: "KES",
             });
         },
         getStatusSeverity(status) {
@@ -206,6 +207,9 @@ export default {
         },
         getItemSeverity(status) {
             return this.getStatusSeverity(status);
+        },
+        exportCSV() {
+            this.$refs.dt.exportCSV();
         },
     },
 };
