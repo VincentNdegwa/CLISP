@@ -297,6 +297,11 @@ export default {
 
                 <div class="flex gap-1">
                     <SplitButtonSelectCustom
+                        v-if="
+                            ['leasing', 'borrowing'].includes(
+                                transactionStore.singleTransaction.type
+                            )
+                        "
                         class="flex h-fit"
                         :SelectItems="SelectItems"
                         :defaulItem="defaulItem"

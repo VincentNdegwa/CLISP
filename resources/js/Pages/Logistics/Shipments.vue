@@ -5,29 +5,73 @@
         <Toolbar class="bg-slate-900" style="padding: 0rem 1rem">
             <template #start>
                 <div class="flex gap-">
-                    <PrimaryButton
-                        @click="exportCSV"
-                        class="flex gap-2 max:h-fit h-[1rem]"
-                    >
-                        <span> Export </span>
-                        <i class="pi pi-external-link"></i>
-                    </PrimaryButton>
+                    <div class="flex items-center" ref="dropdown">
+                        <div class="dropdown">
+                            <div
+                                tabindex="0"
+                                role="button"
+                                class="btn m-1 bg-slate-900 text-white"
+                                @click="toggleDropdown"
+                            >
+                                Filters <i class="bi bi-funnel"></i>
+                            </div>
+                            <ul
+                                tabindex="0"
+                                v-if="isDropdownOpen"
+                                class="dropdown-content flex flex-col gap-2 bg-white text-slate-900 rounded-t-none rounded-b-md z-[100] min-w-52 p-2 shadow"
+                            >
+                                <li class="flex flex-col">
+                                    <span>Transaction Status</span>
+                                    <Select
+                                        @change="toggleDropdown"
+                                        :options="statuses"
+                                        v-model="filterParams.status"
+                                        optionLabel="label"
+                                        optionValue="value"
+                                        placeholder="Select Status"
+                                        class="w-full"
+                                    />
+                                </li>
+
+                                <li class="flex flex-col">
+                                    <span>Transaction Type</span>
+                                    <Select
+                                        @change="toggleDropdown"
+                                        :options="transaction_types"
+                                        v-model="filterParams.incoming"
+                                        optionLabel="label"
+                                        optionValue="value"
+                                        placeholder="Select Status"
+                                        class="w-full"
+                                    />
+                                </li>
+                            </ul>
+                        </div>
+
+                        <PrimaryButton
+                            @click="clearFilters"
+                            class="flex gap-1 bg-slate-900"
+                        >
+                            <span>Clear Filters</span>
+                            <i class="bi bi-x-lg"></i>
+                        </PrimaryButton>
+                    </div>
                 </div>
             </template>
             <template #end>
                 <div class="flex gap-1">
                     <PrimaryButton
-                        @click="expandAll"
-                        class="flex gap-2 max:h-fit h-[1rem]"
-                    >
-                        <span> Expand All </span> <i class="pi pi-plus"></i>
-                    </PrimaryButton>
-
-                    <PrimaryButton
                         @click="collapseAll"
-                        class="flex gap-2 max:h-fit h-[1rem]"
+                        class="flex gap-2 max:h-fit"
                     >
                         <span> Callapse All </span> <i class="pi pi-minus"></i>
+                    </PrimaryButton>
+                    <PrimaryButton
+                        @click="exportCSV"
+                        class="flex gap-2 max:h-fit"
+                    >
+                        <span> Export </span>
+                        <i class="pi pi-external-link"></i>
                     </PrimaryButton>
                 </div>
             </template>
@@ -60,7 +104,10 @@
                     <span v-if="slotProps.data.receiver_business">
                         {{ slotProps.data.receiver_business.business_name }}
                     </span>
-                    <span v-else> Customer </span>
+                    <span v-else-if="slotProps.data.receiver_customer">
+                        {{ slotProps.data.receiver_customer.full_names }}
+                    </span>
+                    <span v-else> --- </span>
                 </template>
             </Column>
 
@@ -78,6 +125,7 @@
                     <Tag
                         :value="slotProps.data.status"
                         :severity="getStatusSeverity(slotProps.data.status)"
+                        style="text-transform: capitalize"
                     />
                 </template>
             </Column>
@@ -86,6 +134,24 @@
             <Column header="Total Price">
                 <template #body="slotProps">
                     {{ formatCurrency(slotProps.data.totalPrice) }}
+                </template>
+            </Column>
+
+            <Column header="Actions">
+                <template #body="slotProps">
+                    <div class="flex gap-1">
+                        <Button
+                            label="Dispatch All"
+                            size="small"
+                            v-if="slotProps.data.transaction_type == 'Outgoing'"
+                        />
+                        <Button
+                            label="Return All"
+                            size="small"
+                            severity="info"
+                            v-if="slotProps.data.transaction_type == 'Incoming'"
+                        />
+                    </div>
                 </template>
             </Column>
 
@@ -105,12 +171,36 @@
                                             itemSlotProps.data.status
                                         )
                                     "
+                                    style="text-transform: capitalize"
                                 />
                             </template>
                         </Column>
                         <Column field="price" header="Price">
                             <template #body="itemSlotProps">
                                 {{ formatCurrency(itemSlotProps.data.price) }}
+                            </template>
+                        </Column>
+                        <Column header="Actions">
+                            <template #body="itemSlotProps">
+                                <div class="flex gap-1">
+                                    <Button
+                                        label="Dispatch"
+                                        size="small"
+                                        v-if="
+                                            slotProps.data.transaction_type ==
+                                            'Outgoing'
+                                        "
+                                    />
+                                    <Button
+                                        label="Return"
+                                        size="small"
+                                        severity="info"
+                                        v-if="
+                                            slotProps.data.transaction_type ==
+                                            'Incoming'
+                                        "
+                                    />
+                                </div>
                             </template>
                         </Column>
                     </DataTable>
@@ -130,9 +220,11 @@ import { Head } from "@inertiajs/vue3";
 import Button from "primevue/button";
 import Column from "primevue/column";
 import DataTable from "primevue/datatable";
+import Select from "primevue/select";
 import Tag from "primevue/tag";
 import Toast from "primevue/toast";
 import Toolbar from "primevue/toolbar";
+import { watch } from "vue";
 import { onMounted, ref } from "vue";
 
 export default {
@@ -147,6 +239,7 @@ export default {
         Toolbar,
         TableSkeleton,
         Toast,
+        Select,
     },
     setup() {
         const transactionStore = useTransactionStore();
@@ -154,7 +247,7 @@ export default {
             incoming: "all",
             type: "",
             items_count: 20,
-            isB2B: false,
+            isB2B: "all",
             page: 0,
             search: "",
             status: null,
@@ -162,6 +255,13 @@ export default {
         onMounted(() => {
             transactionStore.getTransactionLogistics(filterParams.value);
         });
+        watch(
+            filterParams,
+            () => {
+                transactionStore.getTransactionLogistics(filterParams.value);
+            },
+            { deep: true }
+        );
         return {
             filterParams,
             transactionStore,
@@ -170,15 +270,32 @@ export default {
     data() {
         return {
             expandedRows: {},
+            transaction_types: [
+                { label: "All", value: "all" },
+                { label: "Incomming", value: "incoming" },
+                { label: "Outgoing", value: "outgoing" },
+            ],
+            statuses: [
+                { label: "All", value: "all" },
+                { label: "Pending", value: "pending" },
+                { label: "Approved", value: "approved" },
+                { label: "Paid", value: "paid" },
+                { label: "Dispatched", value: "dispatched" },
+                { label: "Completed", value: "completed" },
+                { label: "Canceled", value: "canceled" },
+                { label: "Return", value: "return" },
+            ],
+            isDropdownOpen: false,
         };
     },
     methods: {
-        expandAll() {
-            this.expandedRows =
-                this.transactionStore.shipments.data?.data.reduce(
-                    (acc, p) => (acc[p.id] = true) && acc,
-                    {}
-                );
+        toggleDropdown() {
+            this.isDropdownOpen = !this.isDropdownOpen;
+        },
+        clearFilters() {
+            this.filterParams.incoming = "all";
+            this.filterParams.search = "";
+            this.filterParams.status = null;
         },
         collapseAll() {
             this.expandedRows = null;

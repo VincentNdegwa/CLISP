@@ -179,8 +179,6 @@ export default {
             this.filterParams.status = null;
         },
         handleClickOutside(event) {
-            console.log(event);
-
             const dropdown = this.$refs.dropdown;
             if (dropdown && !dropdown.contains(event.target)) {
                 this.isDropdownOpen = false;

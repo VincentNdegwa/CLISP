@@ -15,7 +15,7 @@ class LogisticController extends Controller
             $validatedData = $request->validate([
                 "incoming" => 'required|string',
                 "status" => 'nullable|string',
-                "isB2B" => 'required|boolean',
+                "isB2B" => 'required|string',
                 "type" => 'nullable|string',
                 "items_count" => "nullable|integer",
                 "page" => 'integer',
@@ -23,11 +23,11 @@ class LogisticController extends Controller
 
             $transactionsQuery = Transaction::with('details', 'initiator:business_id,business_name', 'receiver_business:business_id,business_name', 'receiver_customer', 'items');
 
-            if ($validatedData['isB2B'] === true) {
+            if ($validatedData['isB2B'] === 'business') {
                 // B2B transactions: where receiver_business exists and receiver_customer is null
                 $transactionsQuery->whereNotNull('receiver_business_id')
                     ->whereNull('receiver_customer_id');
-            } elseif ($validatedData['isB2B'] === false) {
+            } elseif ($validatedData['isB2B'] === 'customer') {
                 // B2C transactions: where receiver_customer exists and receiver_business is null
                 $transactionsQuery->whereNotNull('receiver_customer_id')
                     ->whereNull('receiver_business_id');
@@ -54,8 +54,11 @@ class LogisticController extends Controller
             if (isset($validatedData['type']) || $validatedData['type'] != null) {
                 $transactionsQuery
                     ->where('type', $validatedData['type']);
+            } else {
+                $transactionsQuery->whereIn("type", ['leasing', 'borrowing']);
             }
             $transactions = $transactionsQuery
+
                 ->orderBy('created_at', 'DESC')
                 ->paginate($itemsCount, ["*"], 'page', $request->input('page', 1));
 
