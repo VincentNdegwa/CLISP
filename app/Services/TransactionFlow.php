@@ -34,7 +34,7 @@ abstract class TransactionFlow
             $this->transaction->save();
 
             TransactionItem::where('transaction_id', $this->transactionId)->update([
-                'status' => 'transit'
+                'status' => 'pending'
             ]);
 
 

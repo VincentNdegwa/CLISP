@@ -8,6 +8,7 @@ import { useTransactionStore } from "@/Store/TransactionStore";
 import { Head } from "@inertiajs/vue3";
 import axios from "axios";
 import Badge from "primevue/badge";
+import Tag from "primevue/tag";
 
 export default {
     components: {
@@ -18,6 +19,7 @@ export default {
         ConfirmationModal,
         Badge,
         SplitButtonSelectCustom,
+        Tag,
     },
     data() {
         return {
@@ -287,6 +289,26 @@ export default {
                     break;
             }
         },
+        getBadgeSeverity(status) {
+            switch (status) {
+                case "pending":
+                    return "info";
+                case "approved":
+                    return "primary";
+                case "paid":
+                    return "success";
+                case "dispatched":
+                    return "warning";
+                case "completed":
+                    return "success";
+                case "canceled":
+                    return "danger";
+                case "return":
+                    return "danger";
+                default:
+                    return "secondary";
+            }
+        },
     },
 };
 </script>
@@ -316,9 +338,16 @@ export default {
     <AuthenticatedLayout>
         <div class="bg-white px-4 rounded-lg">
             <div class="flex justify-between">
-                <h1 class="text-2xl font-semibold mb-10">
-                    Transaction #{{ transactionStore.singleTransaction.id }}
-                </h1>
+                <div class="flex items-center gap-2">
+                    <i
+                        @click="() => window.history.back()"
+                        class="pi pi-arrow-left p-3 bg-slate-800 text-white rounded-full shadow-lg cursor-pointer hover:bg-slate-600"
+                    ></i>
+
+                    <h1 class="text-2xl font-semibold">
+                        Transaction #{{ transactionStore.singleTransaction.id }}
+                    </h1>
+                </div>
 
                 <div class="flex gap-1">
                     <SplitButtonSelectCustom
@@ -368,7 +397,7 @@ export default {
                     </div>
                 </div>
             </div>
-            <div class="flex justify-between">
+            <div class="flex justify-between mt-5">
                 <div>
                     <p>
                         <strong>Type:</strong>
@@ -378,9 +407,15 @@ export default {
                     </p>
                     <p>
                         <strong>Status:</strong>
-                        <span :class="[statusClass, 'capitalize']">{{
-                            transactionStore.singleTransaction.status
-                        }}</span>
+                        <Tag
+                            :severity="
+                                getBadgeSeverity(
+                                    transactionStore.singleTransaction.status
+                                )
+                            "
+                            :value="transactionStore.singleTransaction.status"
+                            style="text-transform: capitalize"
+                        />
                     </p>
                 </div>
                 <div class="text-right">
