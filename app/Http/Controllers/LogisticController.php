@@ -3,7 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Transaction;
+use App\Services\BorrowingWorkflow;
+use App\Services\LeasingWorkflow;
+use App\Services\NormalSaleWorkflow;
+use App\Services\PurchaseWorkflow;
+use App\Services\TransactionFlow;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class LogisticController extends Controller
@@ -93,5 +99,57 @@ class LogisticController extends Controller
                 'errors' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    public function dispatchItems(Request $request)
+    {
+        try {
+            $validatedData = $request->validate([
+                'transaction_id' => 'required|exists:transactions,id',
+                'transaction_type' => 'required|string',
+                "items" => 'required|array',
+                'items.*.items_id' => [
+                    Rule::exists('transaction_items', 'item_id')->where('transaction_id', $request->input('transaction_id'))
+                ]
+            ]);
+
+            $workflow = $this->getWorkflow($validatedData['transaction_id'], $validatedData['transaction_type']);
+            $workflow->giveTransactionItem();
+            return $workflow;
+        } catch (ValidationException $e) {
+            return response()->json([
+                'error' => true,
+                'message' => 'Validation error.',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => true,
+                'message' => 'An unexpected error occurred.',
+                'errors' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    private function getWorkflow($transaction_id, $transaction_type): TransactionFlow
+    {
+        $workflow = new NormalSaleWorkflow($transaction_id);
+        $transaction_type = $transaction_type;
+
+        switch ($transaction_type) {
+            case 'leasing':
+                $workflow = new LeasingWorkflow($transaction_id);
+                break;
+            case 'purchase':
+                $workflow = new PurchaseWorkflow($transaction_id);
+                break;
+            case 'borrowing':
+                $workflow = new BorrowingWorkflow($transaction_id);
+                break;
+            default:
+                $workflow = new NormalSaleWorkflow($transaction_id);
+                break;
+        }
+        return $workflow;
     }
 }
