@@ -196,10 +196,24 @@
                                 <div class="flex gap-1">
                                     <Button
                                         label="Dispatch"
+                                        @click="
+                                            checkConfirmation(() => {
+                                                dispatchOne(
+                                                    slotProps.data,
+                                                    itemSlotProps.data
+                                                );
+                                            }, 'dispatch_one')
+                                        "
                                         size="small"
                                         v-if="
-                                            slotProps.data.transaction_type ==
-                                            'Outgoing'
+                                            (slotProps.data.transaction_type ==
+                                                'Outgoing' &&
+                                                slotProps.data.status ==
+                                                    'paid') ||
+                                            slotProps.data.status == 'approved'
+                                        "
+                                        :disabled="
+                                            slotProps.data.status == 'approved'
                                         "
                                     />
                                     <Button
@@ -369,14 +383,20 @@ export default {
         exportCSV() {
             this.$refs.dt.exportCSV();
         },
-        dispatchAll(data) {
-            this.dispatchparams.transaction_id = data.id;
-            this.dispatchparams.transaction_type = data.type;
-            this.dispatchparams.items = data.items.map((item) => {
+        dispatchAll(fullTransaction) {
+            this.dispatchparams.transaction_id = fullTransaction.id;
+            this.dispatchparams.transaction_type = fullTransaction.type;
+            this.dispatchparams.items = fullTransaction.items.map((item) => {
                 let d_item = { item_id: null };
-                d_item.item_id = item.id;
+                d_item.item_id = item.item_id;
                 return d_item;
             });
+            console.log(this.dispatchparams);
+        },
+        dispatchOne(fullTransaction, item) {
+            this.dispatchparams.transaction_id = fullTransaction.id;
+            this.dispatchparams.transaction_type = fullTransaction.type;
+            this.dispatchparams.items.push({ item_id: item.item_id });
             console.log(this.dispatchparams);
         },
         checkConfirmation(method, methodText) {
@@ -388,7 +408,12 @@ export default {
                     this.confirmation.title = "Dispatch all Items";
                     this.confirmation.method = method;
                     break;
-                case "dispatch_some":
+                case "dispatch_one":
+                    this.confirmation.isOpen = true;
+                    this.confirmation.message =
+                        "Are you sure you want to dispatch this items to the recepient?";
+                    this.confirmation.title = "Dispatch one Item";
+                    this.confirmation.method = method;
                     break;
                 default:
                     break;
