@@ -17,7 +17,7 @@ abstract class TransactionFlow
         $this->transaction = Transaction::find($transactionId);
     }
 
-    protected function createResponse(bool $error, string $message, $data = null, $errors = null)
+    public function createResponse(bool $error, string $message, $data = null, $errors = null)
     {
         return response()->json([
             'error' => $error,
@@ -90,7 +90,7 @@ abstract class TransactionFlow
     }
 
     // Abstract methods to be implemented by child classes for specific workflows
-    abstract public function giveTransactionItem();
+    abstract public function giveTransactionItem($transactionData);
     abstract public function returnTransactionItem();
     abstract public function applyLateFees();
     abstract public function applyDamageFees();

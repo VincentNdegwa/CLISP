@@ -294,6 +294,9 @@ export default {
         onMounted(() => {
             transactionStore.getTransactionLogistics(filterParams.value);
         });
+        const dispactItems = () => {
+            transactionStore.dispatchItems(dispatchparams.value);
+        };
         watch(
             filterParams,
             () => {
@@ -305,6 +308,7 @@ export default {
             filterParams,
             transactionStore,
             dispatchparams,
+            dispactItems,
         };
     },
     data() {
@@ -392,12 +396,14 @@ export default {
                 return d_item;
             });
             console.log(this.dispatchparams);
+            this.dispactItems();
         },
         dispatchOne(fullTransaction, item) {
             this.dispatchparams.transaction_id = fullTransaction.id;
             this.dispatchparams.transaction_type = fullTransaction.type;
             this.dispatchparams.items.push({ item_id: item.item_id });
             console.log(this.dispatchparams);
+            this.dispactItems();
         },
         checkConfirmation(method, methodText) {
             switch (methodText) {

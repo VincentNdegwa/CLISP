@@ -387,5 +387,13 @@ export const useTransactionStore = defineStore("transactionStore", {
                 this.shipments = response.data;
             }
         },
+        async dispatchItems(dispatchParams) {
+            const url = `/api/transactions/${
+                useUserStore().business
+            }/logistics/dispatch-tems`;
+            this.updateUiResponse(
+                await this.handleRequest(url, "post", dispatchParams)
+            );
+        },
     },
 });

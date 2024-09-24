@@ -4,7 +4,7 @@ namespace App\Services;
 
 class NormalSaleWorkflow extends TransactionFlow
 {
-    public function giveTransactionItem()
+    public function giveTransactionItem($transactionData)
     {
         // Borrowing-specific logic for giving the item
     }
