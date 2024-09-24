@@ -6,7 +6,6 @@ import SplitButtonSelectCustom from "@/Components/SplitButtonSelectCustom.vue";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import { useTransactionStore } from "@/Store/TransactionStore";
 import { Head } from "@inertiajs/vue3";
-import axios from "axios";
 import Badge from "primevue/badge";
 import Tag from "primevue/tag";
 
