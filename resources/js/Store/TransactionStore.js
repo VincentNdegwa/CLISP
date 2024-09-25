@@ -391,9 +391,20 @@ export const useTransactionStore = defineStore("transactionStore", {
             const url = `/api/transactions/${
                 useUserStore().business
             }/logistics/dispatch-tems`;
-            this.updateUiResponse(
-                await this.handleRequest(url, "post", dispatchParams)
+            const response = await this.handleRequest(
+                url,
+                "post",
+                dispatchParams
             );
+            if (!response.data.error) {
+                this.shipments.data = this.shipments.data.map((shipment) => {
+                    if (shipment.id === response.data.data.id) {
+                        return response.data.data;
+                    }
+                    return shipment;
+                });
+            }
+            this.updateUiResponse(response);
         },
     },
 });
