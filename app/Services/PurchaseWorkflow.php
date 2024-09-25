@@ -4,7 +4,7 @@ namespace App\Services;
 
 class PurchaseWorkflow extends TransactionFlow
 {
-    public function giveTransactionItem()
+    public function giveTransactionItem($transactionData)
     {
         // Logic specific to purchase transactions
         // e.g., Mark items as delivered

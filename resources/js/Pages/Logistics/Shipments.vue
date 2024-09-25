@@ -152,7 +152,8 @@
                                 (slotProps.data.transaction_type ==
                                     'Outgoing' &&
                                     slotProps.data.status == 'paid') ||
-                                slotProps.data.status == 'approved'
+                                slotProps.data.status == 'approved' ||
+                                slotProps.data.status == 'partially-dispatched'
                             "
                             :disabled="slotProps.data.status == 'approved'"
                         />
@@ -210,7 +211,12 @@
                                                 'Outgoing' &&
                                                 slotProps.data.status ==
                                                     'paid') ||
-                                            slotProps.data.status == 'approved'
+                                            slotProps.data.status ==
+                                                'approved' ||
+                                            (itemSlotProps.data.status !=
+                                                'transit' &&
+                                                slotProps.data.status ==
+                                                    'partially-dispatched')
                                         "
                                         :disabled="
                                             slotProps.data.status == 'approved'
@@ -294,6 +300,9 @@ export default {
         onMounted(() => {
             transactionStore.getTransactionLogistics(filterParams.value);
         });
+        const dispactItems = () => {
+            transactionStore.dispatchItems(dispatchparams.value);
+        };
         watch(
             filterParams,
             () => {
@@ -305,6 +314,7 @@ export default {
             filterParams,
             transactionStore,
             dispatchparams,
+            dispactItems,
         };
     },
     data() {
@@ -366,6 +376,8 @@ export default {
                     return "success";
                 case "dispatched":
                     return "warn";
+                case "transit":
+                    return "warn";
                 case "completed":
                     return "success";
                 case "canceled":
@@ -373,7 +385,7 @@ export default {
                 case "return":
                     return "warning";
                 default:
-                    return null;
+                    return "danger";
             }
         },
 
@@ -386,18 +398,25 @@ export default {
         dispatchAll(fullTransaction) {
             this.dispatchparams.transaction_id = fullTransaction.id;
             this.dispatchparams.transaction_type = fullTransaction.type;
-            this.dispatchparams.items = fullTransaction.items.map((item) => {
-                let d_item = { item_id: null };
-                d_item.item_id = item.item_id;
-                return d_item;
-            });
-            console.log(this.dispatchparams);
+            this.dispatchparams.items = fullTransaction.items
+                .map((item) => {
+                    if (item.status !== "transit") {
+                        let d_item = { item_id: null };
+                        d_item.item_id = item.item_id;
+                        return d_item;
+                    }
+                    return;
+                })
+                .filter((item) => item != undefined);
+            // console.log(this.dispatchparams);
+            this.dispactItems();
         },
         dispatchOne(fullTransaction, item) {
             this.dispatchparams.transaction_id = fullTransaction.id;
             this.dispatchparams.transaction_type = fullTransaction.type;
             this.dispatchparams.items.push({ item_id: item.item_id });
-            console.log(this.dispatchparams);
+            // console.log(this.dispatchparams);
+            this.dispactItems();
         },
         checkConfirmation(method, methodText) {
             switch (methodText) {

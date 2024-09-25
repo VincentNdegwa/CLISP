@@ -4,9 +4,10 @@ namespace App\Services;
 
 class LeasingWorkflow extends TransactionFlow
 {
-    public function giveTransactionItem()
+    public function giveTransactionItem($transactionData)
     {
         // Leasing logic for giving the item to the customer
+
     }
 
     public function returnTransactionItem()

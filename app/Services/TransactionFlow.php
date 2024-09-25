@@ -10,14 +10,16 @@ abstract class TransactionFlow
 {
     protected $transactionId;
     public $transaction;
+    public $businesId;
 
-    public function __construct(string $transactionId)
+    public function __construct(string $business_id, string $transactionId)
     {
         $this->transactionId = $transactionId;
         $this->transaction = Transaction::find($transactionId);
+        $this->businesId = $business_id;
     }
 
-    protected function createResponse(bool $error, string $message, $data = null, $errors = null)
+    public function createResponse(bool $error, string $message, $data = null, $errors = null)
     {
         return response()->json([
             'error' => $error,
@@ -25,6 +27,47 @@ abstract class TransactionFlow
             'errors' => $errors,
             'data' => $data,
         ]);
+    }
+
+    public function getFullTransaction()
+    {
+        try {
+            $business_id = $this->businesId;
+            $transaction_id = $this->transactionId;
+            $transaction = Transaction::with('details', 'initiator:business_id,business_name,email,phone_number,location', 'receiver_business:business_id,business_name,email,phone_number,location', 'receiver_customer')
+                ->with([
+                    'items' => function ($query) {
+                        $query->with('item');
+                    }
+                ])
+                ->where(function ($query) use ($business_id) {
+                    $query->where('initiator_id', $business_id)
+                        ->orWhere('receiver_business_id', $business_id);
+                })
+                ->where('id', $transaction_id)
+                ->first();
+
+            $transaction->totalPrice = $transaction->items->sum(function ($item) {
+                return $item->quantity * $item->price;
+            });
+            if ($transaction->initiator && $transaction->initiator->business_id == $business_id) {
+                $transaction->transaction_type = 'Outgoing';
+            }
+
+            if ($transaction->receiver_business && $transaction->receiver_business->business_id == $business_id) {
+                $transaction->transaction_type = "Incoming";
+            }
+
+            if ($transaction->receiver_business != null && $transaction->receiver_customer == null) {
+                $transaction->isB2B = true;
+            } else if ($transaction->receiver_business == null && $transaction->receiver_customer != null) {
+                $transaction->isB2B = false;
+            }
+
+            return $transaction;
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
+        }
     }
 
     public function acceptTransaction()
@@ -90,7 +133,7 @@ abstract class TransactionFlow
     }
 
     // Abstract methods to be implemented by child classes for specific workflows
-    abstract public function giveTransactionItem();
+    abstract public function giveTransactionItem($transactionData);
     abstract public function returnTransactionItem();
     abstract public function applyLateFees();
     abstract public function applyDamageFees();

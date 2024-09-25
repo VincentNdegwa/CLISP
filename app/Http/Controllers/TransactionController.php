@@ -365,52 +365,52 @@ class TransactionController extends Controller
     public function acceptTransaction($business_id, $transaction, Request $request)
     {
         $transaction_type = $request->input('type');
-        $workflow = $this->getWorkflow($transaction, $transaction_type);
+        $workflow = $this->getWorkflow($business_id, $transaction, $transaction_type);
         return $workflow->acceptTransaction();
     }
 
     public function rejectTransaction($business_id, $transaction, Request $request)
     {
         $transaction_type = $request->input('type');
-        $workflow = $this->getWorkflow($transaction, $transaction_type);
+        $workflow = $this->getWorkflow($business_id, $transaction, $transaction_type);
         return $workflow->rejectTransaction("reason");
     }
     public function payTransaction($business_id, $transaction, Request $request)
     {
         $transaction_type = $request->input('type');
-        $workflow = $this->getWorkflow($transaction, $transaction_type);
+        $workflow = $this->getWorkflow($business_id, $transaction, $transaction_type);
         return $workflow->payTransaction();
     }
     public function acceptAndPayTransaction($business_id, $transaction, Request $request)
     {
         $transaction_type = $request->input('type');
-        $workflow = $this->getWorkflow($transaction, $transaction_type);
+        $workflow = $this->getWorkflow($business_id, $transaction, $transaction_type);
         return $workflow->payTransaction();
     }
     public function closeTransaction($business_id, $transaction, Request $request)
     {
         $transaction_type = $request->input('type');
-        $workflow = $this->getWorkflow($transaction, $transaction_type);
+        $workflow = $this->getWorkflow($business_id, $transaction, $transaction_type);
         return $workflow->closeTransaction();
     }
 
-    private function getWorkflow($transaction, $transaction_type): TransactionFlow
+    private function getWorkflow($business_id, $transaction, $transaction_type): TransactionFlow
     {
-        $workflow = new NormalSaleWorkflow($transaction);
+        $workflow = new NormalSaleWorkflow($business_id, $transaction);
         $transaction_type = $transaction_type;
 
         switch ($transaction_type) {
             case 'leasing':
-                $workflow = new LeasingWorkflow($transaction);
+                $workflow = new LeasingWorkflow($business_id, $transaction);
                 break;
             case 'purchase':
-                $workflow = new PurchaseWorkflow($transaction);
+                $workflow = new PurchaseWorkflow($business_id, $transaction);
                 break;
             case 'borrowing':
-                $workflow = new BorrowingWorkflow($transaction);
+                $workflow = new BorrowingWorkflow($business_id, $transaction);
                 break;
             default:
-                $workflow = new NormalSaleWorkflow($transaction);
+                $workflow = new NormalSaleWorkflow($business_id, $transaction);
                 break;
         }
         return $workflow;
