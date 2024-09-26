@@ -321,7 +321,7 @@ class TransactionController extends Controller
             $transaction = Transaction::with('details', 'initiator:business_id,business_name,email,phone_number,location', 'receiver_business:business_id,business_name,email,phone_number,location', 'receiver_customer')
                 ->with([
                     'items' => function ($query) {
-                        $query->with('item');
+                        $query->with('item:id,item_name');
                     }
                 ])
                 ->where(function ($query) use ($business_id) {

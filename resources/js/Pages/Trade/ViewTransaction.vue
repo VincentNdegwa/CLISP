@@ -308,6 +308,9 @@ export default {
                     return "secondary";
             }
         },
+        goBack() {
+            window.history.back();
+        },
     },
 };
 </script>
@@ -339,7 +342,7 @@ export default {
             <div class="flex justify-between">
                 <div class="flex items-center gap-2">
                     <i
-                        @click="() => window.history.back()"
+                        @click="goBack"
                         class="pi pi-arrow-left p-3 bg-slate-800 text-white rounded-full shadow-lg cursor-pointer hover:bg-slate-600"
                     ></i>
 

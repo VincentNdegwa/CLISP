@@ -81,6 +81,7 @@
             v-else
             v-model:expandedRows="expandedRows"
             :value="transactionStore.shipments.data?.data"
+            :loading="transactionStore.loading"
             dataKey="id"
             ref="dt"
             tableStyle="min-width: 60rem"
@@ -139,21 +140,19 @@
 
             <Column header="Actions">
                 <template #body="slotProps">
-                    <div class="flex gap-1">
+                    <div
+                        class="flex gap-1"
+                        @click="() => selectTransaction(slotProps.data)"
+                    >
                         <Button
                             label="Dispatch All"
-                            @click="
-                                checkConfirmation(() => {
-                                    dispatchAll(slotProps.data);
-                                }, 'dispatch_all')
-                            "
+                            @click="openModal('ShipmentCounts')"
                             size="small"
                             v-if="
-                                (slotProps.data.transaction_type ==
-                                    'Outgoing' &&
-                                    slotProps.data.status == 'paid') ||
-                                slotProps.data.status == 'approved' ||
-                                slotProps.data.status == 'partially-dispatched'
+                                slotProps.data.transaction_type == 'Outgoing' &&
+                                (slotProps.data.status == 'paid' ||
+                                    slotProps.data.status ==
+                                        'partially-dispatched')
                             "
                             :disabled="slotProps.data.status == 'approved'"
                         />
@@ -161,7 +160,32 @@
                             label="Return All"
                             size="small"
                             severity="info"
-                            v-if="slotProps.data.transaction_type == 'Incoming'"
+                            v-if="
+                                slotProps.data.transaction_type == 'Incoming' &&
+                                slotProps.data.status === 'completed'
+                            "
+                        />
+                        <Button
+                            label="Receive All"
+                            size="small"
+                            severity="success"
+                            v-if="
+                                (slotProps.data.transaction_type ===
+                                    'Incoming' &&
+                                    slotProps.data.status === 'dispatched') ||
+                                slotProps.data.status === 'partially-dispatched'
+                            "
+                        />
+                        <Button
+                            label="Reject All"
+                            size="small"
+                            severity="danger"
+                            v-if="
+                                (slotProps.data.transaction_type ===
+                                    'Incoming' &&
+                                    slotProps.data.status === 'dispatched') ||
+                                slotProps.data.status === 'partially-dispatched'
+                            "
                         />
                     </div>
                 </template>
@@ -171,7 +195,11 @@
             <template #expansion="slotProps">
                 <div class="p-0 -mt-3">
                     <DataTable :value="slotProps.data.items" tableStyle="">
-                        <Column field="id" header="Item ID"></Column>
+                        <Column header="Item Name">
+                            <template #body="itemSlotProps">
+                                {{ itemSlotProps.data.item.item_name }}
+                            </template>
+                        </Column>
                         <Column field="quantity" header="Quantity"></Column>
 
                         <Column field="status" header="Item Status">
@@ -192,7 +220,7 @@
                                 {{ formatCurrency(itemSlotProps.data.price) }}
                             </template>
                         </Column>
-                        <Column header="Actions">
+                        <!-- <Column header="Actions">
                             <template #body="itemSlotProps">
                                 <div class="flex gap-1">
                                     <Button
@@ -207,16 +235,13 @@
                                         "
                                         size="small"
                                         v-if="
-                                            (slotProps.data.transaction_type ==
+                                            slotProps.data.transaction_type ==
                                                 'Outgoing' &&
-                                                slotProps.data.status ==
-                                                    'paid') ||
-                                            slotProps.data.status ==
-                                                'approved' ||
-                                            (itemSlotProps.data.status !=
-                                                'transit' &&
-                                                slotProps.data.status ==
-                                                    'partially-dispatched')
+                                            (slotProps.data.status == 'paid' ||
+                                                (itemSlotProps.data.status !=
+                                                    'transit' &&
+                                                    slotProps.data.status ==
+                                                        'partially-dispatched'))
                                         "
                                         :disabled="
                                             slotProps.data.status == 'approved'
@@ -228,12 +253,14 @@
                                         severity="info"
                                         v-if="
                                             slotProps.data.transaction_type ==
-                                            'Incoming'
+                                                'Incoming' &&
+                                            slotProps.data.status ===
+                                                'completed'
                                         "
                                     />
                                 </div>
                             </template>
-                        </Column>
+                        </Column> -->
                     </DataTable>
                 </div>
             </template>
@@ -246,11 +273,20 @@
             @confirm="confirmAction"
             @close="cancelMakingRequest"
         />
+        <Modal :show="modal.open" @close="closeModal">
+            <ShipmentCounts
+                v-if="modal.component == 'ShipmentCounts'"
+                :transaction="selectedTransaction"
+                @dispatchItems="dispatchAll"
+                @close="closeModal"
+            />
+        </Modal>
     </AuthenticatedLayout>
 </template>
 
 <script>
 import ConfirmationModal from "@/Components/ConfirmationModal.vue";
+import Modal from "@/Components/Modal.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import TableSkeleton from "@/Components/TableSkeleton.vue";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
@@ -265,6 +301,7 @@ import Toast from "primevue/toast";
 import Toolbar from "primevue/toolbar";
 import { watch } from "vue";
 import { onMounted, ref } from "vue";
+import ShipmentCounts from "./ShipmentCounts.vue";
 
 export default {
     components: {
@@ -280,6 +317,8 @@ export default {
         Toast,
         Select,
         ConfirmationModal,
+        Modal,
+        ShipmentCounts,
     },
     setup() {
         const transactionStore = useTransactionStore();
@@ -290,18 +329,14 @@ export default {
             isB2B: "all",
             page: 0,
             search: "",
-            status: null,
+            status: "all",
         });
-        const dispatchparams = ref({
-            transaction_id: "",
-            transaction_type: "",
-            items: [],
-        });
+
         onMounted(() => {
             transactionStore.getTransactionLogistics(filterParams.value);
         });
-        const dispactItems = () => {
-            transactionStore.dispatchItems(dispatchparams.value);
+        const dispactItems = (dispatchparams) => {
+            transactionStore.dispatchItems(dispatchparams);
         };
         watch(
             filterParams,
@@ -313,7 +348,6 @@ export default {
         return {
             filterParams,
             transactionStore,
-            dispatchparams,
             dispactItems,
         };
     },
@@ -327,10 +361,12 @@ export default {
             ],
             statuses: [
                 { label: "All", value: "all" },
-                { label: "Pending", value: "pending" },
-                { label: "Approved", value: "approved" },
                 { label: "Paid", value: "paid" },
                 { label: "Dispatched", value: "dispatched" },
+                {
+                    label: "Partially-Dispatched",
+                    value: "partially-dispatched",
+                },
                 { label: "Completed", value: "completed" },
                 { label: "Canceled", value: "canceled" },
                 { label: "Return", value: "return" },
@@ -342,6 +378,11 @@ export default {
                 message: "",
                 method: null,
             },
+            modal: {
+                open: false,
+                component: "",
+            },
+            selectedTransaction: {},
         };
     },
     methods: {
@@ -395,29 +436,6 @@ export default {
         exportCSV() {
             this.$refs.dt.exportCSV();
         },
-        dispatchAll(fullTransaction) {
-            this.dispatchparams.transaction_id = fullTransaction.id;
-            this.dispatchparams.transaction_type = fullTransaction.type;
-            this.dispatchparams.items = fullTransaction.items
-                .map((item) => {
-                    if (item.status !== "transit") {
-                        let d_item = { item_id: null };
-                        d_item.item_id = item.item_id;
-                        return d_item;
-                    }
-                    return;
-                })
-                .filter((item) => item != undefined);
-            // console.log(this.dispatchparams);
-            this.dispactItems();
-        },
-        dispatchOne(fullTransaction, item) {
-            this.dispatchparams.transaction_id = fullTransaction.id;
-            this.dispatchparams.transaction_type = fullTransaction.type;
-            this.dispatchparams.items.push({ item_id: item.item_id });
-            // console.log(this.dispatchparams);
-            this.dispactItems();
-        },
         checkConfirmation(method, methodText) {
             switch (methodText) {
                 case "dispatch_all":
@@ -449,6 +467,26 @@ export default {
             this.confirmation.message = "";
             this.confirmation.title = "";
             this.confirmation.method = null;
+        },
+        openModal(component) {
+            this.modal.open = true;
+            this.modal.component = component;
+        },
+        closeModal() {
+            this.modal.open = false;
+            this.modal.component = "";
+        },
+        selectTransaction(data) {
+            this.selectedTransaction = data;
+            this.selectedTransaction.items = data.items?.map((item) => ({
+                ...item,
+                quantity_ship: item.quantity,
+            }));
+        },
+        dispatchAll(params) {
+            console.log("in shipping");
+
+            this.dispactItems(params);
         },
     },
 };

@@ -12,9 +12,13 @@ class BorrowingWorkflow extends TransactionFlow
 
         $transactionId = $params['transaction_id'];
         $items = $params['items'];
+        $itemIds = [];
+        foreach ($items as $item) {
+            $itemIds[] = $item['item_id'];
+        }
         $transaction = $this->transaction;
 
-        TransactionItem::where('transaction_id', $transactionId)->whereIn("item_id", $items)->update([
+        TransactionItem::where('transaction_id', $transactionId)->whereIn("item_id", $itemIds)->update([
             'status' => 'transit'
         ]);
         $fullTransaction = $this->getFullTransaction();
@@ -37,6 +41,26 @@ class BorrowingWorkflow extends TransactionFlow
         }
 
         return $this->createResponse(false, "Items dispatched successfully", $fullTransaction);
+    }
+
+    public function receiveTransactionItem($params)
+    {
+        $transactionId = $params['transaction_id'];
+        $items = $params['items'];
+        $transaction = $this->transaction;
+
+        $fullTransaction = $this->getFullTransaction();
+        TransactionItem::where('transaction_id', $transactionId)->whereIn("item_id", $items)->update([
+            'status' => 'received'
+        ]);
+        foreach ($fullTransaction->items as $item) {
+            $item->status = 'received';
+        }
+
+        $fullTransaction['status'] = 'completed';
+        $transaction->update([
+            'status' => 'completed',
+        ]);
     }
 
     public function returnTransactionItem()
