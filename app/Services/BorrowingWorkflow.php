@@ -39,6 +39,26 @@ class BorrowingWorkflow extends TransactionFlow
         return $this->createResponse(false, "Items dispatched successfully", $fullTransaction);
     }
 
+    public function receiveTransactionItem($params)
+    {
+        $transactionId = $params['transaction_id'];
+        $items = $params['items'];
+        $transaction = $this->transaction;
+
+        $fullTransaction = $this->getFullTransaction();
+        TransactionItem::where('transaction_id', $transactionId)->whereIn("item_id", $items)->update([
+            'status' => 'received'
+        ]);
+        foreach ($fullTransaction->items as $item) {
+            $item->status = 'received';
+        }
+
+        $fullTransaction['status'] = 'completed';
+        $transaction->update([
+            'status' => 'completed',
+        ]);
+    }
+
     public function returnTransactionItem()
     {
         // Logic for returning the borrowed item

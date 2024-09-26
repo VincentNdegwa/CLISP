@@ -149,11 +149,10 @@
                             "
                             size="small"
                             v-if="
-                                (slotProps.data.transaction_type ==
-                                    'Outgoing' &&
-                                    slotProps.data.status == 'paid') ||
-                                slotProps.data.status == 'approved' ||
-                                slotProps.data.status == 'partially-dispatched'
+                                slotProps.data.transaction_type == 'Outgoing' &&
+                                (slotProps.data.status == 'paid' ||
+                                    slotProps.data.status ==
+                                        'partially-dispatched')
                             "
                             :disabled="slotProps.data.status == 'approved'"
                         />
@@ -161,7 +160,32 @@
                             label="Return All"
                             size="small"
                             severity="info"
-                            v-if="slotProps.data.transaction_type == 'Incoming'"
+                            v-if="
+                                slotProps.data.transaction_type == 'Incoming' &&
+                                slotProps.data.status === 'completed'
+                            "
+                        />
+                        <Button
+                            label="Receive All"
+                            size="small"
+                            severity="success"
+                            v-if="
+                                (slotProps.data.transaction_type ===
+                                    'Incoming' &&
+                                    slotProps.data.status === 'dispatched') ||
+                                slotProps.data.status === 'partially-dispatched'
+                            "
+                        />
+                        <Button
+                            label="Reject All"
+                            size="small"
+                            severity="danger"
+                            v-if="
+                                (slotProps.data.transaction_type ===
+                                    'Incoming' &&
+                                    slotProps.data.status === 'dispatched') ||
+                                slotProps.data.status === 'partially-dispatched'
+                            "
                         />
                     </div>
                 </template>
@@ -171,7 +195,11 @@
             <template #expansion="slotProps">
                 <div class="p-0 -mt-3">
                     <DataTable :value="slotProps.data.items" tableStyle="">
-                        <Column field="id" header="Item ID"></Column>
+                        <Column header="Item Name">
+                            <template #body="itemSlotProps">
+                                {{ itemSlotProps.data.item.item_name }}
+                            </template>
+                        </Column>
                         <Column field="quantity" header="Quantity"></Column>
 
                         <Column field="status" header="Item Status">
@@ -207,16 +235,13 @@
                                         "
                                         size="small"
                                         v-if="
-                                            (slotProps.data.transaction_type ==
+                                            slotProps.data.transaction_type ==
                                                 'Outgoing' &&
-                                                slotProps.data.status ==
-                                                    'paid') ||
-                                            slotProps.data.status ==
-                                                'approved' ||
-                                            (itemSlotProps.data.status !=
-                                                'transit' &&
-                                                slotProps.data.status ==
-                                                    'partially-dispatched')
+                                            (slotProps.data.status == 'paid' ||
+                                                (itemSlotProps.data.status !=
+                                                    'transit' &&
+                                                    slotProps.data.status ==
+                                                        'partially-dispatched'))
                                         "
                                         :disabled="
                                             slotProps.data.status == 'approved'
@@ -228,7 +253,9 @@
                                         severity="info"
                                         v-if="
                                             slotProps.data.transaction_type ==
-                                            'Incoming'
+                                                'Incoming' &&
+                                            slotProps.data.status ===
+                                                'completed'
                                         "
                                     />
                                 </div>
@@ -290,7 +317,7 @@ export default {
             isB2B: "all",
             page: 0,
             search: "",
-            status: null,
+            status: "all",
         });
         const dispatchparams = ref({
             transaction_id: "",
@@ -327,10 +354,12 @@ export default {
             ],
             statuses: [
                 { label: "All", value: "all" },
-                { label: "Pending", value: "pending" },
-                { label: "Approved", value: "approved" },
                 { label: "Paid", value: "paid" },
                 { label: "Dispatched", value: "dispatched" },
+                {
+                    label: "Partially-Dispatched",
+                    value: "partially-dispatched",
+                },
                 { label: "Completed", value: "completed" },
                 { label: "Canceled", value: "canceled" },
                 { label: "Return", value: "return" },

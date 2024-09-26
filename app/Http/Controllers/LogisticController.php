@@ -27,7 +27,10 @@ class LogisticController extends Controller
                 "page" => 'integer',
             ]);
 
-            $transactionsQuery = Transaction::with('details', 'initiator:business_id,business_name', 'receiver_business:business_id,business_name', 'receiver_customer', 'items');
+            $transactionsQuery = Transaction::with('details', 'initiator:business_id,business_name', 'receiver_business:business_id,business_name', 'receiver_customer')
+                ->with(['items' => function ($query) {
+                    $query->with('item:id,item_name');
+                }]);
 
             if ($validatedData['isB2B'] === 'business') {
                 // B2B transactions: where receiver_business exists and receiver_customer is null
@@ -38,10 +41,11 @@ class LogisticController extends Controller
                 $transactionsQuery->whereNotNull('receiver_customer_id')
                     ->whereNull('receiver_business_id');
             }
-            if ($request->input('status') != 'all') {
-                $transactionsQuery->when($request->input('status'), function ($query, $status) {
-                    $query->where('status', $status);
-                });
+            if ($request->input('status') == 'all') {
+                $statuses = ['paid', 'partially-dispatched', 'dispatched', 'completed', 'canceled', 'return'];
+                $transactionsQuery->whereIn('status', $statuses);
+            } else {
+                $transactionsQuery->where('status', $validatedData['status']);
             }
 
             if ($validatedData['incoming'] == 'incoming') {
