@@ -139,7 +139,10 @@
 
             <Column header="Actions">
                 <template #body="slotProps">
-                    <div class="flex gap-1">
+                    <div
+                        class="flex gap-1"
+                        @click="() => selectTransaction(slotProps.data)"
+                    >
                         <Button
                             label="Dispatch All"
                             @click="openModal('ShipmentCounts')"
@@ -216,7 +219,7 @@
                                 {{ formatCurrency(itemSlotProps.data.price) }}
                             </template>
                         </Column>
-                        <Column header="Actions">
+                        <!-- <Column header="Actions">
                             <template #body="itemSlotProps">
                                 <div class="flex gap-1">
                                     <Button
@@ -256,7 +259,7 @@
                                     />
                                 </div>
                             </template>
-                        </Column>
+                        </Column> -->
                     </DataTable>
                 </div>
             </template>
@@ -270,7 +273,12 @@
             @close="cancelMakingRequest"
         />
         <Modal :show="modal.open" @close="closeModal">
-            <ShipmentCounts v-if="modal.component == 'ShipmentCounts'" />
+            <ShipmentCounts
+                v-if="modal.component == 'ShipmentCounts'"
+                :transaction="selectedTransaction"
+                @dispatchItems="dispactItems"
+                @close="closeModal"
+            />
         </Modal>
     </AuthenticatedLayout>
 </template>
@@ -322,16 +330,12 @@ export default {
             search: "",
             status: "all",
         });
-        const dispatchparams = ref({
-            transaction_id: "",
-            transaction_type: "",
-            items: [],
-        });
+
         onMounted(() => {
             transactionStore.getTransactionLogistics(filterParams.value);
         });
-        const dispactItems = () => {
-            transactionStore.dispatchItems(dispatchparams.value);
+        const dispactItems = (dispatchparams) => {
+            transactionStore.dispatchItems(dispatchparams);
         };
         watch(
             filterParams,
@@ -343,7 +347,6 @@ export default {
         return {
             filterParams,
             transactionStore,
-            dispatchparams,
             dispactItems,
         };
     },
@@ -378,6 +381,7 @@ export default {
                 open: false,
                 component: "",
             },
+            selectedTransaction: {},
         };
     },
     methods: {
@@ -431,29 +435,6 @@ export default {
         exportCSV() {
             this.$refs.dt.exportCSV();
         },
-        dispatchAll(fullTransaction) {
-            this.dispatchparams.transaction_id = fullTransaction.id;
-            this.dispatchparams.transaction_type = fullTransaction.type;
-            this.dispatchparams.items = fullTransaction.items
-                .map((item) => {
-                    if (item.status !== "transit") {
-                        let d_item = { item_id: null };
-                        d_item.item_id = item.item_id;
-                        return d_item;
-                    }
-                    return;
-                })
-                .filter((item) => item != undefined);
-            // console.log(this.dispatchparams);
-            this.dispactItems();
-        },
-        dispatchOne(fullTransaction, item) {
-            this.dispatchparams.transaction_id = fullTransaction.id;
-            this.dispatchparams.transaction_type = fullTransaction.type;
-            this.dispatchparams.items.push({ item_id: item.item_id });
-            // console.log(this.dispatchparams);
-            this.dispactItems();
-        },
         checkConfirmation(method, methodText) {
             switch (methodText) {
                 case "dispatch_all":
@@ -493,6 +474,13 @@ export default {
         closeModal() {
             this.modal.open = false;
             this.modal.component = "";
+        },
+        selectTransaction(data) {
+            this.selectedTransaction = data;
+            this.selectedTransaction.items = data.items?.map((item) => ({
+                ...item,
+                quantity_ship: item.quantity,
+            }));
         },
     },
 };

@@ -89,7 +89,7 @@
                             <Button
                                 type="button"
                                 icon="pi pi-ellipsis-v"
-                                @click="toggle"
+                                @click="toggle(slotProps.data.id, $event)"
                                 aria-haspopup="true"
                                 severity="contrast"
                                 size="small"
@@ -100,9 +100,6 @@
                                 id="overlay_menu"
                                 :model="actionItem"
                                 :popup="true"
-                                @focus="
-                                    () => selectedTransaction(slotProps.data.id)
-                                "
                             />
                         </div>
                     </template>
@@ -190,9 +187,6 @@ export default {
         };
     },
     methods: {
-        selectedTransaction(transactionId) {
-            this.transactionId = transactionId;
-        },
         getBusinessName(business) {
             return business ? business.business_name : "N/A";
         },
@@ -269,11 +263,12 @@ export default {
                 case "return":
                     return "danger";
                 default:
-                    return "secondary"; 
+                    return "secondary";
             }
         },
-        toggle(event) {
+        toggle(transactionId, event) {
             this.$refs.menu.toggle(event);
+            this.transactionId = transactionId;
         },
     },
 };
