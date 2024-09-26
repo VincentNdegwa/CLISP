@@ -332,6 +332,7 @@ export const useTransactionStore = defineStore("transactionStore", {
         },
 
         async handleRequest(url, transactionType, payload = null) {
+            this.loading = true;
             this.refreshState();
             try {
                 let response;
@@ -359,6 +360,8 @@ export const useTransactionStore = defineStore("transactionStore", {
 
                 console.error(`Request failed: ${error.message}`);
                 return null;
+            } finally {
+                this.loading = false;
             }
         },
         updateUiResponse(response) {
@@ -397,12 +400,14 @@ export const useTransactionStore = defineStore("transactionStore", {
                 dispatchParams
             );
             if (!response.data.error) {
-                this.shipments.data = this.shipments.data.map((shipment) => {
-                    if (shipment.id === response.data.data.id) {
-                        return response.data.data;
+                this.shipments.data.data = this.shipments?.data.data.map(
+                    (shipment) => {
+                        if (shipment.id === response.data.data.id) {
+                            return response.data.data;
+                        }
+                        return shipment;
                     }
-                    return shipment;
-                });
+                );
             }
             this.updateUiResponse(response);
         },

@@ -81,6 +81,7 @@
             v-else
             v-model:expandedRows="expandedRows"
             :value="transactionStore.shipments.data?.data"
+            :loading="transactionStore.loading"
             dataKey="id"
             ref="dt"
             tableStyle="min-width: 60rem"
@@ -276,7 +277,7 @@
             <ShipmentCounts
                 v-if="modal.component == 'ShipmentCounts'"
                 :transaction="selectedTransaction"
-                @dispatchItems="dispactItems"
+                @dispatchItems="dispatchAll"
                 @close="closeModal"
             />
         </Modal>
@@ -481,6 +482,11 @@ export default {
                 ...item,
                 quantity_ship: item.quantity,
             }));
+        },
+        dispatchAll(params) {
+            console.log("in shipping");
+
+            this.dispactItems(params);
         },
     },
 };
