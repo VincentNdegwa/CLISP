@@ -142,11 +142,7 @@
                     <div class="flex gap-1">
                         <Button
                             label="Dispatch All"
-                            @click="
-                                checkConfirmation(() => {
-                                    dispatchAll(slotProps.data);
-                                }, 'dispatch_all')
-                            "
+                            @click="openModal('ShipmentCounts')"
                             size="small"
                             v-if="
                                 slotProps.data.transaction_type == 'Outgoing' &&
@@ -273,11 +269,15 @@
             @confirm="confirmAction"
             @close="cancelMakingRequest"
         />
+        <Modal :show="modal.open" @close="closeModal">
+            <ShipmentCounts v-if="modal.component == 'ShipmentCounts'" />
+        </Modal>
     </AuthenticatedLayout>
 </template>
 
 <script>
 import ConfirmationModal from "@/Components/ConfirmationModal.vue";
+import Modal from "@/Components/Modal.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import TableSkeleton from "@/Components/TableSkeleton.vue";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
@@ -292,6 +292,7 @@ import Toast from "primevue/toast";
 import Toolbar from "primevue/toolbar";
 import { watch } from "vue";
 import { onMounted, ref } from "vue";
+import ShipmentCounts from "./ShipmentCounts.vue";
 
 export default {
     components: {
@@ -307,6 +308,8 @@ export default {
         Toast,
         Select,
         ConfirmationModal,
+        Modal,
+        ShipmentCounts,
     },
     setup() {
         const transactionStore = useTransactionStore();
@@ -370,6 +373,10 @@ export default {
                 title: "",
                 message: "",
                 method: null,
+            },
+            modal: {
+                open: false,
+                component: "",
             },
         };
     },
@@ -478,6 +485,14 @@ export default {
             this.confirmation.message = "";
             this.confirmation.title = "";
             this.confirmation.method = null;
+        },
+        openModal(component) {
+            this.modal.open = true;
+            this.modal.component = component;
+        },
+        closeModal() {
+            this.modal.open = false;
+            this.modal.component = "";
         },
     },
 };
