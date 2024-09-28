@@ -411,5 +411,26 @@ export const useTransactionStore = defineStore("transactionStore", {
             }
             this.updateUiResponse(response);
         },
+        async receiveItems(receiveParams) {
+            const url = `/api/transactions/${
+                useUserStore().business
+            }/logistics/receive-items`;
+            const response = await this.handleRequest(
+                url,
+                "post",
+                receiveParams
+            );
+            if (!response.data.error) {
+                this.shipments.data.data = this.shipments?.data.data.map(
+                    (shipment) => {
+                        if (shipment.id === response.data.data.id) {
+                            return response.data.data;
+                        }
+                        return shipment;
+                    }
+                );
+            }
+            this.updateUiResponse(response);
+        }
     },
 });

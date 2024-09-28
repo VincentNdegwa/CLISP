@@ -75,4 +75,5 @@ Route::prefix('transactions/{business_id}')->group(function () {
     Route::post('/logistics', [LogisticController::class, 'getLogistics']);
 
     Route::post('/logistics/dispatch-tems', [LogisticController::class, 'dispatchItems']);
+    Route::post('/logistics/receive-items', [LogisticController::class, 'receiveItems']);
 });
