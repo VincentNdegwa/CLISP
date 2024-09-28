@@ -3,14 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Models\Business;
+use App\Models\ItemBusiness;
 use App\Models\ResourceItem;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class ResourceItemController extends Controller
 {
     public function create(Request $request, $business_id)
     {
+        DB::beginTransaction();
         try {
             $request->validate([
                 "item_name" => 'required|string|max:255',
@@ -25,20 +28,30 @@ class ResourceItemController extends Controller
             $data['business_id'] = $business_id;
 
             $resourceItem = ResourceItem::create($data);
+            ItemBusiness::create([
+                'business_id' => $business_id,
+                'item_id' => $resourceItem->id,
+                'source' => 'Owned',
+            ]);
             $item = ResourceItem::where('id', $resourceItem->id)->with('category')->first();
 
+
+            DB::commit();
             return response()->json([
                 'error' => false,
                 'message' => 'Resource item created successfully.',
                 'data' => $item
             ], 201);
         } catch (ValidationException $e) {
+            DB::rollBack();
             return response()->json([
                 'error' => true,
                 'message' => 'Validation error.',
                 'errors' => $e->errors()
             ]);
         } catch (\Exception $e) {
+            DB::rollBack();
+
             return response()->json([
                 'error' => true,
                 'message' => 'An unexpected error occurred.',
