@@ -29,4 +29,9 @@ class ResourceItem extends Model
     {
         return $this->belongsTo(Business::class, 'business_id', 'business_id');
     }
+
+    public function itemsBusiness()
+    {
+        return $this->hasMany(ItemBusiness::class, 'item_id');
+    }
 }
