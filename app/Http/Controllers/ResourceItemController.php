@@ -74,22 +74,30 @@ class ResourceItemController extends Controller
         $search_text = $request->query('search');
         $category_id = $request->query('category');
 
-        $query = ResourceItem::where('business_id', $business_id)->with('category');
-
-        if ($search_text) {
-            $query->where('item_name', 'like', '%' . $search_text . '%')
-                ->orWhere('description', 'like', '%' . $search_text . '%');
+        $business = ItemBusiness::where('business_id', $business_id)->first();
+        $itemsv2 = [];
+        if ($business) {
+            $itemsv2 = $business->items()
+                ->where(function ($query) use ($search_text, $category_id) {
+                    if ($search_text) {
+                        $query->where('item_name', 'like', '%' . $search_text . '%')
+                            ->orWhere('description', 'like', '%' . $search_text . '%');
+                    }
+                    if ($category_id) {
+                        $query->where('category_id', $category_id);
+                    }
+                })
+                ->with('category')
+                ->paginate(20);
         }
-        if ($category_id) {
-            $query->where('category_id', $category_id);
-        }
 
-        $items = $query->paginate(20);
+
 
         return response()->json([
             'error' => false,
             'message' => 'Resource items fetched successfully.',
-            'data' => $items
+            'data' => $itemsv2,
+            'newData' => $itemsv2
         ]);
     }
 
