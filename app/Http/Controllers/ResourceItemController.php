@@ -32,6 +32,7 @@ class ResourceItemController extends Controller
                 'business_id' => $business_id,
                 'item_id' => $resourceItem->id,
                 'source' => 'Owned',
+                'quantity' => $request->input('quantity'),
             ]);
             $item = ResourceItem::where('id', $resourceItem->id)->with('category')->first();
 
@@ -97,7 +98,6 @@ class ResourceItemController extends Controller
             'error' => false,
             'message' => 'Resource items fetched successfully.',
             'data' => $itemsv2,
-            'newData' => $itemsv2
         ]);
     }
 

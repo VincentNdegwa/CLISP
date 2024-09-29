@@ -11,7 +11,8 @@ class ItemBusiness extends Model
     protected $fillable = [
         'item_id',
         'business_id',
-        'source'
+        'source',
+        'quantity'
 
     ];
     protected $table = 'item_business';
@@ -20,6 +21,8 @@ class ItemBusiness extends Model
     {
         return $this->belongsTo(ResourceItem::class, 'item_id', 'id');
     }
+
+    
 
     public function business()
     {
