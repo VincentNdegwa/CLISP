@@ -77,6 +77,7 @@ class ResourceItemController extends Controller
 
         $business = ItemBusiness::where('business_id', $business_id)->first();
         $itemsv2 = [];
+
         if ($business) {
             $itemsv2 = $business->items()
                 ->where(function ($query) use ($search_text, $category_id) {
@@ -88,7 +89,9 @@ class ResourceItemController extends Controller
                         $query->where('category_id', $category_id);
                     }
                 })
-                ->with('category')
+                ->with(['category', 'itemsBusiness' => function ($query) use ($business_id) {
+                    $query->where('business_id', $business_id)->select('item_id', 'quantity')->take(1);
+                }])
                 ->paginate(20);
         }
 
@@ -165,6 +168,30 @@ class ResourceItemController extends Controller
                 'error' => true,
                 'message' => 'An error occurred while deleting the resource item.',
                 'details' => $e->getMessage()
+            ]);
+        }
+    }
+    public function getSingleResource($business_id, $itemId)
+    {
+        try {
+            $businessItem = ItemBusiness::where('business_id', $business_id)
+                ->with([
+                    'items' => function ($query) {
+                        $query->with('category');
+                    },
+                    'business'
+                ])
+                ->where('item_id', $itemId)
+                ->first();
+            return response()->json([
+                'error' => false,
+                'message' => "",
+                'data' => $businessItem
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'error' => true,
+                'message' => $th->getMessage(),
             ]);
         }
     }

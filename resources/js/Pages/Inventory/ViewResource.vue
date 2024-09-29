@@ -1,21 +1,41 @@
 <script>
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
-import { Head, router } from "@inertiajs/vue3";
+import { useResourceStore } from "@/Store/Resource";
+import { Head } from "@inertiajs/vue3";
+import { onMounted, computed } from "vue";
 
 export default {
-    props: ["item"],
+    props: ["itemId"],
     components: {
         AuthenticatedLayout,
         Head,
         PrimaryButton,
     },
+    setup(props) {
+        const resourceStore = useResourceStore();
+
+        // Fetch single item data when component is mounted
+        onMounted(() => {
+            console.log("Fetching resource for itemId:", props.itemId);
+            resourceStore.getSingleResource(props.itemId);
+        });
+
+        // Computed property to access single item from the store
+        const singleItem = computed(() => resourceStore.singleItem || {});
+
+        return {
+            resourceStore,
+            singleItem,
+        };
+    },
 };
 </script>
 <template>
-    <Head :title="item.item_name" />
     <AuthenticatedLayout>
-        <div class="mx-auto p-4">
+        <div v-if="resourceStore.loading">Loading...</div>
+        <div class="mx-auto p-4" v-else>
+            <Head :title="singleItem?.items?.item_name" />
             <!-- Header Section -->
             <div class="flex items-center justify-between border-b-2 pb-4 mb-6">
                 <a
@@ -38,7 +58,10 @@ export default {
                 <div class="md:h-72 md:w-72">
                     <div class="relative rounded-lg overflow-hidden">
                         <img
-                            :src="item.item_image || '/images/no-image.avif'"
+                            :src="
+                                singleItem.items?.item_image ||
+                                '/images/no-image.avif'
+                            "
                             alt="Item Image"
                             class="w-full h-full object-cover"
                         />
@@ -48,10 +71,10 @@ export default {
                 <!-- Item Details -->
                 <div class="lg:w-1/2 mt-6 lg:mt-0 space-y-4 p-2">
                     <h2 class="text-2xl font-semibold text-slate-800">
-                        {{ item.item_name }}
+                        {{ singleItem.items?.item_name }}
                     </h2>
                     <p class="text-slate-600">
-                        {{ item.description }}
+                        {{ singleItem.items?.description }}
                     </p>
                     <div class="space-y-3 mt-3 w-ful">
                         <div
@@ -59,7 +82,7 @@ export default {
                         >
                             <span class="font-medium">Quantity Available:</span>
                             <span class="font-bold text-lg"
-                                >{{ item.quantity }}
+                                >{{ singleItem.quantity }}
                             </span>
                         </div>
                         <div
@@ -67,7 +90,9 @@ export default {
                         >
                             <span class="font-medium">Category:</span>
                             <span class="font-bold text-lg">{{
-                                item.category ? item.category?.name : "--"
+                                singleItem.items?.category
+                                    ? singleItem.items?.category?.name
+                                    : "--"
                             }}</span>
                         </div>
                         <div
@@ -75,7 +100,7 @@ export default {
                         >
                             <span class="font-medium">Location:</span>
                             <span class="font-bold text-lg"
-                                >{{ item.business.business_name }}
+                                >{{ singleItem.business?.business_name }}
                             </span>
                         </div>
                     </div>
