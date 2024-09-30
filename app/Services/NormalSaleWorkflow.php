@@ -4,10 +4,12 @@ namespace App\Services;
 
 class NormalSaleWorkflow extends TransactionFlow
 {
+
     public function giveTransactionItem($transactionData)
     {
         // Borrowing-specific logic for giving the item
     }
+    public function receiveTransactionItem($params) {}
 
     public function returnTransactionItem()
     {

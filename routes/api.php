@@ -31,6 +31,7 @@ Route::prefix("item/{business_id}")->group(function () {
     Route::post("/create", [ResourceItemController::class, "create"]);
     Route::get("/list", [ResourceItemController::class, 'read']);
     Route::post("/update", [ResourceItemController::class, 'update']);
+    Route::get('/resources/{id}', [ResourceItemController::class, 'getSingleResource']);
 });
 
 Route::delete("item/delete/{id}", [ResourceItemController::class, 'delete']);
@@ -75,4 +76,5 @@ Route::prefix('transactions/{business_id}')->group(function () {
     Route::post('/logistics', [LogisticController::class, 'getLogistics']);
 
     Route::post('/logistics/dispatch-tems', [LogisticController::class, 'dispatchItems']);
+    Route::post('/logistics/receive-items', [LogisticController::class, 'receiveItems']);
 });

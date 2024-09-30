@@ -38,6 +38,10 @@ class LeasingWorkflow extends TransactionFlow
         return $this->createResponse(false, "Items dispatched successfully", $fullTransaction);
     }
 
+    public function receiveTransactionItem($params){
+        
+    }
+
     public function returnTransactionItem()
     {
         // Logic for returning the leased item

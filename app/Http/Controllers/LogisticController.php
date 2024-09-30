@@ -158,4 +158,35 @@ class LogisticController extends Controller
         }
         return $workflow;
     }
+
+    public function receiveItems($business_id, Request $request)
+    {
+        try {
+            $validatedData = $request->validate([
+                'transaction_id' => 'required|exists:transactions,id',
+                'transaction_type' => 'required|string',
+                "items" => 'required|array',
+                // 'items.*.items_id' => [
+                //     Rule::exists('transaction_items', 'item_id')->where('transaction_id', $request->input('transaction_id'))
+                // ]
+            ]);
+
+            $workflow = $this->getWorkflow($business_id, $validatedData['transaction_id'], $validatedData['transaction_type']);
+            $response = $workflow->receiveTransactionItem($validatedData);
+            // return response()->json($validatedData);
+            return $response;
+        } catch (ValidationException $e) {
+            return response()->json([
+                'error' => true,
+                'message' => 'Validation error.',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => true,
+                'message' => 'An unexpected error occurred.',
+                'errors' => $e->getMessage(),
+            ], 500);
+        }
+    }
 }

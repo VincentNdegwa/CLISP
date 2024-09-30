@@ -9,6 +9,7 @@ class PurchaseWorkflow extends TransactionFlow
         // Logic specific to purchase transactions
         // e.g., Mark items as delivered
     }
+    public function receiveTransactionItem($params) {}
 
     public function returnTransactionItem()
     {

@@ -8,6 +8,7 @@ export const useResourceStore = defineStore("resource_store", {
         loading: false,
         error: null,
         success: null,
+        singleItem: {},
     }),
     actions: {
         async fetchResources(queries) {
@@ -108,6 +109,32 @@ export const useResourceStore = defineStore("resource_store", {
                         }
                         return resource;
                     });
+                }
+            } catch (error) {
+                this.error = error.response
+                    ? error.response.data.message
+                    : error.message;
+            } finally {
+                this.loading = false;
+            }
+        },
+        async getSingleResource(itemId) {
+            this.loading = true;
+            this.error = null;
+            const store = useUserStore();
+            const businessId = store.business;
+
+            if (!businessId) {
+                this.error = "Business ID not found.";
+                return;
+            }
+            try {
+                const url = `/api/item/${businessId}/resources/${itemId}`;
+                const response = await axios.get(url);
+                if (response.data.error) {
+                    this.error = response.data.error;
+                } else {
+                    this.singleItem = response.data.data;
                 }
             } catch (error) {
                 this.error = error.response

@@ -49,4 +49,9 @@ class Business extends Model
     {
         return $this->hasMany(ResourceCategory::class, 'business_id', 'business_id');
     }
+
+    public function business_item()
+    {
+        return $this->hasMany(ItemBusiness::class, 'business_id');
+    }
 }

@@ -302,7 +302,10 @@ export default {
                     <td>
                         {{ item.category ? item.category?.name : "--" }}
                     </td>
-                    <td>{{ item.quantity }}</td>
+
+                    <td>
+                        {{ item.items_business[0]?.quantity }}
+                    </td>
                     <td>{{ item.unit }}</td>
                     <td>{{ item.price }}</td>
                     <td>{{ formatDate(item.date_added) }}</td>

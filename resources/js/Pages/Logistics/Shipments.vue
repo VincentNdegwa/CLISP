@@ -169,6 +169,7 @@
                             label="Receive All"
                             size="small"
                             severity="success"
+                            @click="openModal('ReceiveCount')"
                             v-if="
                                 (slotProps.data.transaction_type ===
                                     'Incoming' &&
@@ -280,6 +281,12 @@
                 @dispatchItems="dispatchAll"
                 @close="closeModal"
             />
+            <ReceiveCount
+                v-if="modal.component == 'ReceiveCount'"
+                :transaction="selectedTransaction"
+                @dispatchItems="receiveAll"
+                @close="closeModal"
+            />
         </Modal>
     </AuthenticatedLayout>
 </template>
@@ -302,6 +309,7 @@ import Toolbar from "primevue/toolbar";
 import { watch } from "vue";
 import { onMounted, ref } from "vue";
 import ShipmentCounts from "./ShipmentCounts.vue";
+import ReceiveCount from "./ReceiveCount.vue";
 
 export default {
     components: {
@@ -319,6 +327,7 @@ export default {
         ConfirmationModal,
         Modal,
         ShipmentCounts,
+        ReceiveCount,
     },
     setup() {
         const transactionStore = useTransactionStore();
@@ -338,6 +347,9 @@ export default {
         const dispactItems = (dispatchparams) => {
             transactionStore.dispatchItems(dispatchparams);
         };
+        const receiveItems = (receiverparams) => {
+            transactionStore.receiveItems(receiverparams);
+        };
         watch(
             filterParams,
             () => {
@@ -349,6 +361,7 @@ export default {
             filterParams,
             transactionStore,
             dispactItems,
+            receiveItems,
         };
     },
     data() {
@@ -484,9 +497,10 @@ export default {
             }));
         },
         dispatchAll(params) {
-            console.log("in shipping");
-
             this.dispactItems(params);
+        },
+        receiveAll(params) {
+            console.log("receiving");
         },
     },
 };

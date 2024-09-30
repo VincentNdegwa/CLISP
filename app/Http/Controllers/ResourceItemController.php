@@ -3,14 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Models\Business;
+use App\Models\ItemBusiness;
 use App\Models\ResourceItem;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class ResourceItemController extends Controller
 {
     public function create(Request $request, $business_id)
     {
+        DB::beginTransaction();
         try {
             $request->validate([
                 "item_name" => 'required|string|max:255',
@@ -25,20 +28,31 @@ class ResourceItemController extends Controller
             $data['business_id'] = $business_id;
 
             $resourceItem = ResourceItem::create($data);
+            ItemBusiness::create([
+                'business_id' => $business_id,
+                'item_id' => $resourceItem->id,
+                'source' => 'Owned',
+                'quantity' => $request->input('quantity'),
+            ]);
             $item = ResourceItem::where('id', $resourceItem->id)->with('category')->first();
 
+
+            DB::commit();
             return response()->json([
                 'error' => false,
                 'message' => 'Resource item created successfully.',
                 'data' => $item
             ], 201);
         } catch (ValidationException $e) {
+            DB::rollBack();
             return response()->json([
                 'error' => true,
                 'message' => 'Validation error.',
                 'errors' => $e->errors()
             ]);
         } catch (\Exception $e) {
+            DB::rollBack();
+
             return response()->json([
                 'error' => true,
                 'message' => 'An unexpected error occurred.',
@@ -61,22 +75,36 @@ class ResourceItemController extends Controller
         $search_text = $request->query('search');
         $category_id = $request->query('category');
 
-        $query = ResourceItem::where('business_id', $business_id)->with('category');
+        $business = ItemBusiness::where('business_id', $business_id)->first();
+        $items = [];
 
-        if ($search_text) {
-            $query->where('item_name', 'like', '%' . $search_text . '%')
-                ->orWhere('description', 'like', '%' . $search_text . '%');
+        if ($business) {
+            $items = $business->items()
+                ->where(function ($query) use ($search_text, $category_id) {
+                    if ($search_text) {
+                        $query->where('item_name', 'like', '%' . $search_text . '%')
+                            ->orWhere('description', 'like', '%' . $search_text . '%');
+                    }
+                    if ($category_id) {
+                        $query->where('category_id', $category_id);
+                    }
+                })
+                ->with(['category', 'itemsBusiness' => function ($query) use ($business_id) {
+                    $query->where('business_id', $business_id)->select('item_id', 'quantity')->take(1);
+                }])
+                ->paginate(20);
         }
-        if ($category_id) {
-            $query->where('category_id', $category_id);
-        }
+        $itemsv2 = $items->getCollection();
+        $itemsv2['qnt'] = $itemsv2->items;
 
-        $items = $query->paginate(20);
+
+
 
         return response()->json([
             'error' => false,
             'message' => 'Resource items fetched successfully.',
-            'data' => $items
+            'data' => $items,
+            'newdata' => $itemsv2,
         ]);
     }
 
@@ -144,6 +172,30 @@ class ResourceItemController extends Controller
                 'error' => true,
                 'message' => 'An error occurred while deleting the resource item.',
                 'details' => $e->getMessage()
+            ]);
+        }
+    }
+    public function getSingleResource($business_id, $itemId)
+    {
+        try {
+            $businessItem = ItemBusiness::where('business_id', $business_id)
+                ->with([
+                    'items' => function ($query) {
+                        $query->with('category');
+                    },
+                    'business'
+                ])
+                ->where('item_id', $itemId)
+                ->first();
+            return response()->json([
+                'error' => false,
+                'message' => "",
+                'data' => $businessItem
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'error' => true,
+                'message' => $th->getMessage(),
             ]);
         }
     }

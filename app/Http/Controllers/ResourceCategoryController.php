@@ -69,17 +69,11 @@ class ResourceCategoryController extends Controller
 
     public function openItem($id)
     {
-        $item = ResourceItem::where('id', $id)->with('category', 'business')->first();
-        if ($item) {
-            return Inertia::render('Inventory/ViewResource', [
-                "item" => $item
-            ]);
-        } else {
-            return response()->json([
-                'error' => true,
-                'message' => 'Item not found.'
-            ], 404);
-        }
+
+
+        return Inertia::render('Inventory/ViewResource', [
+            'itemId' => $id
+        ]);
     }
     public function update(Request $request)
     {
