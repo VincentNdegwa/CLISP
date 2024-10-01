@@ -77,25 +77,44 @@ class ResourceItemController extends Controller
 
         $business = ItemBusiness::where('business_id', $business_id)->first();
         $items = [];
-
-        if ($business) {
-            $items = $business->items()
-                ->where(function ($query) use ($search_text, $category_id) {
-                    if ($search_text) {
-                        $query->where('item_name', 'like', '%' . $search_text . '%')
-                            ->orWhere('description', 'like', '%' . $search_text . '%');
-                    }
-                    if ($category_id) {
-                        $query->where('category_id', $category_id);
-                    }
-                })
+        if ($business && $business->items()) {
+            $items = $business->items()->where(function ($query) use ($search_text, $category_id) {
+                if ($search_text) {
+                    $query->where('item_name', 'like', '%' . $search_text . '%')
+                        ->orWhere('description', 'like', '%' . $search_text . '%');
+                }
+                if ($category_id) {
+                    $query->where('category_id', $category_id);
+                }
+            })
                 ->with(['category', 'itemsBusiness' => function ($query) use ($business_id) {
                     $query->where('business_id', $business_id)->select('item_id', 'quantity')->take(1);
                 }])
                 ->paginate(20);
+
+            $itemsv2 = $items->getCollection();
+
+            $itemsv2->map(function ($item) {
+                if (isset($item->itemsBusiness[0])) {
+                    $item->quantity = $item->itemsBusiness[0]->quantity;
+                } else {
+                    $item->quantity = 0;
+                }
+                unset($item->itemsBusiness);
+                return $item;
+            });
+
+            $items->setCollection($itemsv2);
         }
-        $itemsv2 = $items->getCollection();
-        $itemsv2['qnt'] = $itemsv2->items;
+
+
+        return response()->json([
+            'error' => false,
+            'message' => 'Resource items fetched successfully.',
+            'data' => $items ?? []
+        ]);
+
+
 
 
 
@@ -104,7 +123,7 @@ class ResourceItemController extends Controller
             'error' => false,
             'message' => 'Resource items fetched successfully.',
             'data' => $items,
-            'newdata' => $itemsv2,
+
         ]);
     }
 
