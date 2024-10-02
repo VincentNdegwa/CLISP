@@ -2,6 +2,10 @@
     <div class="h-[80vh]">
         <div class="table-display">
             <DataTable
+                v-if="
+                    transactionStore.transactions.data &&
+                    transactionStore.transactions?.data?.length > 0
+                "
                 :value="transactionStore.transactions.data"
                 :loading="transactionStore.loading"
                 dataKey="id"
@@ -105,6 +109,7 @@
                     </template>
                 </Column>
             </DataTable>
+            <NoRecords v-else />
         </div>
     </div>
 
@@ -125,6 +130,7 @@ import DataTable from "primevue/datatable";
 import Tag from "primevue/tag";
 import Button from "primevue/button";
 import Menu from "primevue/menu";
+import NoRecords from "@/Components/NoRecords.vue";
 
 export default {
     emits: ["startUpdate", "startDelete"],
@@ -136,6 +142,7 @@ export default {
         DataTable,
         Button,
         Menu,
+        NoRecords,
     },
     props: {
         transactionStore: {

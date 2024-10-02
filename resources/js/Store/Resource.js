@@ -4,7 +4,9 @@ import { useUserStore } from "./UserStore";
 
 export const useResourceStore = defineStore("resource_store", {
     state: () => ({
-        items: {},
+        items: {
+            data: [],
+        },
         loading: false,
         error: null,
         success: null,
@@ -15,6 +17,10 @@ export const useResourceStore = defineStore("resource_store", {
             const store = useUserStore();
             const businessId = store.business;
 
+            if (!businessId) {
+                this.error = "Business ID not found.";
+                return;
+            }
             let link = `/api/item/${businessId}/list`;
             if (queries) {
                 if (queries.search) {
@@ -24,17 +30,13 @@ export const useResourceStore = defineStore("resource_store", {
                     link += `?category=${queries.category}`;
                 }
             }
-            if (!businessId) {
-                this.error = "Business ID not found.";
-                return;
-            }
             this.loading = true;
             this.error = null;
 
             try {
                 const response = await axios.get(link);
                 if (response.data.error) {
-                    this.error = response.data.error;
+                    this.error = response.data.message;
                 } else {
                     this.items = response.data.data;
                     this.success = response.data.success;
