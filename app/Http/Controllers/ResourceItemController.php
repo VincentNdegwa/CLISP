@@ -75,10 +75,10 @@ class ResourceItemController extends Controller
         $search_text = $request->query('search');
         $category_id = $request->query('category');
 
-        $business = ItemBusiness::where('business_id', $business_id)->first();
-        $items = [];
-        if ($business && $business->items()) {
-            $items = $business->items()->where(function ($query) use ($search_text, $category_id) {
+        $newData = ResourceItem::whereHas('itemsBusiness', function ($query) use ($business_id) {
+            $query->where('business_id', $business_id);
+        })
+            ->where(function ($query) use ($search_text, $category_id) {
                 if ($search_text) {
                     $query->where('item_name', 'like', '%' . $search_text . '%')
                         ->orWhere('description', 'like', '%' . $search_text . '%');
@@ -87,31 +87,31 @@ class ResourceItemController extends Controller
                     $query->where('category_id', $category_id);
                 }
             })
-                ->with(['category', 'itemsBusiness' => function ($query) use ($business_id) {
-                    $query->where('business_id', $business_id)->select('item_id', 'quantity')->take(1);
-                }])
-                ->paginate(20);
-
-            $itemsv2 = $items->getCollection();
-
-            $itemsv2->map(function ($item) {
-                if (isset($item->itemsBusiness[0])) {
-                    $item->quantity = $item->itemsBusiness[0]->quantity;
-                } else {
-                    $item->quantity = 0;
+            ->with([
+                'category',
+                'itemsBusiness' => function ($query) use ($business_id) {
+                    $query->where('business_id', $business_id)->select('item_id', 'quantity');
                 }
-                unset($item->itemsBusiness);
-                return $item;
-            });
+            ])
+            ->paginate(20);
 
-            $items->setCollection($itemsv2);
-        }
+        $newData->getCollection()->transform(function ($item) {
+            if (isset($item->itemsBusiness[0])) {
+                $item->quantity = $item->itemsBusiness[0]->quantity;
+            } else {
+                $item->quantity = 0;
+            }
+            unset($item->itemsBusiness);
+            return $item;
+        });
+
+
 
 
         return response()->json([
             'error' => false,
             'message' => 'Resource items fetched successfully.',
-            'data' => $items ?? []
+            'data' => $newData ?? [],
         ]);
 
 
