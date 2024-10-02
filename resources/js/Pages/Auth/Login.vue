@@ -6,6 +6,7 @@ import InputLabel from "@/Components/InputLabel.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import TextInput from "@/Components/TextInput.vue";
 import { Head, Link, useForm } from "@inertiajs/vue3";
+import { onMounted } from "vue";
 
 defineProps({
     canResetPassword: {
@@ -27,6 +28,11 @@ const submit = () => {
         onFinish: () => form.reset("password"),
     });
 };
+
+onMounted(() => {
+    window.localStorage.removeItem("default_business");
+    console.log("mounted in login");
+});
 </script>
 
 <template>

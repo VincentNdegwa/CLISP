@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ItemBusiness;
 use App\Models\ResourceItem;
 use App\Models\Transaction;
 use App\Models\TransactionDetail;
@@ -59,7 +60,9 @@ class TransactionController extends Controller
                     'quantity' => $item['quantity'],
                     'price' => $item['price'],
                 ]);
-                $transactionModel = ResourceItem::find($item['item_id']);
+                $transactionModel = ItemBusiness::where('business_id', $business_id)
+                    ->where('item_id', $item['item_id'])
+                    ->first();
                 $newQuantity = $transactionModel->quantity - $item['quantity'];
                 $transactionModel->update([
                     'quantity' => $newQuantity,

@@ -304,7 +304,7 @@ export default {
                     </td>
 
                     <td>
-                        {{ item.items_business[0]?.quantity }}
+                        {{ item.quantity }}
                     </td>
                     <td>{{ item.unit }}</td>
                     <td>{{ item.price }}</td>

@@ -4,7 +4,9 @@ import { useUserStore } from "./UserStore";
 
 export const useResourceCategoryStore = defineStore("resource_category", {
     state: () => ({
-        items: {},
+        items: {
+            data: [],
+        },
         loading: false,
         error: null,
         success: null,

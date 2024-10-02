@@ -78,7 +78,10 @@
         </Toolbar>
         <TableSkeleton v-if="transactionStore.loading" />
         <DataTable
-            v-else
+            v-else-if="
+                transactionStore.shipments.data &&
+                transactionStore.shipments?.data?.length > 0
+            "
             v-model:expandedRows="expandedRows"
             :value="transactionStore.shipments.data?.data"
             :loading="transactionStore.loading"
@@ -266,6 +269,7 @@
                 </div>
             </template>
         </DataTable>
+        <NoRecords v-else />
         <Toast />
         <ConfirmationModal
             :isOpen="confirmation.isOpen"
@@ -310,6 +314,7 @@ import { watch } from "vue";
 import { onMounted, ref } from "vue";
 import ShipmentCounts from "./ShipmentCounts.vue";
 import ReceiveCount from "./ReceiveCount.vue";
+import NoRecords from "@/Components/NoRecords.vue";
 
 export default {
     components: {
@@ -328,6 +333,7 @@ export default {
         Modal,
         ShipmentCounts,
         ReceiveCount,
+        NoRecords,
     },
     setup() {
         const transactionStore = useTransactionStore();

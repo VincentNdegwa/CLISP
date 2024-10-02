@@ -136,7 +136,7 @@ export default {
             </div>
 
             <TableSkeleton v-if="categories.loading" />
-            <NoRecords v-else-if="categories.items?.data.length == 0" />
+            <NoRecords v-else-if="categories.items?.data?.length == 0" />
 
             <div v-else class="h-[74vh] overflow-y-scroll relative mt-1">
                 <table class="min-w-full bg-white relative table">

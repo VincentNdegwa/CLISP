@@ -19,10 +19,11 @@ class ItemBusiness extends Model
 
     public function items()
     {
+
         return $this->belongsTo(ResourceItem::class, 'item_id', 'id');
     }
 
-    
+
 
     public function business()
     {
