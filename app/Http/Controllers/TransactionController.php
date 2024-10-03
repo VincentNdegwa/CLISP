@@ -63,10 +63,12 @@ class TransactionController extends Controller
                 $transactionModel = ItemBusiness::where('business_id', $business_id)
                     ->where('item_id', $item['item_id'])
                     ->first();
-                $newQuantity = $transactionModel->quantity - $item['quantity'];
-                $transactionModel->update([
-                    'quantity' => $newQuantity,
-                ]);
+                if ($request->input('type') == 'sale') {
+                    $newQuantity = $transactionModel->quantity - $item['quantity'];
+                    $transactionModel->update([
+                        'quantity' => $newQuantity,
+                    ]);
+                }
             }
 
             if ($transaction_details = $request->input('transaction_details')) {

@@ -65,7 +65,7 @@ class LogisticController extends Controller
                 $transactionsQuery
                     ->where('type', $validatedData['type']);
             } else {
-                $transactionsQuery->whereIn("type", ['leasing', 'borrowing']);
+                $transactionsQuery->whereIn("type", ['leasing', 'borrowing', 'purchase']);
             }
             $transactions = $transactionsQuery
 

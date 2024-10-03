@@ -80,7 +80,7 @@
         <DataTable
             v-else-if="
                 transactionStore.shipments.data &&
-                transactionStore.shipments?.data?.length > 0
+                transactionStore.shipments.data?.data.length > 0
             "
             v-model:expandedRows="expandedRows"
             :value="transactionStore.shipments.data?.data"
