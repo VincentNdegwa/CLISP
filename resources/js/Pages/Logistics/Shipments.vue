@@ -174,10 +174,11 @@
                             severity="success"
                             @click="openModal('ReceiveCount')"
                             v-if="
-                                (slotProps.data.transaction_type ===
+                                slotProps.data.transaction_type ===
                                     'Incoming' &&
-                                    slotProps.data.status === 'dispatched') ||
-                                slotProps.data.status === 'partially-dispatched'
+                                (slotProps.data.status === 'dispatched' ||
+                                    slotProps.data.status ===
+                                        'partially-dispatched')
                             "
                         />
                         <Button
@@ -185,10 +186,11 @@
                             size="small"
                             severity="danger"
                             v-if="
-                                (slotProps.data.transaction_type ===
+                                slotProps.data.transaction_type ===
                                     'Incoming' &&
-                                    slotProps.data.status === 'dispatched') ||
-                                slotProps.data.status === 'partially-dispatched'
+                                (slotProps.data.status === 'dispatched' ||
+                                    slotProps.data.status ===
+                                        'partially-dispatched')
                             "
                         />
                     </div>

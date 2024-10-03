@@ -108,13 +108,18 @@ class LogisticController extends Controller
     public function dispatchItems($business_id, Request $request)
     {
         try {
+
             $validatedData = $request->validate([
                 'transaction_id' => 'required|exists:transactions,id',
                 'transaction_type' => 'required|string',
-                "items" => 'required|array',
-                // 'items.*.items_id' => [
-                //     Rule::exists('transaction_items', 'item_id')->where('transaction_id', $request->input('transaction_id'))
-                // ]
+                'items' => 'required|array',
+                'items.*.item_id' => [
+                    'required',
+                    Rule::exists('transaction_items', 'item_id')
+                        ->where('transaction_id', $request->input('transaction_id'))
+                ],
+                'items.*.quantity' => 'required|integer|min:1',
+                'items.*.quantity_ship' => 'required|integer|min:1|lte:items.*.quantity',
             ]);
 
             $workflow = $this->getWorkflow($business_id, $validatedData['transaction_id'], $validatedData['transaction_type']);
