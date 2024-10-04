@@ -1,15 +1,21 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Transactions\Shipping;
 
-class NormalSaleWorkflow extends TransactionFlow
+use App\Services\ShippableTransactionWorkflow;
+
+class LeasingWorkflow extends ShippableTransactionWorkflow
 {
+    public function giveTransactionItem($params)
 
-    public function giveTransactionItem($transactionData)
     {
-        // Borrowing-specific logic for giving the item
+        return parent::giveTransactionItem($params);
     }
-    public function receiveTransactionItem($params) {}
+
+    public function receiveTransactionItem($params)
+    {
+        return parent::receiveTransactionItem($params);
+    }
 
     public function returnTransactionItem()
     {

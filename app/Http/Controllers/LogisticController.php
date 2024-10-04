@@ -3,11 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Transaction;
-use App\Services\BorrowingWorkflow;
-use App\Services\LeasingWorkflow;
-use App\Services\NormalSaleWorkflow;
-use App\Services\PurchaseWorkflow;
+
 use App\Services\TransactionFlow;
+use App\Services\Transactions\NonShipping\NormalSaleWorkflow;
+use App\Services\Transactions\Shipping\BorrowingWorkflow;
+use App\Services\Transactions\Shipping\LeasingWorkflow;
+use App\Services\Transactions\Shipping\PurchaseWorkflow;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -65,7 +66,7 @@ class LogisticController extends Controller
                 $transactionsQuery
                     ->where('type', $validatedData['type']);
             } else {
-                $transactionsQuery->whereIn("type", ['leasing', 'borrowing']);
+                $transactionsQuery->whereIn("type", ['leasing', 'borrowing', 'purchase']);
             }
             $transactions = $transactionsQuery
 
@@ -108,13 +109,18 @@ class LogisticController extends Controller
     public function dispatchItems($business_id, Request $request)
     {
         try {
+
             $validatedData = $request->validate([
                 'transaction_id' => 'required|exists:transactions,id',
                 'transaction_type' => 'required|string',
-                "items" => 'required|array',
-                // 'items.*.items_id' => [
-                //     Rule::exists('transaction_items', 'item_id')->where('transaction_id', $request->input('transaction_id'))
-                // ]
+                'items' => 'required|array',
+                'items.*.item_id' => [
+                    'required',
+                    Rule::exists('transaction_items', 'item_id')
+                        ->where('transaction_id', $request->input('transaction_id'))
+                ],
+                'items.*.quantity' => 'required|integer|min:1',
+                'items.*.quantity_ship' => 'required|integer|min:1|lte:items.*.quantity',
             ]);
 
             $workflow = $this->getWorkflow($business_id, $validatedData['transaction_id'], $validatedData['transaction_type']);
@@ -166,9 +172,13 @@ class LogisticController extends Controller
                 'transaction_id' => 'required|exists:transactions,id',
                 'transaction_type' => 'required|string',
                 "items" => 'required|array',
-                // 'items.*.items_id' => [
-                //     Rule::exists('transaction_items', 'item_id')->where('transaction_id', $request->input('transaction_id'))
-                // ]
+                'items.*.item_id' => [
+                    'required',
+                    Rule::exists('transaction_items', 'item_id')
+                        ->where('transaction_id', $request->input('transaction_id'))
+                ],
+                'items.*.quantity' => 'required|integer|min:1',
+                'items.*.quantity_ship' => 'required|integer|min:1|lte:items.*.quantity',
             ]);
 
             $workflow = $this->getWorkflow($business_id, $validatedData['transaction_id'], $validatedData['transaction_type']);

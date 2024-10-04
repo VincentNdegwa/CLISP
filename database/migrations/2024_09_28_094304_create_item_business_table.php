@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('item_id'); //foreign key from resource_item.id
             $table->unsignedBigInteger('business_id'); // foreign key from business.business_id
             $table->decimal('quantity', 10, 2)->default(0); //quantity of the item
-            $table->enum('source', ['Owned', 'Borrowed', 'Leased'])->default('Owned');
+            $table->enum('source', ['Owned', 'Borrowed', 'Leased', 'Purchased'])->default('Owned');
             $table->timestamps();
         });
     }

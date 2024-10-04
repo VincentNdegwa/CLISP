@@ -7,10 +7,10 @@ use App\Models\ResourceItem;
 use App\Models\Transaction;
 use App\Models\TransactionDetail;
 use App\Models\TransactionItem;
-use App\Services\BorrowingWorkflow;
-use App\Services\LeasingWorkflow;
-use App\Services\NormalSaleWorkflow;
-use App\Services\PurchaseWorkflow;
+use App\Services\Transactions\NonShipping\NormalSaleWorkflow;
+use App\Services\Transactions\Shipping\BorrowingWorkflow;
+use App\Services\Transactions\Shipping\LeasingWorkflow;
+use App\Services\Transactions\Shipping\PurchaseWorkflow;
 use App\Services\TransactionFlow;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -63,10 +63,12 @@ class TransactionController extends Controller
                 $transactionModel = ItemBusiness::where('business_id', $business_id)
                     ->where('item_id', $item['item_id'])
                     ->first();
-                $newQuantity = $transactionModel->quantity - $item['quantity'];
-                $transactionModel->update([
-                    'quantity' => $newQuantity,
-                ]);
+                if ($request->input('type') == 'sale') {
+                    $newQuantity = $transactionModel->quantity - $item['quantity'];
+                    $transactionModel->update([
+                        'quantity' => $newQuantity,
+                    ]);
+                }
             }
 
             if ($transaction_details = $request->input('transaction_details')) {
