@@ -290,7 +290,7 @@
             <ReceiveCount
                 v-if="modal.component == 'ReceiveCount'"
                 :transaction="selectedTransaction"
-                @dispatchItems="receiveAll"
+                @receiveItems="receiveAll"
                 @close="closeModal"
             />
         </Modal>
@@ -435,13 +435,13 @@ export default {
                 case "approved":
                     return "secondary";
                 case "paid":
+                case "completed":
+                case "received":
                     return "success";
                 case "dispatched":
                     return "warn";
                 case "transit":
                     return "warn";
-                case "completed":
-                    return "success";
                 case "canceled":
                     return "danger";
                 case "return":
@@ -508,7 +508,7 @@ export default {
             this.dispactItems(params);
         },
         receiveAll(params) {
-            console.log("receiving");
+            this.receiveItems(params);
         },
     },
 };
