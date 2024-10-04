@@ -22,7 +22,7 @@ class TransactionController extends Controller
     public function create($business_id, Request $request)
     {
         DB::beginTransaction();
-        try {
+        try { 
             $request->validate([
                 "type" => 'required|string',
                 "status" => 'required|string',
