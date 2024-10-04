@@ -163,6 +163,7 @@
                             label="Return All"
                             size="small"
                             severity="info"
+                            @click="returnAll"
                             v-if="
                                 slotProps.data.transaction_type == 'Incoming' &&
                                 slotProps.data.status === 'completed'
@@ -283,13 +284,13 @@
         <Modal :show="modal.open" @close="closeModal">
             <ShipmentCounts
                 v-if="modal.component == 'ShipmentCounts'"
-                :transaction="selectedTransaction"
+                :transaction="selectedTransactionData"
                 @dispatchItems="dispatchAll"
                 @close="closeModal"
             />
             <ReceiveCount
                 v-if="modal.component == 'ReceiveCount'"
-                :transaction="selectedTransaction"
+                :transaction="selectedTransactionData"
                 @receiveItems="receiveAll"
                 @close="closeModal"
             />
@@ -403,7 +404,7 @@ export default {
                 open: false,
                 component: "",
             },
-            selectedTransaction: {},
+            selectedTransactionData: {},
         };
     },
     methods: {
@@ -460,22 +461,29 @@ export default {
         checkConfirmation(method, methodText) {
             switch (methodText) {
                 case "dispatch_all":
-                    this.confirmation.isOpen = true;
-                    this.confirmation.message =
-                        "Are you sure you want to dispatch all the items to the recepient?";
-                    this.confirmation.title = "Dispatch all Items";
-                    this.confirmation.method = method;
+                    this.createModalConfimation(
+                        "Are you sure you want to dispatch all the items to the recepient?",
+                        "Dispatch one Item",
+                        method
+                    );
                     break;
                 case "dispatch_one":
-                    this.confirmation.isOpen = true;
-                    this.confirmation.message =
-                        "Are you sure you want to dispatch this items to the recepient?";
-                    this.confirmation.title = "Dispatch one Item";
-                    this.confirmation.method = method;
+                    this.createModalConfimation(
+                        "Are you sure you want to dispatch this items to the recepient?",
+                        "Dispatch one Item",
+                        method
+                    );
+
                     break;
                 default:
                     break;
             }
+        },
+        createModalConfimation(message, title, method) {
+            this.confirmation.isOpen = true;
+            this.confirmation.message = message;
+            this.confirmation.title = title;
+            this.confirmation.method = method;
         },
         confirmAction() {
             if (this.confirmation.method) {
@@ -498,8 +506,8 @@ export default {
             this.modal.component = "";
         },
         selectTransaction(data) {
-            this.selectedTransaction = data;
-            this.selectedTransaction.items = data.items?.map((item) => ({
+            this.selectedTransactionData = data;
+            this.selectedTransactionData.items = data.items?.map((item) => ({
                 ...item,
                 quantity_ship: item.quantity,
             }));
@@ -509,6 +517,17 @@ export default {
         },
         receiveAll(params) {
             this.receiveItems(params);
+        },
+        returnAll() {
+            this.createModalConfimation(
+                "Are you sure you want to return all the items?",
+                "Return all the items",
+                () => {
+                    this.transactionStore.returnItems(this.selectedTransactionData);
+                }
+            );
+
+            this.closeModal();
         },
     },
 };

@@ -389,7 +389,6 @@ export const useTransactionStore = defineStore("transactionStore", {
             if (!response.data.error) {
                 this.shipments = response.data;
             }
-            console.log(response.data);
         },
         async dispatchItems(dispatchParams) {
             const url = `/api/transactions/${
@@ -432,6 +431,9 @@ export const useTransactionStore = defineStore("transactionStore", {
                 );
             }
             this.updateUiResponse(response);
+        },
+        async returnItems(params) {
+            const url = ``;
         },
     },
 });

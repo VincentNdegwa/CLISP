@@ -199,4 +199,7 @@ class LogisticController extends Controller
             ], 500);
         }
     }
+    public function returnItems(Request $request){
+        
+    }
 }
