@@ -115,10 +115,9 @@ class ShippableTransactionWorkflow extends TransactionFlow
 
     public function returnTransactionItem($params)
     {
-        // Logic for returning the borrowed item
-        return response()->json([
-            'items' => 'bitch'
-        ]);
+        $transactionId = $params['transaction_id'];
+        $items = $params['items'];
+        
     }
 
     public function applyLateFees()
