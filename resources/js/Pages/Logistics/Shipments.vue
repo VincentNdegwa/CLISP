@@ -523,7 +523,21 @@ export default {
                 "Are you sure you want to return all the items?",
                 "Return all the items",
                 () => {
-                    this.transactionStore.returnItems(this.selectedTransactionData);
+                    let params = {
+                        transaction_id: "",
+                        transaction_type: "",
+                        items: [],
+                    };
+                    params.transaction_id = this.selectedTransactionData.id;
+                    params.transaction_type = this.selectedTransactionData.type;
+                    params.items = this.selectedTransactionData.items.map(
+                        (item) => ({
+                            item_id: item.item.id,
+                            quantity: item.quantity,
+                            quantity_ship: item.quantity_ship,
+                        })
+                    );
+                    this.transactionStore.returnItems(params);
                 }
             );
 
