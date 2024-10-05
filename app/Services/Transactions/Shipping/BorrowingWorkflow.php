@@ -18,23 +18,23 @@ class BorrowingWorkflow extends ShippableTransactionWorkflow
         return parent::receiveTransactionItem($params);
     }
 
-    public function returnTransactionItem()
+    public function returnTransactionItem($params)
     {
-        // Logic for returning the borrowed item
+        return parent::returnTransactionItem($params);
     }
 
     public function applyLateFees()
     {
-        // Borrowing-specific late fees
+        return parent::applyLateFees();
     }
 
     public function applyDamageFees()
     {
-        // Borrowing-specific damage fee logic
+        return parent::applyDamageFees();
     }
 
     public function applyShippingFees()
     {
-        // Borrowing-specific shipping fee logic
+        return parent::applyShippingFees();
     }
 }

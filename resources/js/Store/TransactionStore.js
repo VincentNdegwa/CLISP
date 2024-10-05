@@ -389,7 +389,6 @@ export const useTransactionStore = defineStore("transactionStore", {
             if (!response.data.error) {
                 this.shipments = response.data;
             }
-            console.log(response.data);
         },
         async dispatchItems(dispatchParams) {
             const url = `/api/transactions/${
@@ -421,6 +420,23 @@ export const useTransactionStore = defineStore("transactionStore", {
                 "post",
                 receiveParams
             );
+            if (!response.data.error) {
+                this.shipments.data.data = this.shipments?.data.data.map(
+                    (shipment) => {
+                        if (shipment.id === response.data.data.id) {
+                            return response.data.data;
+                        }
+                        return shipment;
+                    }
+                );
+            }
+            this.updateUiResponse(response);
+        },
+        async returnItems(params) {
+            const url = `/api/transactions/${
+                useUserStore().business
+            }/logistics/return-items`;
+            const response = await this.handleRequest(url, "post", params);
             if (!response.data.error) {
                 this.shipments.data.data = this.shipments?.data.data.map(
                     (shipment) => {

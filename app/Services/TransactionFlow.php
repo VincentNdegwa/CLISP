@@ -135,7 +135,7 @@ abstract class TransactionFlow
     // Abstract methods to be implemented by child classes for specific workflows
     abstract public function giveTransactionItem($transactionData);
     abstract public function receiveTransactionItem($transactionData);
-    abstract public function returnTransactionItem();
+    abstract public function returnTransactionItem($transactionData);
     abstract public function applyLateFees();
     abstract public function applyDamageFees();
     abstract public function applyShippingFees();

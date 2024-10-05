@@ -13,7 +13,7 @@ class NormalSaleWorkflow extends TransactionFlow
     }
     public function receiveTransactionItem($params) {}
 
-    public function returnTransactionItem()
+    public function returnTransactionItem($params)
     {
         // Logic for returning the borrowed item
     }
