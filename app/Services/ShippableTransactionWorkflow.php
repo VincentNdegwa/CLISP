@@ -115,9 +115,50 @@ class ShippableTransactionWorkflow extends TransactionFlow
 
     public function returnTransactionItem($params)
     {
-        $transactionId = $params['transaction_id'];
-        $items = $params['items'];
-        
+
+        try {
+            $fullTransaction = $this->getFullTransaction();
+
+            DB::beginTransaction();
+            $transactionId = $params['transaction_id'];
+            $items = $params['items'];
+            $itemIds = [];
+            foreach ($items as $item) {
+
+                $receiverBusinessItemExists = ItemBusiness::where('item_id', $item['item_id'])
+                    ->where('business_id', $fullTransaction->receiver_business->business_id)->first();
+                if (isset($receiverBusinessItemExists)) {
+                    $receiverBusinessItemExists->quantity -= $item['quantity_ship'];
+                    $receiverBusinessItemExists->save();
+                }
+
+                $intiatorBusinessItem = ItemBusiness::where('business_id', $fullTransaction->initiator->business_id)
+                    ->where('item_id', $item['item_id'])->first();
+                $intiatorBusinessItem->update([
+                    'quantity' => $intiatorBusinessItem->quantity += $item['quantity_ship'],
+                ]);
+                if ($item['quantity'] == $item['quantity_ship']) {
+                    $itemIds[] = $item['item_id'];
+                }
+
+                $itemIds[] = $item['item_id'];
+            }
+
+            $transaction = $this->transaction;
+            $transaction->status = 'return';
+            $transaction->save();
+
+            TransactionItem::whereIn('item_id', $itemIds)->update([
+                'status' => 'returned'
+            ]);
+            DB::commit();
+            $fullTransaction = $this->getFullTransaction();
+
+            return $this->createResponse(false, "Items returned successfully", $fullTransaction);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return $this->createResponse(true, 'Failed to return items', $th->getMessage());
+        }
     }
 
     public function applyLateFees()

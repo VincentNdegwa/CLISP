@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Business;
 use App\Models\ItemBusiness;
 use App\Models\ResourceItem;
+use App\Models\TransactionItemHistory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -18,25 +19,34 @@ class ResourceItemController extends Controller
             $request->validate([
                 "item_name" => 'required|string|max:255',
                 "category_id" => 'required|exists:resource_category,id',
-                "quantity" => 'required|min:0',
+                "quantity" => 'required|min:0|numeric',
                 "unit" => 'required|string|max:50',
                 "price" => 'required|numeric|min:0',
-                "date_added" => 'required'
+                "date_added" => 'required',
+                "unit" => 'string'
             ]);
 
             $data = $request->all();
             $data['business_id'] = $business_id;
+            unset($data['quantity']);
 
             $resourceItem = ResourceItem::create($data);
-            ItemBusiness::create([
+            $itemBusiness = ItemBusiness::create([
                 'business_id' => $business_id,
                 'item_id' => $resourceItem->id,
                 'source' => 'Owned',
                 'quantity' => $request->input('quantity'),
             ]);
+
+            TransactionItemHistory::create([
+                'item_business_id' => $itemBusiness->id,
+                'transaction_type' => 'Stock In',
+                'quantity' => $request->input('quantity'),
+                'transaction_time' => now(),
+            ]);
+
             $item = ResourceItem::where('id', $resourceItem->id)->with('category')->first();
-
-
+            $item->quantity = $request->input('quantity');
             DB::commit();
             return response()->json([
                 'error' => false,

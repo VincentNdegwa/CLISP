@@ -29,4 +29,8 @@ class ItemBusiness extends Model
     {
         return $this->belongsTo(Business::class, 'business_id', 'business_id');
     }
+    public function transactionItemsHistory()
+    {
+        return $this->hasMany(TransactionItemHistory::class, 'item_business_id');
+    }
 }

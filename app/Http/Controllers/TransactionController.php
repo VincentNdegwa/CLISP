@@ -7,6 +7,7 @@ use App\Models\ResourceItem;
 use App\Models\Transaction;
 use App\Models\TransactionDetail;
 use App\Models\TransactionItem;
+use App\Models\TransactionItemHistory;
 use App\Services\Transactions\NonShipping\NormalSaleWorkflow;
 use App\Services\Transactions\Shipping\BorrowingWorkflow;
 use App\Services\Transactions\Shipping\LeasingWorkflow;
@@ -22,7 +23,7 @@ class TransactionController extends Controller
     public function create($business_id, Request $request)
     {
         DB::beginTransaction();
-        try { 
+        try {
             $request->validate([
                 "type" => 'required|string',
                 "status" => 'required|string',
@@ -69,6 +70,12 @@ class TransactionController extends Controller
                         'quantity' => $newQuantity,
                     ]);
                 }
+                TransactionItemHistory::create([
+                    'item_business_id' => $transactionModel->id,
+                    'transaction_type' => $request->input('type'),
+                    'quantity' => $item['quantity'],
+                    'transaction_time' => $new_transaction->created_at,
+                ]);
             }
 
             if ($transaction_details = $request->input('transaction_details')) {
