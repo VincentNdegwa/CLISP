@@ -212,7 +212,8 @@ class ResourceItemController extends Controller
                     'items' => function ($query) {
                         $query->with('category');
                     },
-                    'business'
+                    'business',
+                    'transactionItemsHistory'
                 ])
                 ->where('item_id', $itemId)
                 ->first();
