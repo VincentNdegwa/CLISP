@@ -69,13 +69,14 @@ class TransactionController extends Controller
                     $transactionModel->update([
                         'quantity' => $newQuantity,
                     ]);
+
+                    TransactionItemHistory::create([
+                        'item_business_id' => $transactionModel->id,
+                        'transaction_type' => 'Sale',
+                        'quantity' => $item['quantity'],
+                        'transaction_time' => $new_transaction->created_at,
+                    ]);
                 }
-                TransactionItemHistory::create([
-                    'item_business_id' => $transactionModel->id,
-                    'transaction_type' => $request->input('type'),
-                    'quantity' => $item['quantity'],
-                    'transaction_time' => $new_transaction->created_at,
-                ]);
             }
 
             if ($transaction_details = $request->input('transaction_details')) {
