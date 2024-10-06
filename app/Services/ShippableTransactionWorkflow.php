@@ -6,6 +6,7 @@ namespace App\Services;
 use App\Services\TransactionFlow;
 use App\Models\ItemBusiness;
 use App\Models\TransactionItem;
+use App\Models\TransactionItemHistory;
 use Illuminate\Support\Facades\DB;
 
 class ShippableTransactionWorkflow extends TransactionFlow
@@ -24,9 +25,19 @@ class ShippableTransactionWorkflow extends TransactionFlow
             foreach ($items as $item) {
                 $intiatorBusinessItem = ItemBusiness::where('business_id', $fullTransaction->initiator->business_id)
                     ->where('item_id', $item['item_id'])->first();
+
+
                 $intiatorBusinessItem->update([
                     'quantity' => $intiatorBusinessItem->quantity - $item['quantity_ship'],
                 ]);
+
+                TransactionItemHistory::create([
+                    'item_business_id' => $intiatorBusinessItem->id,
+                    'transaction_type' => $fullTransaction->type,
+                    'quantity' => -$item['quantity_ship'],
+                    'transaction_time' => now(),
+                ]);
+
                 if ($item['quantity'] == $item['quantity_ship']) {
                     $itemIds[] = $item['item_id'];
                 }
@@ -73,7 +84,7 @@ class ShippableTransactionWorkflow extends TransactionFlow
             $fullTransaction = $this->getFullTransaction();
 
             foreach ($items as $item) {
-
+                $receiverBusinessItemExists = null;
                 $receiverBusinessItemExists = ItemBusiness::where('item_id', $item['item_id'])
                     ->where('business_id', $fullTransaction->receiver_business->business_id)->first();
                 if (isset($receiverBusinessItemExists)) {
@@ -81,13 +92,20 @@ class ShippableTransactionWorkflow extends TransactionFlow
                     $receiverBusinessItemExists->save();
                 } else {
 
-                    ItemBusiness::create([
+                    $receiverBusinessItemExists = ItemBusiness::create([
                         'item_id' => $item['item_id'],
                         'business_id' => $fullTransaction->receiver_business->business_id,
                         'source' => 'Borrowed',
                         'quantity' => $item['quantity_ship']
                     ]);
                 }
+
+                TransactionItemHistory::create([
+                    'item_business_id' => $receiverBusinessItemExists->id,
+                    'transaction_type' => $fullTransaction->type,
+                    'quantity' => $item['quantity_ship'],
+                    'transaction_time' => now(),
+                ]);
                 $itemIds[] = $item['item_id'];
             }
             $transaction = $this->transaction;
@@ -115,9 +133,63 @@ class ShippableTransactionWorkflow extends TransactionFlow
 
     public function returnTransactionItem($params)
     {
-        $transactionId = $params['transaction_id'];
-        $items = $params['items'];
-        
+
+        try {
+            $fullTransaction = $this->getFullTransaction();
+
+            DB::beginTransaction();
+            $transactionId = $params['transaction_id'];
+            $items = $params['items'];
+            $itemIds = [];
+            foreach ($items as $item) {
+
+                $receiverBusinessItemExists = ItemBusiness::where('item_id', $item['item_id'])
+                    ->where('business_id', $fullTransaction->receiver_business->business_id)->first();
+                if (isset($receiverBusinessItemExists)) {
+                    $receiverBusinessItemExists->quantity -= $item['quantity_ship'];
+                    $receiverBusinessItemExists->save();
+
+                    TransactionItemHistory::create([
+                        'item_business_id' => $receiverBusinessItemExists->id,
+                        'transaction_type' => $fullTransaction->type,
+                        'quantity' => -$item['quantity_ship'],
+                        'transaction_time' => now(),
+                    ]);
+                }
+
+                $intiatorBusinessItem = ItemBusiness::where('business_id', $fullTransaction->initiator->business_id)
+                    ->where('item_id', $item['item_id'])->first();
+                $intiatorBusinessItem->update([
+                    'quantity' => $intiatorBusinessItem->quantity += $item['quantity_ship'],
+                ]);
+                TransactionItemHistory::create([
+                    'item_business_id' => $intiatorBusinessItem->id,
+                    'transaction_type' => $fullTransaction->type,
+                    'quantity' => $item['quantity_ship'],
+                    'transaction_time' => now(),
+                ]);
+                if ($item['quantity'] == $item['quantity_ship']) {
+                    $itemIds[] = $item['item_id'];
+                }
+
+                $itemIds[] = $item['item_id'];
+            }
+
+            $transaction = $this->transaction;
+            $transaction->status = 'return';
+            $transaction->save();
+
+            TransactionItem::whereIn('item_id', $itemIds)->update([
+                'status' => 'returned'
+            ]);
+            DB::commit();
+            $fullTransaction = $this->getFullTransaction();
+
+            return $this->createResponse(false, "Items returned successfully", $fullTransaction);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return $this->createResponse(true, 'Failed to return items', $th->getMessage());
+        }
     }
 
     public function applyLateFees()
