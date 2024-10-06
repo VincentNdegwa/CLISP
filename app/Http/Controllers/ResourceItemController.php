@@ -40,7 +40,7 @@ class ResourceItemController extends Controller
 
             TransactionItemHistory::create([
                 'item_business_id' => $itemBusiness->id,
-                'transaction_type' => 'Stock In',
+                'transaction_type' => 'stock in',
                 'quantity' => $request->input('quantity'),
                 'transaction_time' => now(),
             ]);
