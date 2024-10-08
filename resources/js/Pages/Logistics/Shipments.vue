@@ -186,6 +186,7 @@
                             label="Reject All"
                             size="small"
                             severity="danger"
+                            @click="rejectAll"
                             v-if="
                                 slotProps.data.transaction_type ===
                                     'Incoming' &&
@@ -518,26 +519,38 @@ export default {
         receiveAll(params) {
             this.receiveItems(params);
         },
+        getParams() {
+            let params = {
+                transaction_id: "",
+                transaction_type: "",
+                items: [],
+            };
+            params.transaction_id = this.selectedTransactionData.id;
+            params.transaction_type = this.selectedTransactionData.type;
+            params.items = this.selectedTransactionData.items.map((item) => ({
+                item_id: item.item.id,
+                quantity: item.quantity,
+                quantity_ship: item.quantity_ship,
+            }));
+            return params;
+        },
         returnAll() {
             this.createModalConfimation(
                 "Are you sure you want to return all the items?",
                 "Return all the items",
                 () => {
-                    let params = {
-                        transaction_id: "",
-                        transaction_type: "",
-                        items: [],
-                    };
-                    params.transaction_id = this.selectedTransactionData.id;
-                    params.transaction_type = this.selectedTransactionData.type;
-                    params.items = this.selectedTransactionData.items.map(
-                        (item) => ({
-                            item_id: item.item.id,
-                            quantity: item.quantity,
-                            quantity_ship: item.quantity_ship,
-                        })
-                    );
-                    this.transactionStore.returnItems(params);
+                    this.transactionStore.returnItems(this.getParams());
+                }
+            );
+
+            this.closeModal();
+        },
+        rejectAll() {
+            this.createModalConfimation(
+                "Are you sure you want to reject all the items?",
+                "Reject all the items",
+                () => {
+                    this.transactionStore.rejectItems(this.getParams());
                 }
             );
 
