@@ -173,6 +173,8 @@ export default {
     },
     methods: {
         getActionItems(transactionId) {
+            console.log(transactionId);
+
             const defaultActionItems = [
                 {
                     label: "View",
@@ -248,6 +250,19 @@ export default {
                     );
                 },
             };
+            let print = {
+                label: "Print",
+                icon: "pi pi-print",
+                command: () => {
+                    const printWindow = window.open(
+                        `/transaction/view-receipt/print/${transactionId}`,
+                        "_blank"
+                    );
+                    printWindow.addEventListener("load", () => {
+                        printWindow.print();
+                    });
+                },
+            };
 
             let canApprove =
                 ((transaction_type == "Incoming" && isB2B == true) ||
@@ -262,6 +277,7 @@ export default {
                     transaction_type == "Outgoing") &&
                 (transaction_status == "pending" ||
                     transaction_status == "approved");
+            let canPrint = transaction_status == "paid";
 
             if (canApprove) {
                 defaultActionItems.push(approve);
@@ -271,6 +287,9 @@ export default {
             }
             if (canCancel) {
                 defaultActionItems.push(cancel);
+            }
+            if (canPrint) {
+                defaultActionItems.push(print);
             }
 
             this.actionItem = defaultActionItems;
