@@ -183,6 +183,11 @@ class TransactionController extends Controller
                 if ($transaction->receiver_business && $transaction->receiver_business->business_id == $business_id) {
                     $transaction->transaction_type = "Incoming";
                 }
+                if ($transaction->receiver_business != null && $transaction->receiver_customer == null) {
+                    $transaction->isB2B = true;
+                } else if ($transaction->receiver_business == null && $transaction->receiver_customer != null) {
+                    $transaction->isB2B = false;
+                }
             }
             return response()->json([
                 "error" => false,
