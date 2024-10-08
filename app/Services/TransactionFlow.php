@@ -2,9 +2,12 @@
 
 namespace App\Services;
 
+use App\Models\ItemBusiness;
 use App\Models\ResourceItem;
 use App\Models\Transaction;
 use App\Models\TransactionItem;
+use App\Models\TransactionItemHistory;
+use Illuminate\Support\Facades\DB;
 
 abstract class TransactionFlow
 {
@@ -87,25 +90,35 @@ abstract class TransactionFlow
         }
     }
 
-    public function rejectTransaction(string $reason)
+    public function rejectTransaction($transactionData)
     {
         try {
+            DB::beginTransaction();
             $this->transaction->status = 'canceled';
-            // $this->transaction->rejection_reason = $reason;
             $this->transaction->save();
             TransactionItem::where('transaction_id', $this->transactionId)->update([
                 'status' => 'cancelled'
             ]);
-            $transactionItems = TransactionItem::where('transaction_id', $this->transactionId)->get();
-            foreach ($transactionItems as $transactionItem) {
-                $item = ResourceItem::find($transactionItem->item_id);
-                $newQuantity = $transactionItem->quantity + $item->quantity;
-                $item->update([
-                    'quantity' => $newQuantity
-                ]);
+            if (isset($transactionData['items'])) {
+                foreach ($transactionData['items'] as $item) {
+                    $intiatorBusinessItem = ItemBusiness::where('business_id', $this->transaction->initiator->business_id)
+                        ->where('item_id', $item['item_id'])->first();
+                    $intiatorBusinessItem->update([
+                        'quantity' => $intiatorBusinessItem->quantity += $item['quantity_ship'],
+                    ]);
+                    TransactionItemHistory::create([
+                        'item_business_id' => $intiatorBusinessItem->id,
+                        'transaction_type' => $this->transaction->type,
+                        'quantity' => $item['quantity_ship'],
+                        'transaction_time' => now(),
+                    ]);
+                }
             }
-            return $this->createResponse(false, 'Transaction cancelled successfully.', $this->transaction);
+
+            DB::commit();
+            return $this->createResponse(false, 'Transaction cancelled successfully.', $this->getFullTransaction());
         } catch (\Exception $e) {
+            DB::rollBack();
             return $this->createResponse(true, 'Failed to reject transaction.', null, $e->getMessage());
         }
     }
@@ -132,10 +145,12 @@ abstract class TransactionFlow
         }
     }
 
+
     // Abstract methods to be implemented by child classes for specific workflows
     abstract public function giveTransactionItem($transactionData);
     abstract public function receiveTransactionItem($transactionData);
     abstract public function returnTransactionItem($transactionData);
+
     abstract public function applyLateFees();
     abstract public function applyDamageFees();
     abstract public function applyShippingFees();

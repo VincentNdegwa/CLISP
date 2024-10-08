@@ -101,7 +101,7 @@
                             />
                             <Menu
                                 ref="menu"
-                                id="overlay_menu"
+                                :id="'overlay_menu_' + slotProps.data.id"
                                 :model="actionItem"
                                 :popup="true"
                             />
@@ -167,7 +167,15 @@ export default {
                 message: "",
                 method: null,
             },
-            actionItem: [
+            actionItem: [],
+            transactionId: null,
+        };
+    },
+    methods: {
+        getActionItems(transactionId) {
+            console.log(transactionId);
+
+            const defaultActionItems = [
                 {
                     label: "View",
                     icon: "pi pi-arrow-up-right",
@@ -189,13 +197,111 @@ export default {
                         this.startDelete();
                     },
                 },
-            ],
-            transactionId: null,
-        };
-    },
-    methods: {
+            ];
+            this.actionItem = defaultActionItems;
+            const data = this.transactionStore.transactions.data.find(
+                (trans) => trans.id == transactionId
+            );
+
+            const transaction_type = data.transaction_type;
+            const transaction_status = data.status;
+            const isB2B = data.isB2B;
+            let approve = {
+                label: "Approve",
+                icon: "pi pi-check",
+                command: () => {
+                    this.startMakingRequestChanges(
+                        "Are you sure you want to approve this transaction?",
+                        "Approve Transaction",
+                        () => {
+                            this.transactionStore.acceptTransaction(
+                                transactionId
+                            );
+                        }
+                    );
+                },
+            };
+            let pay = {
+                label: "Pay",
+                icon: "pi pi-wallet",
+                command: () => {
+                    this.startMakingRequestChanges(
+                        "Are you sure you want to pay this transaction?",
+                        "Pay Transaction",
+                        () => {
+                            this.transactionStore.payTransaction(transactionId);
+                        }
+                    );
+                },
+            };
+            let cancel = {
+                label: "Cancel",
+                icon: "pi pi-times",
+                command: () => {
+                    this.startMakingRequestChanges(
+                        "Are you sure you want to cancel this transaction?",
+                        "Cancel Transaction",
+                        () => {
+                            this.transactionStore.rejectTransaction(
+                                transactionId,
+                                "Use choose to cancel this transaction"
+                            );
+                        }
+                    );
+                },
+            };
+            let print = {
+                label: "Print",
+                icon: "pi pi-print",
+                command: () => {
+                    const printWindow = window.open(
+                        `/transaction/view-receipt/print/${transactionId}`,
+                        "_blank"
+                    );
+                    printWindow.addEventListener("load", () => {
+                        printWindow.print();
+                    });
+                },
+            };
+
+            let canApprove =
+                ((transaction_type == "Incoming" && isB2B == true) ||
+                    (transaction_type == "Outgoing" && isB2B == false)) &&
+                transaction_status == "pending";
+            let canPay =
+                ((transaction_type == "Incoming" && isB2B == true) ||
+                    (transaction_type == "Outgoing" && isB2B == false)) &&
+                transaction_status == "approved";
+            let canCancel =
+                (transaction_type == "Incoming" ||
+                    transaction_type == "Outgoing") &&
+                (transaction_status == "pending" ||
+                    transaction_status == "approved");
+            let canPrint = transaction_status == "paid";
+
+            if (canApprove) {
+                defaultActionItems.push(approve);
+            }
+            if (canPay) {
+                defaultActionItems.push(pay);
+            }
+            if (canCancel) {
+                defaultActionItems.push(cancel);
+            }
+            if (canPrint) {
+                defaultActionItems.push(print);
+            }
+
+            this.actionItem = defaultActionItems;
+        },
         getBusinessName(business) {
             return business ? business.business_name : "N/A";
+        },
+        startMakingRequestChanges(message, title, method) {
+            this.confirmation.isOpen = true;
+            this.confirmation.message = message;
+            this.confirmation.title = title;
+            this.confirmation.method = method;
         },
         formatDate(date) {
             const options = {
@@ -276,6 +382,7 @@ export default {
         toggle(transactionId, event) {
             this.$refs.menu.toggle(event);
             this.transactionId = transactionId;
+            this.getActionItems(transactionId);
         },
     },
 };

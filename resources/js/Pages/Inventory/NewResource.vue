@@ -157,6 +157,7 @@ export default {
                     <InputLabel value="Quantity" required />
                     <input
                         v-model="form.quantity"
+                        :readonly="newResource == 'false'"
                         type="number"
                         id="quantity"
                         class="input input-bordered w-full bg-white ring-1 ring-slate-300"

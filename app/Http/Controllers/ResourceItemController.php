@@ -144,7 +144,6 @@ class ResourceItemController extends Controller
                 'id' => 'required|exists:resource_item,id',
                 "item_name" => 'required|string|max:255',
                 "category_id" => 'required|exists:resource_category,id',
-                "quantity" => 'required|min:0',
                 "unit" => 'required|string|max:50',
                 "price" => 'required|numeric|min:0',
             ]);
@@ -152,7 +151,6 @@ class ResourceItemController extends Controller
                 'item_name' => $request->input('item_name'),
                 'description' => $request->input('description'),
                 'category_id' => $request->input('category_id'),
-                'quantity' => $request->input('quantity'),
                 'unit' => $request->input('unit'),
                 'price' => $request->input('price'),
                 'item_image' => $request->input('item_image'),

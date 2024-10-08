@@ -144,6 +144,7 @@ export default {
                 this.transactionStore.singleTransaction.transaction_type;
             const transaction_status =
                 this.transactionStore.singleTransaction.status;
+            const isB2B = this.transactionStore.singleTransaction.isB2B;
 
             switch (action) {
                 case "Approve_and_Pay":
@@ -153,7 +154,9 @@ export default {
                     );
                 case "Approve":
                     return (
-                        transaction_type == "Incoming" &&
+                        ((transaction_type == "Incoming" && isB2B == true) ||
+                            (transaction_type == "Outgoing" &&
+                                isB2B == false)) &&
                         transaction_status == "pending"
                     );
                 case "Cancel":
@@ -165,7 +168,9 @@ export default {
                     );
                 case "Pay":
                     return (
-                        transaction_type == "Incoming" &&
+                        ((transaction_type == "Incoming" && isB2B == true) ||
+                            (transaction_type == "Outgoing" &&
+                                isB2B == false)) &&
                         transaction_status == "approved"
                     );
                 default:

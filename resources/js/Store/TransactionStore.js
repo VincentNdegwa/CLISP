@@ -207,7 +207,6 @@ export const useTransactionStore = defineStore("transactionStore", {
                 if (payload) {
                     response = await axios.post(url, payload);
                 } else {
-                    console.log("making response");
                     response = await axios.post(url);
                 }
 
@@ -240,15 +239,18 @@ export const useTransactionStore = defineStore("transactionStore", {
                 ...this.singleTransaction,
                 status: updatedTransaction.status,
             };
-            this.transactions?.data?.map((transaction) => {
-                if (transaction.id == transactionId) {
-                    return {
-                        ...transaction,
-                        status: updatedTransaction.status,
-                    };
+            this.transactions.data = this.transactions?.data?.map(
+                (transaction) => {
+                    if (transaction.id == transactionId) {
+                        return {
+                            ...transaction,
+                            status: updatedTransaction.status,
+                        };
+                    }
+                    return transaction;
                 }
-                return transaction;
-            });
+            );
+            console.log(this.transactions.data);
         },
 
         // Accept transaction
@@ -436,6 +438,23 @@ export const useTransactionStore = defineStore("transactionStore", {
             const url = `/api/transactions/${
                 useUserStore().business
             }/logistics/return-items`;
+            const response = await this.handleRequest(url, "post", params);
+            if (!response.data.error) {
+                this.shipments.data.data = this.shipments?.data.data.map(
+                    (shipment) => {
+                        if (shipment.id === response.data.data.id) {
+                            return response.data.data;
+                        }
+                        return shipment;
+                    }
+                );
+            }
+            this.updateUiResponse(response);
+        },
+        async rejectItems(params) {
+            const url = `/api/transactions/${
+                useUserStore().business
+            }/logistics/reject-items`;
             const response = await this.handleRequest(url, "post", params);
             if (!response.data.error) {
                 this.shipments.data.data = this.shipments?.data.data.map(

@@ -3,6 +3,8 @@ import PrimaryButton from "@/Components/PrimaryButton.vue";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import { useResourceStore } from "@/Store/Resource";
 import { Head } from "@inertiajs/vue3";
+import Column from "primevue/column";
+import DataTable from "primevue/datatable";
 import { onMounted, computed } from "vue";
 
 export default {
@@ -11,6 +13,8 @@ export default {
         AuthenticatedLayout,
         Head,
         PrimaryButton,
+        DataTable,
+        Column,
     },
     setup(props) {
         const resourceStore = useResourceStore();
@@ -28,6 +32,11 @@ export default {
             resourceStore,
             singleItem,
         };
+    },
+    methods: {
+        isNegative(quantity) {
+            return Math.sign(Number(quantity));
+        },
     },
 };
 </script>
@@ -118,48 +127,33 @@ export default {
                     <PrimaryButton> View All </PrimaryButton>
                 </div>
                 <div class="overflow-x-auto mt-4 h-fit">
-                    <table
-                        class="table w-full bg-slate-50 rounded-lg shadow-sm"
-                    >
-                        <thead
-                            class="bg-slate-100 text-slate-800 text-sm uppercase tracking-wide"
-                        >
-                            <tr>
-                                <th class="py-3 px-4 text-left">Date</th>
-                                <th class="py-3 px-4 text-left">
-                                    Transaction Type
-                                </th>
-                                <th class="py-3 px-4 text-left">Quantity</th>
-                                <th class="py-3 px-4 text-left">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody class="text-slate-700">
-                            <tr
-                                class="border-b hover:bg-slate-100 transition duration-150"
-                            >
-                                <td class="py-3 px-4">2024-09-01</td>
-                                <td class="py-3 px-4">Borrowing</td>
-                                <td class="py-3 px-4">2</td>
-                                <td class="py-3 px-4">Completed</td>
-                            </tr>
-                            <tr
-                                class="border-b hover:bg-slate-100 transition duration-150"
-                            >
-                                <td class="py-3 px-4">2024-08-28</td>
-                                <td class="py-3 px-4">Lending</td>
-                                <td class="py-3 px-4">3</td>
-                                <td class="py-3 px-4">Pending</td>
-                            </tr>
-                            <tr
-                                class="hover:bg-slate-100 transition duration-150"
-                            >
-                                <td class="py-3 px-4">2024-08-20</td>
-                                <td class="py-3 px-4">Purchase</td>
-                                <td class="py-3 px-4">5</td>
-                                <td class="py-3 px-4">Cancelled</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <DataTable :value="singleItem.transaction_items_history">
+                        <Column field="transaction_time" header="Date" />
+                        <Column field="quantity" header="Quantity" />
+                        <Column
+                            field="transaction_type"
+                            header="Transaction Type"
+                            style="text-transform: capitalize"
+                        />
+                        <Column field="quantity" header="Trend">
+                            <template #body="slotsProp">
+                                <i
+                                    v-if="
+                                        isNegative(slotsProp.data.quantity) == 1
+                                    "
+                                    class="pi pi-arrow-up-right text-green-600"
+                                ></i>
+                                <i
+                                    v-if="
+                                        isNegative(slotsProp.data.quantity) ==
+                                        -1
+                                    "
+                                    class="pi pi-arrow-down-right text-red-600"
+                                ></i>
+                            </template>
+                        </Column>
+                        
+                    </DataTable>
                 </div>
             </div>
         </div>

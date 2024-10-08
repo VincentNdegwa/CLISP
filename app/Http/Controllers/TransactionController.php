@@ -73,7 +73,7 @@ class TransactionController extends Controller
                     TransactionItemHistory::create([
                         'item_business_id' => $transactionModel->id,
                         'transaction_type' => 'Sale',
-                        'quantity' => $item['quantity'],
+                        'quantity' => -$item['quantity'],
                         'transaction_time' => $new_transaction->created_at,
                     ]);
                 }
@@ -182,6 +182,11 @@ class TransactionController extends Controller
 
                 if ($transaction->receiver_business && $transaction->receiver_business->business_id == $business_id) {
                     $transaction->transaction_type = "Incoming";
+                }
+                if ($transaction->receiver_business != null && $transaction->receiver_customer == null) {
+                    $transaction->isB2B = true;
+                } else if ($transaction->receiver_business == null && $transaction->receiver_customer != null) {
+                    $transaction->isB2B = false;
                 }
             }
             return response()->json([
