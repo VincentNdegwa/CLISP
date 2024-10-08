@@ -7,6 +7,7 @@ use App\Models\ResourceItem;
 use App\Models\Transaction;
 use App\Models\TransactionItem;
 use App\Models\TransactionItemHistory;
+use Illuminate\Support\Facades\DB;
 
 abstract class TransactionFlow
 {
@@ -92,28 +93,32 @@ abstract class TransactionFlow
     public function rejectTransaction($transactionData)
     {
         try {
+            DB::beginTransaction();
             $this->transaction->status = 'canceled';
             $this->transaction->save();
             TransactionItem::where('transaction_id', $this->transactionId)->update([
                 'status' => 'cancelled'
             ]);
-            foreach ($transactionData['items'] as $item) {
-                $intiatorBusinessItem = ItemBusiness::where('business_id', $this->transaction->initiator->business_id)
-                    ->where('item_id', $item['item_id'])->first();
-                $intiatorBusinessItem->update([
-                    'quantity' => $intiatorBusinessItem->quantity += $item['quantity_ship'],
-                ]);
-                TransactionItemHistory::create([
-                    'item_business_id' => $intiatorBusinessItem->id,
-                    'transaction_type' => $this->transaction->type,
-                    'quantity' => $item['quantity_ship'],
-                    'transaction_time' => now(),
-                ]);
+            if (isset($transactionData['items'])) {
+                foreach ($transactionData['items'] as $item) {
+                    $intiatorBusinessItem = ItemBusiness::where('business_id', $this->transaction->initiator->business_id)
+                        ->where('item_id', $item['item_id'])->first();
+                    $intiatorBusinessItem->update([
+                        'quantity' => $intiatorBusinessItem->quantity += $item['quantity_ship'],
+                    ]);
+                    TransactionItemHistory::create([
+                        'item_business_id' => $intiatorBusinessItem->id,
+                        'transaction_type' => $this->transaction->type,
+                        'quantity' => $item['quantity_ship'],
+                        'transaction_time' => now(),
+                    ]);
+                }
             }
 
-
+            DB::commit();
             return $this->createResponse(false, 'Transaction cancelled successfully.', $this->getFullTransaction());
         } catch (\Exception $e) {
+            DB::rollBack();
             return $this->createResponse(true, 'Failed to reject transaction.', null, $e->getMessage());
         }
     }

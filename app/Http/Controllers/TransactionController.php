@@ -73,7 +73,7 @@ class TransactionController extends Controller
                     TransactionItemHistory::create([
                         'item_business_id' => $transactionModel->id,
                         'transaction_type' => 'Sale',
-                        'quantity' => $item['quantity'],
+                        'quantity' => -$item['quantity'],
                         'transaction_time' => $new_transaction->created_at,
                     ]);
                 }
