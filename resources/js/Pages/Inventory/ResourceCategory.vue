@@ -8,6 +8,10 @@ import { ref } from "vue";
 import TableSkeleton from "@/Components/TableSkeleton.vue";
 import ConfirmationModal from "@/Components/ConfirmationModal.vue";
 import NoRecords from "@/Components/NoRecords.vue";
+import Column from "primevue/column";
+import Button from "primevue/button";
+import DataTable from "primevue/datatable";
+import Menu from "primevue/menu";
 
 export default {
     components: {
@@ -18,10 +22,18 @@ export default {
         TableSkeleton,
         ConfirmationModal,
         NoRecords,
+        Column,
+        Button,
+        DataTable,
+        Menu,
     },
     setup() {
+        const params = ref({
+            page: 1,
+            rows: 20,
+        });
         const categories = useResourceCategoryStore();
-        categories.fetchResourceCategory();
+        categories.fetchResourceCategory(params.value);
         const categoryAdd = async (category) => {
             await categories.addItem(category);
             if (categories.success) {
@@ -53,6 +65,12 @@ export default {
         const closeModal = () => {
             modal.value.open = false;
         };
+        const paginateCategories = (page) => {
+            if (page > 0) {
+                params.value.page = page;
+                categories.fetchResourceCategory(params.value);
+            }
+        };
 
         return {
             categories,
@@ -62,6 +80,8 @@ export default {
             categoryAdd,
             categoryUpdate,
             categoryDelete,
+            params,
+            paginateCategories,
         };
     },
     data() {
@@ -73,6 +93,7 @@ export default {
                 title: "Confirm Action",
             },
             category_to_delete: {},
+            selectedCategory: null,
         };
     },
     methods: {
@@ -98,6 +119,11 @@ export default {
         },
         handleCofirm() {
             this.categoryDelete(this.category_to_delete.id);
+        },
+        toggleActionMenu(data, event) {
+            event.preventDefault();
+            this.selectedCategory = data;
+            this.$refs.menu.toggle(event);
         },
     },
 };
@@ -139,62 +165,63 @@ export default {
             <NoRecords v-else-if="categories.items?.data?.length == 0" />
 
             <div v-else class="h-[74vh] overflow-y-scroll relative mt-1">
-                <table class="min-w-full bg-white relative table">
-                    <thead
-                        class="sticky top-0 bg-gray-200 z-[2] font-bold text-slate-950"
-                    >
-                        <tr>
-                            <th class="py-2 px-4 border">#</th>
-                            <th class="py-2 px-4 border">Name</th>
-                            <th class="py-2 px-4 border">Description</th>
-                            <th class="py-2 px-4 border">Actions</th>
-                        </tr>
-                    </thead>
+                <DataTable
+                    v-if="categories.items?.data?.length > 0"
+                    :value="categories.items.data"
+                    dataKey="id"
+                    :tableStyle="{ width: '100%' }"
+                    class="min-w-full"
+                >
+                    <!-- Name -->
+                    <Column header="Name" field="name" />
 
-                    <tbody class="">
-                        <tr
-                            v-for="(item, index) in categories.items?.data"
-                            :key="index"
-                            class="hover:bg-gray-100 transition-colors"
-                        >
-                            <td class="py-2 px-4 border-b">{{ item.id }}</td>
-                            <td class="py-2 px-4 border-b">{{ item.name }}</td>
-                            <td class="py-2 px-4 border-b">
-                                {{ item.description }}
-                            </td>
-                            <td class="py-2 px-4 border-b">
-                                <div class="dropdown dropdown-left">
-                                    <div
-                                        tabindex="0"
-                                        class="btn btn-xs bg-blue-500 text-white"
-                                    >
-                                        Action
-                                    </div>
-                                    <ul
-                                        tabindex="0"
-                                        class="dropdown-content menu bg-white rounded-box z-[1] w-52 p-2 shadow"
-                                    >
-                                        <li @click="openEditCategory(item)">
-                                            <a>Edit</a>
-                                        </li>
-                                        <li
-                                            @click="
-                                                () =>
-                                                    openConfirm(
-                                                        `Are you sure you want to delete category ${item.name}? This process cannot be undone`,
-                                                        'Confirm Item Delete',
-                                                        item
-                                                    )
-                                            "
-                                        >
-                                            <a>Delete</a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                    <!-- Description -->
+                    <Column header="Description" field="description" />
+
+                    <!-- Actions -->
+                    <Column header="Actions">
+                        <template #body="slotProps">
+                            <div class="card flex justify-center">
+                                <Button
+                                    type="button"
+                                    icon="pi pi-ellipsis-v"
+                                    @click="
+                                        toggleActionMenu(slotProps.data, $event)
+                                    "
+                                    aria-haspopup="true"
+                                    severity="contrast"
+                                    size="small"
+                                    aria-controls="'action_menu_' + slotProps.data.id"
+                                />
+                                <Menu
+                                    ref="menu"
+                                    :id="'action_menu_' + slotProps.data.id"
+                                    :model="[
+                                        {
+                                            label: 'Edit',
+                                            icon: 'pi pi-pencil',
+                                            command: () =>
+                                                openEditCategory(
+                                                    selectedCategory
+                                                ),
+                                        },
+                                        {
+                                            label: 'Delete',
+                                            icon: 'pi pi-trash',
+                                            command: () =>
+                                                openConfirm(
+                                                    `Are you sure you want to delete category ${selectedCategory.name}? This process cannot be undone`,
+                                                    'Confirm Item Delete',
+                                                    selectedCategory
+                                                ),
+                                        },
+                                    ]"
+                                    :popup="true"
+                                />
+                            </div>
+                        </template>
+                    </Column>
+                </DataTable>
             </div>
 
             <div
@@ -204,28 +231,28 @@ export default {
                 <button
                     :class="[
                         'py-2 px-4 rounded',
-                        !categories.items?.prev_page_url
-                            ? 'bg-gray-300 text-gray-700 cursor-not-allowed'
-                            : 'bg-slate-900 text-white',
+                        categories.items?.prev_page_url
+                            ? 'bg-slate-900 text-white'
+                            : 'bg-gray-300 text-gray-700 cursor-not-allowed',
                     ]"
-                    :disabled="categories?.items?.prev_page_url == null"
-                    @click="fetchCategories(categories.items?.current_page - 1)"
+                    :disabled="!categories.items?.prev_page_url"
+                    @click="paginateCategories(params.page - 1)"
                 >
                     Previous
                 </button>
-                <span
-                    >Page {{ categories.items?.current_page }} of
-                    {{ categories.items?.last_page }}</span
-                >
+                <span>
+                    Page {{ categories.items?.current_page }} of
+                    {{ categories.items?.last_page }}
+                </span>
                 <button
                     :class="[
                         'py-2 px-4 rounded',
-                        !categories.items?.prev_page_url
-                            ? 'bg-gray-300 text-gray-700 cursor-not-allowed'
-                            : 'bg-slate-900 text-white',
+                        categories.items?.next_page_url
+                            ? 'bg-slate-900 text-white'
+                            : 'bg-gray-300 text-gray-700 cursor-not-allowed',
                     ]"
-                    :disabled="categories.items?.next_page_url == null"
-                    @click="fetchCategories(categories.items?.current_page + 1)"
+                    :disabled="!categories.items?.next_page_url"
+                    @click="paginateCategories(params.page + 1)"
                 >
                     Next
                 </button>
