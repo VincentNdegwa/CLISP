@@ -2,11 +2,15 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import { useMyBusiness } from "@/Store/MyBusiness";
 import { Head, usePage } from "@inertiajs/vue3";
+import DataTable from "primevue/datatable";
+import Column from "primevue/column";
 
 export default {
     components: {
         AuthenticatedLayout,
         Head,
+        DataTable,
+        Column,
     },
     setup() {
         const { props } = usePage();
@@ -19,6 +23,16 @@ export default {
             myBusiness,
         };
     },
+    methods: {
+        formatRole(data) {
+            return `<span class="inline-block px-3 py-1 text-sm font-semibold bg-rose-100 text-rose-600 rounded-full">${data.role}</span>`;
+        },
+        formatStatus(data) {
+            return data.business.status === "active"
+                ? '<span class="text-green-600">Active</span>'
+                : '<span class="text-red-600">Inactive</span>';
+        },
+    },
 };
 </script>
 
@@ -29,86 +43,47 @@ export default {
             My Businesses
         </h1>
 
-        <div
-            v-if="myBusiness.loading"
-            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-        >
-            <!-- Skeleton Loader -->
-            <div
-                v-for="n in 3"
-                :key="n"
-                class="bg-gray-200 animate-pulse rounded-lg shadow-lg p-6"
-            >
-                <div class="h-6 bg-gray-300 mb-2 rounded"></div>
-                <div class="h-4 bg-gray-300 mb-4 rounded"></div>
-                <div class="h-4 bg-gray-300 mb-2 rounded"></div>
-                <div class="h-4 bg-gray-300 mb-2 rounded"></div>
-                <div class="h-4 bg-gray-300 rounded"></div>
-            </div>
+        <!-- Loading Skeleton -->
+        <div v-if="myBusiness.loading">
+            <!-- Skeleton Loader can be here or a loading spinner -->
         </div>
 
-        <div
-            v-else-if="myBusiness.data && myBusiness.data.length > 0"
-            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-        >
-            <!-- Business Cards -->
-            <div
-                v-for="business in myBusiness.data"
-                :key="business.id"
-                class="bg-gray-100 text-slate-900 rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-all scale-95 hover:scale-100 duration-300 ease-in-out"
+        <!-- Display Businesses in DataTable -->
+        <div v-else-if="myBusiness.data && myBusiness.data.length > 0">
+            <DataTable
+                :value="myBusiness.data"
+                paginator
+                rows="10"
+                :rowsPerPageOptions="[5, 10, 20]"
+                class="p-datatable-gridlines"
             >
-                <div class="p-6">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-2">
-                        {{ business.business.business_name }}
-                    </h2>
-                    <p class="text-sm font-medium text-gray-500 mb-4">
-                        {{ business.business.location }}
-                    </p>
-                    <div class="mb-4">
-                        <span
-                            class="inline-block px-3 py-1 text-sm font-semibold bg-rose-100 text-rose-600 rounded-full"
-                        >
-                            {{ business.role }}
-                        </span>
-                    </div>
-                    <div class="text-gray-700 space-y-1">
-                        <p>
-                            <strong>Email:</strong>
-                            {{ business.business.email }}
-                        </p>
-                        <p>
-                            <strong>Phone:</strong>
-                            {{ business.business.phone_number }}
-                        </p>
-                        <p>
-                            <strong>Status:</strong>
-                            <span
-                                :class="
-                                    business.business.status === 'active'
-                                        ? 'text-green-600'
-                                        : 'text-red-600'
-                                "
-                            >
-                                {{ business.business.status }}
-                            </span>
-                        </p>
-                        <p>
-                            <strong>Trust Score:</strong>
-                            {{ business.business.trust_score }}
-                        </p>
-                        <p>
-                            <strong>Subscription:</strong>
-                            {{ business.business.subscription_plan }}
-                        </p>
-                        <p>
-                            <strong>Registered:</strong>
-                            {{ business.business.date_registered }}
-                        </p>
-                    </div>
-                </div>
-            </div>
+                <Column field="business.business_name" header="Business Name" />
+                <Column field="business.location" header="Location" />
+                <Column
+                    field="role"
+                    header="Role"
+                    :body="(data) => formatRole(data)"
+                />
+                <Column field="business.email" header="Email" />
+                <Column field="business.phone_number" header="Phone" />
+                <Column
+                    field="business.status"
+                    header="Status"
+                    :body="(data) => formatStatus(data)"
+                />
+                <Column field="business.trust_score" header="Trust Score" />
+                <Column
+                    field="business.subscription_plan"
+                    header="Subscription"
+                />
+                <Column
+                    field="business.date_registered"
+                    header="Registered Date"
+                />
+            </DataTable>
         </div>
 
+        <!-- No businesses message -->
         <div v-else class="text-center">
             <p class="text-gray-700">
                 You are not associated with any businesses.
@@ -118,8 +93,8 @@ export default {
 </template>
 
 <style scoped>
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
+/* Custom styles for the DataTable */
+.p-datatable-gridlines {
+    --primary-color: #1d4ed8; /* Example custom color */
 }
 </style>
