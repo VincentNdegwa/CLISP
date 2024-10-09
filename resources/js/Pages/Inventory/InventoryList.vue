@@ -10,6 +10,10 @@ import { ref } from "vue";
 import ConfirmationModal from "@/Components/ConfirmationModal.vue";
 import NoRecords from "@/Components/NoRecords.vue";
 import TableDisplay from "@/Layouts/TableDisplay.vue";
+import DataTable from "primevue/datatable";
+import Column from "primevue/column";
+import Button from "primevue/button";
+import Menu from "primevue/menu";
 
 export default {
     setup() {
@@ -86,6 +90,7 @@ export default {
             },
             item_to_delete: {},
             isDropdownOpen: false,
+            selectedItem: null,
             table_header: [
                 "#",
                 "Item Name",
@@ -172,7 +177,12 @@ export default {
             this.makeQuery(this.query);
         },
         viewItem(id) {
-            return `/inventory/resources/${id}`;
+            const url = `/inventory/resources/${id}`;
+            window.open(url, "_self");
+        },
+        toggleActionMenu(item, event) {
+            this.selectedItem = item;
+            this.$refs.menu.toggle(event);
         },
     },
     components: {
@@ -184,6 +194,10 @@ export default {
         ConfirmationModal,
         NoRecords,
         TableDisplay,
+        DataTable,
+        Column,
+        Button,
+        Menu,
     },
 };
 </script>
@@ -286,56 +300,91 @@ export default {
                 </button>
             </div>
         </div>
-
-        <TableDisplay
-            :loading="resources.loading"
-            :keys="table_header"
-            :data_length="resources.items.data?.length"
+        <div
+            v-if="resources.items?.data?.length > 0"
+            class="h-[75vh] overflow-y-scroll relative mt-1"
         >
-            <template v-slot:row>
-                <tr
-                    v-for="(item, index) in resources.items.data"
-                    :key="item.item_id"
-                >
-                    <td>{{ index + 1 }}</td>
-                    <td>{{ item.item_name }}</td>
-                    <td>
-                        {{ item.category ? item.category?.name : "--" }}
-                    </td>
+            <DataTable
+                :value="resources.items.data"
+                :loading="resources.loading"
+                dataKey="id"
+                tableStyle="width:100%"
+            >
+                <!-- Item Name -->
+                <Column header="Item Name" field="item_name" />
 
-                    <td>
-                        {{ item.quantity }}
-                    </td>
-                    <td>{{ item.unit }}</td>
-                    <td>{{ item.price }}</td>
-                    <td>{{ formatDate(item.date_added) }}</td>
-                    <td>
-                        <div class="dropdown dropdown-left">
-                            <div
-                                tabindex="0"
-                                class="btn btn-xs bg-blue-500 text-white"
-                            >
-                                Action
-                            </div>
-                            <ul
-                                tabindex="0"
-                                class="dropdown-content menu bg-white rounded-box z-[1] w-52 p-2 shadow"
-                            >
-                                <li>
-                                    <a :href="viewItem(item.id)">View</a>
-                                </li>
-                                <li @click="() => editResource(item)">
-                                    <a>Edit</a>
-                                </li>
-                                <li @click="() => handleResourceDelete(item)">
-                                    <a>Delete</a>
-                                </li>
-                            </ul>
+                <!-- Category -->
+                <Column header="Category">
+                    <template #body="slotProps">
+                        {{ slotProps.data.category?.name || "--" }}
+                    </template>
+                </Column>
+
+                <!-- Quantity -->
+                <Column header="Quantity" field="quantity" />
+
+                <!-- Unit -->
+                <Column header="Unit" field="unit" />
+
+                <!-- Price -->
+                <Column header="Price" field="price" />
+
+                <!-- Date Added -->
+                <Column header="Date Added">
+                    <template #body="slotProps">
+                        {{ formatDate(slotProps.data.date_added) }}
+                    </template>
+                </Column>
+
+                <!-- Actions -->
+                <Column header="Actions">
+                    <template #body="slotProps">
+                        <div class="card flex justify-center">
+                            <Button
+                                type="button"
+                                icon="pi pi-ellipsis-v"
+                                @click="
+                                    toggleActionMenu(slotProps.data, $event)
+                                "
+                                aria-haspopup="true"
+                                severity="contrast"
+                                size="small"
+                                aria-controls="action_menu"
+                            />
+                            <Menu
+                                ref="menu"
+                                :id="'action_menu_' + slotProps.data.id"
+                                :model="[
+                                    {
+                                        label: 'View',
+                                        icon: 'pi pi-arrow-up-right',
+                                        command: () =>
+                                            viewItem(selectedItem?.id),
+                                    },
+                                    {
+                                        label: 'Edit',
+                                        icon: 'pi pi-pencil',
+
+                                        command: () =>
+                                            editResource(selectedItem),
+                                    },
+                                    {
+                                        label: 'Delete',
+                                        icon: 'pi pi-trash',
+
+                                        command: () =>
+                                            handleResourceDelete(selectedItem),
+                                    },
+                                ]"
+                                :popup="true"
+                            />
                         </div>
-                    </td>
-                </tr>
-            </template>
-        </TableDisplay>
+                    </template>
+                </Column>
+            </DataTable>
+        </div>
+
+        <NoRecords v-else />
 
         <div
             v-if="resources.items.data?.length > 0"

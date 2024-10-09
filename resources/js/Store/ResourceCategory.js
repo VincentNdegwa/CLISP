@@ -12,7 +12,7 @@ export const useResourceCategoryStore = defineStore("resource_category", {
         success: null,
     }),
     actions: {
-        async fetchResourceCategory() {
+        async fetchResourceCategory(params) {
             const store = useUserStore();
             const businessId = store.business;
 
@@ -25,9 +25,11 @@ export const useResourceCategoryStore = defineStore("resource_category", {
             this.error = null;
             try {
                 const response = await axios.get(
-                    `/api/category/${businessId}/list`
+                    `/api/category/${businessId}/list?rows=${params.rows}&page=${params.page}?`
                 );
-                if (response.data.error) {
+              
+
+                http: if (response.data.error) {
                     this.error = response.data.message;
                     if (response.data.errors) {
                         this.error = response.data.errors;

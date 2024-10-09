@@ -47,25 +47,44 @@ class ResourceCategoryController extends Controller
         }
     }
 
-    public function read($business_id)
+    public function read(Request $request, $business_id)
     {
-        $business = Business::where('business_id', $business_id)->first();
+        try {
+            $rows = (int)$request->query('rows', 20);
+            $page = (int)$request->query('page', 1);
 
-        if (!$business) {
+            if ($rows <= 0 || $page <= 0) {
+                return response()->json([
+                    'error' => true,
+                    'message' => 'Invalid pagination parameters.'
+                ], 400);
+            }
+
+            $business = Business::where('business_id', $business_id)->first();
+
+            if (!$business) {
+                return response()->json([
+                    'error' => true,
+                    'message' => 'Business not found.'
+                ]);
+            }
+
+            $items = ResourceCategory::where('business_id', $business_id)
+                ->paginate($rows, ['*'], 'page', $page);
+
+            return response()->json([
+                'error' => false,
+                'message' => 'Resource categories retrieved successfully.',
+                'data' => $items
+            ]);
+        } catch (\Exception $e) {
             return response()->json([
                 'error' => true,
-                'message' => 'Business not found.'
-            ]);
+                'message' => 'An error occurred while fetching resource categories.'
+            ], 500);
         }
-
-        $items = ResourceCategory::where('business_id', $business_id)
-            ->paginate(20);
-        return response()->json([
-            'error' => false,
-            'message' => 'Resource category fetched successfully.',
-            'data' => $items
-        ]);
     }
+
 
     public function openItem($id)
     {
