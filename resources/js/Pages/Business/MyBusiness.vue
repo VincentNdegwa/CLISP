@@ -4,6 +4,10 @@ import { useMyBusiness } from "@/Store/MyBusiness";
 import { Head, usePage } from "@inertiajs/vue3";
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
+import Button from "primevue/button";
+import Menu from "primevue/menu";
+import TableSkeleton from "@/Components/TableSkeleton.vue";
+import Badge from "primevue/badge";
 
 export default {
     components: {
@@ -11,6 +15,10 @@ export default {
         Head,
         DataTable,
         Column,
+        Button,
+        Menu,
+        TableSkeleton,
+        Badge,
     },
     setup() {
         const { props } = usePage();
@@ -23,14 +31,29 @@ export default {
             myBusiness,
         };
     },
+    data() {
+        return {
+            selectedBusiness: null,
+        };
+    },
     methods: {
         formatRole(data) {
             return `<span class="inline-block px-3 py-1 text-sm font-semibold bg-rose-100 text-rose-600 rounded-full">${data.role}</span>`;
         },
-        formatStatus(data) {
-            return data.business.status === "active"
-                ? '<span class="text-green-600">Active</span>'
-                : '<span class="text-red-600">Inactive</span>';
+        getStatuSeverity(status) {
+            if (status === "active") {
+                return "success";
+            } else if (status === "inactive") {
+                return "danger";
+            } else {
+                return "text-gray-500";
+            }
+        },
+        toggleActionMenu(data, event) {
+            console.log(data);
+
+            this.selectedBusiness = data;
+            this.$refs.menu.toggle(event);
         },
     },
 };
@@ -45,7 +68,7 @@ export default {
 
         <!-- Loading Skeleton -->
         <div v-if="myBusiness.loading">
-            <!-- Skeleton Loader can be here or a loading spinner -->
+            <TableSkeleton />
         </div>
 
         <!-- Display Businesses in DataTable -->
@@ -55,7 +78,6 @@ export default {
                 paginator
                 rows="10"
                 :rowsPerPageOptions="[5, 10, 20]"
-                class="p-datatable-gridlines"
             >
                 <Column field="business.business_name" header="Business Name" />
                 <Column field="business.location" header="Location" />
@@ -66,20 +88,56 @@ export default {
                 />
                 <Column field="business.email" header="Email" />
                 <Column field="business.phone_number" header="Phone" />
-                <Column
-                    field="business.status"
-                    header="Status"
-                    :body="(data) => formatStatus(data)"
-                />
+                <Column header="Status">
+                    <template #body="slotProps">
+                        <div>
+                            <Badge
+                                style="text-transform: capitalize"
+                                :severity="
+                                    getStatuSeverity(
+                                        slotProps.data.business.status
+                                    )
+                                "
+                            >
+                                {{ slotProps.data.business.status }}
+                            </Badge>
+                        </div>
+                    </template>
+                </Column>
                 <Column field="business.trust_score" header="Trust Score" />
-                <Column
-                    field="business.subscription_plan"
-                    header="Subscription"
-                />
-                <Column
-                    field="business.date_registered"
-                    header="Registered Date"
-                />
+                <Column header="Actions">
+                    <template #body="slotProps">
+                        <div class="card flex justify-center">
+                            <Button
+                                type="button"
+                                icon="pi pi-ellipsis-v"
+                                @click="
+                                    toggleActionMenu(slotProps.data, $event)
+                                "
+                                aria-haspopup="true"
+                                severity="contrast"
+                                size="small"
+                                aria-controls="action_menu"
+                            />
+                            <Menu
+                                ref="menu"
+                                :id="'action_menu_' + slotProps.data.id"
+                                :model="[
+                                    {
+                                        label: 'Edit',
+                                        icon: 'pi pi-pencil',
+
+                                        command: () =>
+                                            startEditingBusiness(
+                                                selectedBusiness
+                                            ),
+                                    },
+                                ]"
+                                :popup="true"
+                            />
+                        </div>
+                    </template>
+                </Column>
             </DataTable>
         </div>
 
