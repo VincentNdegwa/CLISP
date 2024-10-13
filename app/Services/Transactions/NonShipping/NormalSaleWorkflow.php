@@ -2,34 +2,39 @@
 
 namespace App\Services\Transactions\NonShipping;
 
+use App\Services\NonShippableTransactionWorkflow;
 use App\Services\TransactionFlow;
 
-class NormalSaleWorkflow extends TransactionFlow
+class NormalSaleWorkflow extends NonShippableTransactionWorkflow
 {
 
-    public function giveTransactionItem($transactionData)
+    public function giveTransactionItem($params)
     {
-        // Borrowing-specific logic for giving the item
+        return parent::giveTransactionItem($params);
     }
-    public function receiveTransactionItem($params) {}
+
+    public function receiveTransactionItem($params)
+    {
+        return parent::receiveTransactionItem($params);
+    }
 
     public function returnTransactionItem($params)
     {
-        // Logic for returning the borrowed item
+        return parent::returnTransactionItem($params);
     }
 
     public function applyLateFees()
     {
-        // Borrowing-specific late fees
+        return parent::applyLateFees();
     }
 
     public function applyDamageFees()
     {
-        // Borrowing-specific damage fee logic
+        return parent::applyDamageFees();
     }
 
     public function applyShippingFees()
     {
-        // Borrowing-specific shipping fee logic
+        return parent::applyShippingFees();
     }
 }

@@ -61,22 +61,22 @@ class TransactionController extends Controller
                     'quantity' => $item['quantity'],
                     'price' => $item['price'],
                 ]);
-                $transactionModel = ItemBusiness::where('business_id', $business_id)
-                    ->where('item_id', $item['item_id'])
-                    ->first();
-                if ($request->input('type') == 'sale') {
-                    $newQuantity = $transactionModel->quantity - $item['quantity'];
-                    $transactionModel->update([
-                        'quantity' => $newQuantity,
-                    ]);
+                // $transactionModel = ItemBusiness::where('business_id', $business_id)
+                //     ->where('item_id', $item['item_id'])
+                //     ->first();
+                // if ($request->input('type') == 'sale') {
+                //     $newQuantity = $transactionModel->quantity - $item['quantity'];
+                //     $transactionModel->update([
+                //         'quantity' => $newQuantity,
+                //     ]);
 
-                    TransactionItemHistory::create([
-                        'item_business_id' => $transactionModel->id,
-                        'transaction_type' => 'Sale',
-                        'quantity' => -$item['quantity'],
-                        'transaction_time' => $new_transaction->created_at,
-                    ]);
-                }
+                //     TransactionItemHistory::create([
+                //         'item_business_id' => $transactionModel->id,
+                //         'transaction_type' => 'Sale',
+                //         'quantity' => -$item['quantity'],
+                //         'transaction_time' => $new_transaction->created_at,
+                //     ]);
+                // }
             }
 
             if ($transaction_details = $request->input('transaction_details')) {
@@ -415,23 +415,30 @@ class TransactionController extends Controller
     private function getWorkflow($business_id, $transaction, $transaction_type): TransactionFlow
     {
         $workflow = new NormalSaleWorkflow($business_id, $transaction);
+        $actualTransaction = $workflow->getFullTransaction();
         $transaction_type = $transaction_type;
 
-        switch ($transaction_type) {
-            case 'leasing':
-                $workflow = new LeasingWorkflow($business_id, $transaction);
-                break;
-            case 'purchase':
-                $workflow = new PurchaseWorkflow($business_id, $transaction);
-                break;
-            case 'borrowing':
-                $workflow = new BorrowingWorkflow($business_id, $transaction);
-                break;
-            default:
-                $workflow = new NormalSaleWorkflow($business_id, $transaction);
-                break;
+        $isB2B = $actualTransaction->isB2B;
+
+        if (!$isB2B) {
+            return $workflow;
+        } else {
+            switch ($transaction_type) {
+                case 'leasing':
+                    $workflow = new LeasingWorkflow($business_id, $transaction);
+                    break;
+                case 'purchase':
+                    $workflow = new PurchaseWorkflow($business_id, $transaction);
+                    break;
+                case 'borrowing':
+                    $workflow = new BorrowingWorkflow($business_id, $transaction);
+                    break;
+                default:
+                    $workflow = new NormalSaleWorkflow($business_id, $transaction);
+                    break;
+            }
+            return $workflow;
         }
-        return $workflow;
     }
 
     public function retrieveTransaction($transactionId, $isAgreemet)
