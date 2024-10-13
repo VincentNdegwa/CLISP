@@ -190,13 +190,6 @@ export default {
                         this.startUpdate();
                     },
                 },
-                {
-                    label: "Delete",
-                    icon: "pi pi-trash",
-                    command: () => {
-                        this.startDelete();
-                    },
-                },
             ];
             this.actionItem = defaultActionItems;
             const data = this.transactionStore.transactions.data.find(
@@ -264,6 +257,14 @@ export default {
                 },
             };
 
+            let deleteM = {
+                label: "Delete",
+                icon: "pi pi-trash",
+                command: () => {
+                    this.startDelete();
+                },
+            };
+
             let canApprove =
                 ((transaction_type == "Incoming" && isB2B == true) ||
                     (transaction_type == "Outgoing" && isB2B == false)) &&
@@ -275,9 +276,10 @@ export default {
             let canCancel =
                 (transaction_type == "Incoming" ||
                     transaction_type == "Outgoing") &&
-                (transaction_status == "pending" ||
-                    transaction_status == "approved");
+                transaction_status == "approved";
             let canPrint = transaction_status == "paid";
+
+            let canDelete = transaction_status == "canceled";
 
             if (canApprove) {
                 defaultActionItems.push(approve);
@@ -290,6 +292,9 @@ export default {
             }
             if (canPrint) {
                 defaultActionItems.push(print);
+            }
+            if (canDelete) {
+                defaultActionItems.push(deleteM);
             }
 
             this.actionItem = defaultActionItems;
