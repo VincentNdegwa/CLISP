@@ -132,6 +132,8 @@
                             :optionValue="(option) => option.id"
                             placeholder="Search Item..."
                             @update:modelValue="selectChange"
+                            filter
+                            @filter="selectSearch"
                             class="md:max-w-60 md:w-60 bg-white text-slate-950 p-1 b-0 ring-0 w-full relative"
                         />
 
@@ -586,12 +588,14 @@ export default {
                     item.price = this.products.find(
                         (x) => x.id == selectedOption
                     )?.price;
-                    console.log(item);
 
                     return item;
                 }
                 return item;
             });
+        },
+        selectSearch(filter) {
+            this.onSearch(filter.value);
         },
     },
 };
