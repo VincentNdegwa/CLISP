@@ -8,6 +8,7 @@ import { useUserStore } from "@/Store/UserStore";
 import ConfirmationModal from "@/Components/ConfirmationModal.vue";
 import axios from "axios";
 import NoRecords from "@/Components/NoRecords.vue";
+import RequestList from "./RequestList.vue";
 
 export default {
     components: {
@@ -18,6 +19,7 @@ export default {
         ConnectionRequestForm,
         ConfirmationModal,
         NoRecords,
+        RequestList,
     },
     data() {
         return {
@@ -295,103 +297,18 @@ export default {
             <h2 class="text-xl font-semibold mb-4 text-center">
                 Sent Requests
             </h2>
-            <div class="min-h-[70vh] h-fit flex flex-wrap gap-2">
-                <div
-                    v-if="sentRequests.length"
-                    v-for="request in sentRequests"
-                    :key="request.id"
-                    class="h-fit w-full md:w-96"
-                >
-                    <div
-                        class="p-6 bg-white shadow-md rounded-lg border border-gray-300 flex flex-col justify-between"
-                    >
-                        <div>
-                            <p class="text-lg font-bold text-gray-800 mb-2">
-                                {{ request.business_receiver.business_name }}
-                            </p>
-                            <p class="text-sm text-gray-600">
-                                <strong>Status:</strong>
-                                <span
-                                    class="capitalize ms-1 font-bold"
-                                    :class="{
-                                        'text-green-500':
-                                            request.connection_status ===
-                                            'approved',
-                                        'text-yellow-500':
-                                            request.connection_status ===
-                                            'pending',
-                                        'text-red-500':
-                                            request.connection_status ===
-                                            'rejected',
-                                        'text-orange-500':
-                                            request.connection_status ===
-                                            'cancelled',
-                                        'text-purple-500':
-                                            request.connection_status ===
-                                            'terminated',
-                                    }"
-                                >
-                                    {{ request.connection_status }}
-                                </span>
-                            </p>
-                            <p class="text-sm text-gray-600">
-                                <strong>Requested By:</strong>
-                                {{ request.user_requester.name }}
-                            </p>
-                            <p class="text-sm text-gray-600">
-                                <strong>Email:</strong>
-                                {{ request.user_requester.email }}
-                            </p>
-                        </div>
-                        <div class="mt-4">
-                            <p class="text-sm text-gray-600">
-                                <strong>Request Date:</strong>
-                                {{
-                                    new Date(
-                                        request.created_at
-                                    ).toLocaleString()
-                                }}
-                            </p>
-                            <p class="text-sm text-gray-600">
-                                <strong>Receiver Email:</strong>
-                                {{ request.business_receiver.email }}
-                            </p>
-                            <p class="text-sm text-gray-600">
-                                <strong>Receiver Phone:</strong>
-                                {{ request.business_receiver.phone_number }}
-                            </p>
-                        </div>
-                        <div class="mt-4">
-                            <button
-                                v-if="request.connection_status === 'pending'"
-                                @click="
-                                    startMakingRequestChanges(request, 'Cancel')
-                                "
-                                class="w-full bg-red-600 text-white px-4 py-2 rounded mt-2"
-                            >
-                                Cancel Request
-                            </button>
-                            <button
-                                v-else-if="
-                                    request.connection_status === 'approved'
-                                "
-                                @click="
-                                    startMakingRequestChanges(
-                                        request,
-                                        'Terminate'
-                                    )
-                                "
-                                class="w-full bg-yellow-500 text-white px-4 py-2 rounded mt-2"
-                            >
-                                Terminate Connection
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div v-else class="text-center text-gray-700 w-full">
-                    <NoRecords />
-                </div>
-            </div>
+            <RequestList
+                :requests="sentRequests"
+                requestType="sent"
+                pendingActionText="Cancel Request"
+                approvedActionText="Terminate Connection"
+                :pendingAction="
+                    (request) => startMakingRequestChanges(request, 'Cancel')
+                "
+                :approvedAction="
+                    (request) => startMakingRequestChanges(request, 'Terminate')
+                "
+            />
         </div>
 
         <!-- Incoming Requests -->
@@ -399,116 +316,18 @@ export default {
             <h2 class="text-xl font-semibold mb-4 text-center">
                 Incoming Requests
             </h2>
-            <div class="min-h-[70vh] h-fit flex flex-wrap gap-2">
-                <div
-                    v-if="incomingRequests.length"
-                    v-for="request in incomingRequests"
-                    :key="request.id"
-                    class="h-fit w-full md:w-96"
-                >
-                    <div
-                        class="p-6 bg-white shadow-md rounded-lg border border-gray-300 flex flex-col justify-between"
-                    >
-                        <div>
-                            <p class="text-lg font-bold text-gray-800 mb-2">
-                                {{ request.business_requester.business_name }}
-                            </p>
-                            <p class="text-sm text-gray-600">
-                                <strong>Status:</strong>
-                                <span
-                                    class="capitalize ms-1 font-bold"
-                                    :class="{
-                                        'text-green-500':
-                                            request.connection_status ===
-                                            'approved',
-                                        'text-yellow-500':
-                                            request.connection_status ===
-                                            'pending',
-                                        'text-red-500':
-                                            request.connection_status ===
-                                            'rejected',
-                                        'text-orange-500':
-                                            request.connection_status ===
-                                            'cancelled',
-                                        'text-purple-500':
-                                            request.connection_status ===
-                                            'terminated',
-                                    }"
-                                >
-                                    {{ request.connection_status }}
-                                </span>
-                            </p>
-                            <p class="text-sm text-gray-600">
-                                <strong>Requested By:</strong>
-                                {{ request.user_requester.name }}
-                            </p>
-                            <p class="text-sm text-gray-600">
-                                <strong>Email:</strong>
-                                {{ request.user_requester.email }}
-                            </p>
-                        </div>
-                        <div class="mt-4">
-                            <p class="text-sm text-gray-600">
-                                <strong>Request Date:</strong>
-                                {{
-                                    new Date(
-                                        request.created_at
-                                    ).toLocaleString()
-                                }}
-                            </p>
-                            <p class="text-sm text-gray-600">
-                                <strong>Requester Email:</strong>
-                                {{ request.business_requester.email }}
-                            </p>
-                            <p class="text-sm text-gray-600">
-                                <strong>Requester Phone:</strong>
-                                {{ request.business_requester.phone_number }}
-                            </p>
-                        </div>
-                        <div class="mt-4 flex justify-between">
-                            <button
-                                v-if="request.connection_status === 'pending'"
-                                @click="
-                                    startMakingRequestChanges(
-                                        request,
-                                        'Approve'
-                                    )
-                                "
-                                class="bg-green-600 text-white px-4 py-2 rounded w-1/2 mr-2"
-                            >
-                                Accept
-                            </button>
-                            <button
-                                v-if="request.connection_status === 'pending'"
-                                @click="
-                                    startMakingRequestChanges(request, 'Reject')
-                                "
-                                class="bg-red-600 text-white px-4 py-2 rounded w-1/2"
-                            >
-                                Reject
-                            </button>
-                            <button
-                                v-else-if="
-                                    request.connection_status === 'approved'
-                                "
-                                @click="
-                                    startMakingRequestChanges(
-                                        request,
-                                        'Terminate'
-                                    )
-                                "
-                                class="bg-yellow-500 text-white px-4 py-2 rounded w-1/2 flex-1"
-                            >
-                                Terminate Connection
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div v-else class="text-center text-gray-700 w-full">
-                    <NoRecords />
-                </div>
-            </div>
+            <RequestList
+                :requests="incomingRequests"
+                requestType="incoming"
+                pendingActionText="Accept"
+                approvedActionText="Terminate Connection"
+                :pendingAction="
+                    (request) => startMakingRequestChanges(request, 'Approve')
+                "
+                :approvedAction="
+                    (request) => startMakingRequestChanges(request, 'Terminate')
+                "
+            />
         </div>
     </AuthenticatedLayout>
 </template>
