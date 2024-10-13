@@ -93,6 +93,7 @@
                         fluid
                         iconDisplay="input"
                         id="lease_end_date"
+                        :minDate="form.lease_start_date"
                     />
                 </div>
             </div>
@@ -124,8 +125,17 @@
                             required="true"
                             class="w-full"
                         />
+                        <Select
+                            v-model="item.item_id"
+                            :options="options"
+                            :optionLabel="(option) => option.item_name"
+                            :optionValue="(option) => option.id"
+                            placeholder="Search Item..."
+                            @update:modelValue="selectChange"
+                            class="md:max-w-60 md:w-60 bg-white text-slate-950 p-1 b-0 ring-0 w-full relative"
+                        />
 
-                        <v-select
+                        <!-- <v-select
                             id="autocomplete"
                             required
                             v-model="item.item_id"
@@ -138,7 +148,7 @@
                             @update:modelValue="onInput"
                             @option:selected="onOptionSelected"
                             class="md:max-w-60 md:w-60 bg-white text-slate-950 p-1 b-0 ring-0 w-full relative"
-                        />
+                        /> -->
                     </div>
 
                     <!-- Quantity -->
@@ -306,6 +316,7 @@ import vSelect from "vue-select";
 import { useResourceStore } from "@/Store/Resource";
 import { useTransactionStore } from "@/Store/TransactionStore";
 import DatePicker from "primevue/datepicker";
+import Select from "primevue/select";
 
 export default {
     props: {
@@ -350,6 +361,7 @@ export default {
         PrimaryRoseButton,
         vSelect,
         DatePicker,
+        Select,
     },
 
     setup(props, { emit }) {
@@ -391,9 +403,9 @@ export default {
                     transaction_details: {
                         due_date: null,
                         return_date: null,
-                        late_fees: null,
-                        damage_fees: null,
-                        shipping_fees: null,
+                        late_fees: 0,
+                        damage_fees: 0,
+                        shipping_fees: 0,
                     },
                 };
             } else {
@@ -420,12 +432,11 @@ export default {
                         return_date:
                             props.transactionData?.details?.return_date || null,
                         late_fees:
-                            props.transactionData?.details?.late_fees || null,
+                            props.transactionData?.details?.late_fees || 0,
                         damage_fees:
-                            props.transactionData?.details?.damage_fees || null,
+                            props.transactionData?.details?.damage_fees || 0,
                         shipping_fees:
-                            props.transactionData?.details?.shipping_fees ||
-                            null,
+                            props.transactionData?.details?.shipping_fees || 0,
                     },
                 };
             }
@@ -564,6 +575,19 @@ export default {
                         item.price = selectedOption.price;
                         return item;
                     }
+                    return item;
+                }
+                return item;
+            });
+        },
+        selectChange(selectedOption) {
+            this.form.transaction_items.map((item) => {
+                if (selectedOption == item.item_id) {
+                    item.price = this.products.find(
+                        (x) => x.id == selectedOption
+                    )?.price;
+                    console.log(item);
+
                     return item;
                 }
                 return item;
