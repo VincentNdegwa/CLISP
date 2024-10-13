@@ -75,7 +75,6 @@ export default {
         <div v-else-if="myBusiness.data && myBusiness.data.length > 0">
             <DataTable
                 :value="myBusiness.data"
-                paginator
                 rows="10"
                 :rowsPerPageOptions="[5, 10, 20]"
             >
