@@ -184,6 +184,9 @@ export default {
             this.selectedItem = item;
             this.$refs.menu.toggle(event);
         },
+        exportCSV() {
+            this.$refs.dt.exportCSV();
+        },
     },
     components: {
         SearchInput,
@@ -309,12 +312,22 @@ export default {
                 :loading="resources.loading"
                 dataKey="id"
                 tableStyle="width:100%"
+                ref="dt"
             >
+                <template #header>
+                    <div class="text-end pb-4">
+                        <Button
+                            icon="pi pi-external-link"
+                            label="Export"
+                            @click="exportCSV($event)"
+                        />
+                    </div>
+                </template>
                 <!-- Item Name -->
                 <Column header="Item Name" field="item_name" />
 
                 <!-- Category -->
-                <Column header="Category">
+                <Column header="Category" field="category.name">
                     <template #body="slotProps">
                         {{ slotProps.data.category?.name || "--" }}
                     </template>
@@ -330,7 +343,7 @@ export default {
                 <Column header="Price" field="price" />
 
                 <!-- Date Added -->
-                <Column header="Date Added">
+                <Column header="Date Added" field="date_added">
                     <template #body="slotProps">
                         {{ formatDate(slotProps.data.date_added) }}
                     </template>

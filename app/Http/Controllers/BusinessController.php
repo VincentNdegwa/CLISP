@@ -30,7 +30,8 @@ class BusinessController extends Controller
                 'business_type_id' => 'required|exists:business_types,id',
                 'industry_id' => 'required|exists:industries,id',
                 'location' => 'required',
-                'user_id' => 'required|exists:users,id'
+                'user_id' => 'required|exists:users,id',
+                'logo' => 'nullable|string'
             ]);
 
             $business = Business::create($validatedData);
