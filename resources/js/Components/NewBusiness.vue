@@ -81,7 +81,7 @@ export default {
                         this.notification.message =
                             "Logo uploaded successfully";
                         this.notification.status = "success";
-                    }       
+                    }
                     console.log(response);
                 })
                 .catch((error) => {
@@ -121,6 +121,8 @@ export default {
                         this.notification.open = true;
                         this.notification.message = res.data.message;
                         this.notification.status = "success";
+
+                        window.location.reload()
                     }
 
                     if (res.data.error) {

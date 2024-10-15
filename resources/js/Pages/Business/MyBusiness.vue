@@ -8,6 +8,7 @@ import Button from "primevue/button";
 import Menu from "primevue/menu";
 import TableSkeleton from "@/Components/TableSkeleton.vue";
 import Badge from "primevue/badge";
+import Avatar from "primevue/avatar";
 
 export default {
     components: {
@@ -19,6 +20,7 @@ export default {
         Menu,
         TableSkeleton,
         Badge,
+        Avatar,
     },
     setup() {
         const { props } = usePage();
@@ -73,11 +75,18 @@ export default {
 
         <!-- Display Businesses in DataTable -->
         <div v-else-if="myBusiness.data && myBusiness.data.length > 0">
-            <DataTable
-                :value="myBusiness.data"
-                rows="10"
-                :rowsPerPageOptions="[5, 10, 20]"
-            >
+            <DataTable :value="myBusiness.data">
+                <Column>
+                    <template #body="slotProps">
+                        <Avatar
+                            :image="
+                                slotProps.data.business.logo ||
+                                '/images/CLISP-logo.png'
+                            "
+                            shape="circle"
+                        />
+                    </template>
+                </Column>
                 <Column field="business.business_name" header="Business Name" />
                 <Column field="business.location" header="Location" />
                 <Column
@@ -103,7 +112,7 @@ export default {
                         </div>
                     </template>
                 </Column>
-                <Column field="business.trust_score" header="Trust Score" />
+
                 <Column header="Actions">
                     <template #body="slotProps">
                         <div class="card flex justify-center">
