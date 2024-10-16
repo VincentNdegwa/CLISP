@@ -2,7 +2,7 @@
     <div class="p-1 h-fit relative">
         <div class="text-2xl font-bold ms-6 mt-2 capitalize">
             {{
-                newTransaction == "true"
+                newTransaction == true
                     ? `New ${transactionType}`
                     : `Update ${transactionType}`
             }}
@@ -81,6 +81,7 @@
                         showIcon
                         fluid
                         iconDisplay="input"
+                        dateFormat="yy-mm-dd"
                     />
                 </div>
 
@@ -93,7 +94,8 @@
                         fluid
                         iconDisplay="input"
                         id="lease_end_date"
-                        :minDate="form.lease_start_date"
+                        dateFormat="yy-mm-dd"
+                        :minDate="new Date(form.lease_start_date)"
                     />
                 </div>
             </div>
@@ -122,7 +124,7 @@
                         <InputLabel
                             :for="`item_id_${index}`"
                             value="Item"
-                            required="true"
+                            :required="true"
                             class="w-full"
                         />
                         <Select
@@ -136,21 +138,6 @@
                             @filter="selectSearch"
                             class="md:max-w-60 md:w-60 bg-white text-slate-950 p-1 b-0 ring-0 w-full relative"
                         />
-
-                        <!-- <v-select
-                            id="autocomplete"
-                            required
-                            v-model="item.item_id"
-                            :options="options"
-                            :get-option-label="(option) => option.item_name"
-                            :reduce="(option) => option.id"
-                            :filterable="false"
-                            placeholder="Search Item..."
-                            @search="onSearch"
-                            @update:modelValue="onInput"
-                            @option:selected="onOptionSelected"
-                            class="md:max-w-60 md:w-60 bg-white text-slate-950 p-1 b-0 ring-0 w-full relative"
-                        /> -->
                     </div>
 
                     <!-- Quantity -->
@@ -159,7 +146,7 @@
                             :for="`quantity_${index}`"
                             value="Quantity"
                             class="w-full"
-                            required="true"
+                            :required="true"
                         />
                         <TextInput
                             v-model="item.quantity"
@@ -177,7 +164,7 @@
                             :for="`price_${index}`"
                             value="Unit Price"
                             class="w-full"
-                            required="true"
+                            :required="true"
                         />
                         <TextInput
                             v-model="item.price"
@@ -208,32 +195,6 @@
                 v-if="tr_with_dates.includes(transactionType)"
             >
                 <h3 class="text-lg font-bold mb-4">Transaction Details</h3>
-
-                <!-- <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <InputLabel for="due_date" value="Due Date" />
-
-                        <DatePicker
-                            v-model="form.transaction_details.due_date"
-                            showIcon
-                            fluid
-                            iconDisplay="input"
-                            id="due_date"
-                        />
-                    </div>
-
-                    <div>
-                        <InputLabel for="return_date" value="Return Date" />
-
-                        <DatePicker
-                            v-model="form.transaction_details.return_date"
-                            showIcon
-                            fluid
-                            iconDisplay="input"
-                            id="return_date"
-                        />
-                    </div>
-                </div> -->
 
                 <div class="flex flex-col md:flex-row gap-2 mt-8">
                     <!-- Late Fees -->
@@ -281,7 +242,7 @@
                     type="submit"
                     :disabled="transactionStore.loading || loadingClose"
                 >
-                    {{ newTransaction == "true" ? "Submit" : "Update" }}
+                    {{ newTransaction == true ? "Submit" : "Update" }}
                 </PrimaryButton>
                 <PrimaryRoseButton
                     :disabled="transactionStore.loading || loadingClose"
@@ -321,6 +282,8 @@ import DatePicker from "primevue/datepicker";
 import Select from "primevue/select";
 
 export default {
+    emits: ["closeMe"],
+
     props: {
         initiatorBusiness: {
             type: Number,
@@ -351,7 +314,7 @@ export default {
             default: true,
         },
         transactionData: {
-            type: Object,
+            type: Object || {},
             default: null,
             required: false,
         },
@@ -377,15 +340,15 @@ export default {
             initiator_id: props.initiatorBusiness,
             receiver_business_id: null,
             receiver_customer_id: null,
-            transaction_items: [{ item_id: null, quantity: 1, price: 0 }],
+            transaction_items: [{ item_id: null, quantity: "1", price: "0" }],
             lease_start_date: null,
             lease_end_date: null,
             transaction_details: {
                 due_date: null,
                 return_date: null,
-                late_fees: 0,
-                damage_fees: 0,
-                shipping_fees: 0,
+                late_fees: "0",
+                damage_fees: "0",
+                shipping_fees: "0",
             },
         });
 
@@ -398,16 +361,16 @@ export default {
                     receiver_business_id: null,
                     receiver_customer_id: null,
                     transaction_items: [
-                        { item_id: null, quantity: 1, price: 0 },
+                        { item_id: null, quantity: "1", price: "0" },
                     ],
                     lease_start_date: null,
                     lease_end_date: null,
                     transaction_details: {
                         due_date: null,
                         return_date: null,
-                        late_fees: 0,
-                        damage_fees: 0,
-                        shipping_fees: 0,
+                        late_fees: "0",
+                        damage_fees: "0",
+                        shipping_fees: "0",
                     },
                 };
             } else {
@@ -422,23 +385,29 @@ export default {
                     receiver_customer_id:
                         props.transactionData?.receiver_customer?.id || null,
                     transaction_items: props.transactionData?.items || [
-                        { item_id: null, quantity: 1, price: 0 },
+                        { item_id: null, quantity: "1", price: "0" },
                     ],
                     lease_start_date:
-                        props.transactionData?.lease_start_date || null,
+                        new Date(props.transactionData?.lease_start_date) ||
+                        null,
                     lease_end_date:
-                        props.transactionData?.lease_end_date || null,
+                        new Date(props.transactionData?.lease_end_date) || null,
                     transaction_details: {
                         due_date:
-                            props.transactionData?.details?.due_date || null,
+                            new Date(
+                                props.transactionData?.details?.due_date
+                            ) || null,
                         return_date:
-                            props.transactionData?.details?.return_date || null,
+                            new Date(
+                                props.transactionData?.details?.return_date
+                            ) || null,
                         late_fees:
-                            props.transactionData?.details?.late_fees || 0,
+                            props.transactionData?.details?.late_fees || "0",
                         damage_fees:
-                            props.transactionData?.details?.damage_fees || 0,
+                            props.transactionData?.details?.damage_fees || "0",
                         shipping_fees:
-                            props.transactionData?.details?.shipping_fees || 0,
+                            props.transactionData?.details?.shipping_fees ||
+                            "0",
                     },
                 };
             }
@@ -456,7 +425,7 @@ export default {
         const addItem = () => {
             form.value.transaction_items.push({
                 item_id: null,
-                quantity: 1,
+                quantity: "1",
                 price: 0,
             });
         };
@@ -492,7 +461,7 @@ export default {
                         .slice(0, 10);
             }
 
-            if (props.newTransaction == "true") {
+            if (props.newTransaction == true) {
                 await transactionStore.addTransaction(form.value);
             } else {
                 await transactionStore.updateTransaction(
@@ -513,7 +482,7 @@ export default {
         };
 
         const closeForm = () => {
-            emit("close");
+            emit("closeMe");
         };
 
         return {

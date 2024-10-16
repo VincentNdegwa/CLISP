@@ -223,9 +223,9 @@ export default {
             :transactionType="transactionType"
             :isB2B="isB2B"
             :products="resourceStore.items.data"
-            newTransaction="true"
-            transactionData="null"
-            @close="closeModal"
+            :newTransaction="true"
+            :transactionData="null"
+            @closeMe="closeModal"
         />
         <NewTransactionForm
             v-if="modal.component == 'UpdateTransaction'"
@@ -235,9 +235,9 @@ export default {
             :transactionType="transactionType"
             :isB2B="isB2B"
             :products="resourceStore.items.data"
-            newTransaction="false"
+            :newTransaction="false"
             :transactionData="transactionStore.singleTransaction"
-            @close="closeModal"
+            @closeMe="closeModal"
         />
     </Modal>
     <AuthenticatedLayout>
