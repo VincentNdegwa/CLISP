@@ -91,7 +91,7 @@ class TransactionController extends Controller
 
                 Mail::to($transaction->receiver_business->email)
                     ->cc('ndegwavincent7@gmail.com')
-                    ->queue(new RequestApprovalMail($transaction, $transaction->totalPrice));
+                    ->queue(new RequestApprovalMail($transaction, $transaction->totalPrice, $transaction->id));
             }
 
             return response()->json([

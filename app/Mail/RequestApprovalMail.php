@@ -17,13 +17,15 @@ class RequestApprovalMail extends Mailable
 
     private $transactionData;
     private $totalPrice;
+    private $transactionId;
     /**
      * Create a new message instance.
      */
-    public function __construct($transactionData, $totalPrice, $pdfContent = null)
+    public function __construct($transactionData, $totalPrice, $transactionId)
     {
         $this->transactionData = $transactionData;
         $this->totalPrice = $totalPrice;
+        $this->transactionId = $transactionId;
     }
 
     /**
@@ -41,11 +43,16 @@ class RequestApprovalMail extends Mailable
      */
     public function content(): Content
     {
+        $transactionId = $this->transactionData['id'];
+        $baseUrl = env('APP_URL');
+        $approvalLink = "{$baseUrl}/transaction/view/{$transactionId}";
+
         return new Content(
             view: 'Mail.RequestApproval',
             with: [
                 'transactionData' => $this->transactionData,
                 'totalPrice' => $this->totalPrice,
+                'approvalLink' => $approvalLink,
             ]
         );
     }

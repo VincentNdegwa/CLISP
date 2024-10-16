@@ -89,6 +89,12 @@
         <p class="footer">To complete this process, please click the button below to approve the transaction and proceed
             with the payment:</p>
 
+        <a href="{{ $approvalLink }}"
+            style="display: inline-block; padding: 10px 20px; background-color: #4a90e2; color: white; text-decoration: none; border-radius: 5px;">
+            Approve Transaction
+        </a>
+
+
         <p class="footer">Once we receive your approval and payment, we will dispatch the items promptly.</p>
 
         <p class="footer">Thank you for your cooperation.</p>
