@@ -301,6 +301,11 @@ export default {
                 >
                     Add Categories
                 </button>
+                <Button
+                    icon="pi pi-external-link"
+                    label="Export"
+                    @click="exportCSV($event)"
+                />
             </div>
         </div>
         <div
@@ -314,15 +319,6 @@ export default {
                 tableStyle="width:100%"
                 ref="dt"
             >
-                <template #header>
-                    <div class="text-end pb-4">
-                        <Button
-                            icon="pi pi-external-link"
-                            label="Export"
-                            @click="exportCSV($event)"
-                        />
-                    </div>
-                </template>
                 <!-- Item Name -->
                 <Column header="Item Name" field="item_name" />
 

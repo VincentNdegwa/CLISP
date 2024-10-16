@@ -168,6 +168,7 @@ class ShippableTransactionWorkflow extends TransactionFlow
                     'quantity' => $item['quantity_ship'],
                     'transaction_time' => now(),
                 ]);
+                
                 if ($item['quantity'] == $item['quantity_ship']) {
                     $itemIds[] = $item['item_id'];
                 }
