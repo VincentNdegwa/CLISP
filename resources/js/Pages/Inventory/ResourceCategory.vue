@@ -12,6 +12,7 @@ import Column from "primevue/column";
 import Button from "primevue/button";
 import DataTable from "primevue/datatable";
 import Menu from "primevue/menu";
+import Paginator from "primevue/paginator";
 
 export default {
     components: {
@@ -26,6 +27,7 @@ export default {
         Button,
         DataTable,
         Menu,
+        Paginator,
     },
     setup() {
         const params = ref({
@@ -66,10 +68,12 @@ export default {
             modal.value.open = false;
         };
         const paginateCategories = (page) => {
-            if (page > 0) {
-                params.value.page = page;
-                categories.fetchResourceCategory(params.value);
-            }
+            params.value.page = page.page + 1;
+
+            categories.fetchResourceCategory(params.value);
+        };
+        const onRowChange = (rows) => {
+            params.value.rows = rows;
         };
 
         return {
@@ -82,6 +86,7 @@ export default {
             categoryDelete,
             params,
             paginateCategories,
+            onRowChange,
         };
     },
     data() {
@@ -226,36 +231,20 @@ export default {
 
             <div
                 v-if="categories.items?.data?.length > 0"
-                class="flex justify-between items-center"
+                class="flex justify-center items-center w-full"
             >
-                <button
-                    :class="[
-                        'py-2 px-4 rounded',
-                        categories.items?.prev_page_url
-                            ? 'bg-slate-900 text-white'
-                            : 'bg-gray-300 text-gray-700 cursor-not-allowed',
-                    ]"
-                    :disabled="!categories.items?.prev_page_url"
-                    @click="paginateCategories(params.page - 1)"
+                <Paginator
+                    :totalRecords="categories.items?.total"
+                    :rows="categories.items?.per_page"
+                    :first="
+                        (categories.items?.current_page - 1) *
+                        categories.items?.per_page
+                    "
+                    @page="paginateCategories"
+                    @update:rows="onRowChange"
+                    :rowsPerPageOptions="[10, 20, 50]"
                 >
-                    Previous
-                </button>
-                <span>
-                    Page {{ categories.items?.current_page }} of
-                    {{ categories.items?.last_page }}
-                </span>
-                <button
-                    :class="[
-                        'py-2 px-4 rounded',
-                        categories.items?.next_page_url
-                            ? 'bg-slate-900 text-white'
-                            : 'bg-gray-300 text-gray-700 cursor-not-allowed',
-                    ]"
-                    :disabled="!categories.items?.next_page_url"
-                    @click="paginateCategories(params.page + 1)"
-                >
-                    Next
-                </button>
+                </Paginator>
             </div>
         </div>
 

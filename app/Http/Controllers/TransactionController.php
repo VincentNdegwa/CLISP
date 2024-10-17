@@ -454,7 +454,8 @@ class TransactionController extends Controller
                 $query->with('item');
             }
         ])->first();
-        $imagePath = public_path('images/CLISP-logo.png');
+
+        $imagePath = public_path('images/default-business-logo.png');
 
         // Read the image file and encode it to base64
         $imageData = base64_encode(file_get_contents($imagePath));
