@@ -3,6 +3,7 @@
 use App\Http\Controllers\BusinessConnectionController;
 use App\Http\Controllers\BusinessController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FileSystemController;
 use App\Http\Controllers\LogisticController;
 use App\Http\Controllers\ResourceCategoryController;
@@ -18,6 +19,10 @@ Route::prefix('business')->group(function () {
     Route::post('/update', [BusinessController::class, 'Update'])->name('business.update');
     Route::post('/delete', [BusinessController::class, 'Delete'])->name('business.delete');
     Route::get('/details', [BusinessController::class, 'getDetails'])->name('business.details');
+});
+
+Route::prefix('dashboard/{business_id}')->group(function () {
+    Route::post('details', [DashboardController::class, 'create']);
 });
 
 Route::prefix('subscription')->group(function () {
