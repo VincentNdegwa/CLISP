@@ -14,6 +14,7 @@ import DataTable from "primevue/datatable";
 import Column from "primevue/column";
 import Button from "primevue/button";
 import Menu from "primevue/menu";
+import Paginator from "primevue/paginator";
 
 export default {
     setup() {
@@ -81,6 +82,8 @@ export default {
             query: {
                 search: null,
                 category: null,
+                page: 1,
+                rows: 20,
             },
             edit_form: {},
             confirmBox: {
@@ -187,6 +190,16 @@ export default {
         exportCSV() {
             this.$refs.dt.exportCSV();
         },
+        onPageChange(event) {
+            if (this.query.page != event.page + 1) {
+                this.query.page = event.page + 1;
+                this.makeQuery(this.query);
+            }
+        },
+        onRowChange(row) {
+            this.query.rows = row;
+            this.makeQuery(this.query);
+        },
     },
     components: {
         SearchInput,
@@ -201,6 +214,7 @@ export default {
         Column,
         Button,
         Menu,
+        Paginator,
     },
 };
 </script>
@@ -301,6 +315,11 @@ export default {
                 >
                     Add Categories
                 </button>
+                <Button
+                    icon="pi pi-external-link"
+                    label="Export"
+                    @click="exportCSV($event)"
+                />
             </div>
         </div>
         <div
@@ -314,15 +333,6 @@ export default {
                 tableStyle="width:100%"
                 ref="dt"
             >
-                <template #header>
-                    <div class="text-end pb-4">
-                        <Button
-                            icon="pi pi-external-link"
-                            label="Export"
-                            @click="exportCSV($event)"
-                        />
-                    </div>
-                </template>
                 <!-- Item Name -->
                 <Column header="Item Name" field="item_name" />
 
@@ -399,38 +409,19 @@ export default {
 
         <NoRecords v-else />
 
-        <div
-            v-if="resources.items.data?.length > 0"
-            class="flex justify-between items-center"
-        >
-            <button
-                :class="[
-                    'py-2 px-4 rounded',
-                    !resources.items.prev_page_url
-                        ? 'bg-gray-300 text-gray-700 cursor-not-allowed'
-                        : 'bg-slate-900 text-white',
-                ]"
-                :disabled="resources.items.prev_page_url == null"
-                @click="fetchCategories(resources.items.current_page - 1)"
+        <div v-if="resources.items?.data?.length > 0">
+            <Paginator
+                :totalRecords="resources.items?.total"
+                :rows="resources.items?.per_page"
+                :first="
+                    (resources.items?.current_page - 1) *
+                    resources.items?.per_page
+                "
+                @page="onPageChange"
+                @update:rows="onRowChange"
+                :rowsPerPageOptions="[10, 20, 50]"
             >
-                Previous
-            </button>
-            <span
-                >Page {{ resources.items.current_page }} of
-                {{ resources.items.last_page }}</span
-            >
-            <button
-                :class="[
-                    'py-2 px-4 rounded',
-                    !resources.items.prev_page_url
-                        ? 'bg-gray-300 text-gray-700 cursor-not-allowed'
-                        : 'bg-slate-900 text-white',
-                ]"
-                :disabled="resources.items.next_page_url == null"
-                @click="fetchCategories(resources.items.current_page + 1)"
-            >
-                Next
-            </button>
+            </Paginator>
         </div>
     </div>
     <Modal :show="modal.open" @close="closeModal">

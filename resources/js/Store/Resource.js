@@ -23,13 +23,25 @@ export const useResourceStore = defineStore("resource_store", {
             }
             let link = `/api/item/${businessId}/list`;
             if (queries) {
+                const params = [];
                 if (queries.search) {
-                    link += `?search=${queries.search}`;
+                    params.push(`search=${queries.search}`);
                 }
                 if (queries.category) {
-                    link += `?category=${queries.category}`;
+                    params.push(`category=${queries.category}`);
+                }
+                if (queries.page) {
+                    params.push(`page=${queries.page}`);
+                }
+                if (queries.rows) {
+                    params.push(`rows=${queries.rows}`);
+                }
+
+                if (params.length) {
+                    link += `?${params.join("&")}`;
                 }
             }
+
             this.loading = true;
             this.error = null;
 

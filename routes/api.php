@@ -3,6 +3,7 @@
 use App\Http\Controllers\BusinessConnectionController;
 use App\Http\Controllers\BusinessController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FileSystemController;
 use App\Http\Controllers\LogisticController;
 use App\Http\Controllers\ResourceCategoryController;
@@ -20,6 +21,10 @@ Route::prefix('business')->group(function () {
     Route::get('/details', [BusinessController::class, 'getDetails'])->name('business.details');
 });
 
+Route::prefix('dashboard/{business_id}')->group(function () {
+    Route::post('details', [DashboardController::class, 'create']);
+});
+
 Route::prefix('subscription')->group(function () {
     Route::post('/make', [SubscriptionController::class, 'pay'])->name('subscription.pay');
 });
@@ -33,7 +38,6 @@ Route::prefix("item/{business_id}")->group(function () {
     Route::post("/update", [ResourceItemController::class, 'update']);
     Route::get('/resources/{id}', [ResourceItemController::class, 'getSingleResource']);
 });
-
 Route::delete("item/delete/{id}", [ResourceItemController::class, 'delete']);
 Route::delete("category/delete/{id}", [ResourceCategoryController::class, 'delete']);
 

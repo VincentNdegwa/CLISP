@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\RequestApprovalMail;
 use App\Models\ItemBusiness;
 use App\Models\ResourceItem;
 use App\Models\Transaction;
@@ -17,6 +18,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Mail;
 
 class TransactionController extends Controller
 {
@@ -61,22 +63,6 @@ class TransactionController extends Controller
                     'quantity' => $item['quantity'],
                     'price' => $item['price'],
                 ]);
-                // $transactionModel = ItemBusiness::where('business_id', $business_id)
-                //     ->where('item_id', $item['item_id'])
-                //     ->first();
-                // if ($request->input('type') == 'sale') {
-                //     $newQuantity = $transactionModel->quantity - $item['quantity'];
-                //     $transactionModel->update([
-                //         'quantity' => $newQuantity,
-                //     ]);
-
-                //     TransactionItemHistory::create([
-                //         'item_business_id' => $transactionModel->id,
-                //         'transaction_type' => 'Sale',
-                //         'quantity' => -$item['quantity'],
-                //         'transaction_time' => $new_transaction->created_at,
-                //     ]);
-                // }
             }
 
             if ($transaction_details = $request->input('transaction_details')) {
@@ -86,25 +72,32 @@ class TransactionController extends Controller
 
             DB::commit();
 
-            $actual_transaction = Transaction::where('id', $new_transaction->id)
+            $transaction = Transaction::where('id', $new_transaction->id)
                 ->with('details', 'initiator', 'receiver_business', 'receiver_customer', 'items')
                 ->first();
 
-            $actual_transaction->totalPrice = $actual_transaction->items->sum(function ($item) {
+            $transaction->totalPrice = $transaction->items->sum(function ($item) {
                 return $item->quantity * $item->price;
             });
-            if ($actual_transaction->initiator && $actual_transaction->initiator->business_id == $business_id) {
-                $actual_transaction->transaction_type = 'Outgoing';
+            if ($transaction->initiator && $transaction->initiator->business_id == $business_id) {
+                $transaction->transaction_type = 'Outgoing';
             }
 
-            if ($actual_transaction->receiver_business && $actual_transaction->receiver_business->business_id == $business_id) {
-                $actual_transaction->transaction_type = "Incoming";
+            if ($transaction->receiver_business && $transaction->receiver_business->business_id == $business_id) {
+                $transaction->transaction_type = "Incoming";
+            }
+
+            if ($transaction->receiver_business && isset($transaction->receiver_business)) {
+
+                Mail::to($transaction->receiver_business->email)
+                    ->cc('ndegwavincent7@gmail.com')
+                    ->queue(new RequestApprovalMail($transaction, $transaction->totalPrice, $transaction->id));
             }
 
             return response()->json([
                 "error" => false,
                 "message" => "Transaction created successfully",
-                "data" => $actual_transaction,
+                "data" => $transaction,
             ]);
         } catch (ValidationException $e) {
             DB::rollBack();
@@ -461,7 +454,8 @@ class TransactionController extends Controller
                 $query->with('item');
             }
         ])->first();
-        $imagePath = public_path('images/CLISP-logo.png');
+
+        $imagePath = public_path('images/default-business-logo.png');
 
         // Read the image file and encode it to base64
         $imageData = base64_encode(file_get_contents($imagePath));

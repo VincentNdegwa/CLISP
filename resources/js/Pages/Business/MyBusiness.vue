@@ -81,7 +81,7 @@ export default {
                         <Avatar
                             :image="
                                 slotProps.data.business.logo ||
-                                '/images/CLISP-logo.png'
+                                '/images/default-business-logo.png'
                             "
                             shape="circle"
                         />

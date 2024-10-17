@@ -195,6 +195,28 @@
                                         'partially-dispatched')
                             "
                         />
+                        <!-- <Button
+                            label="Accept Return"
+                            size="small"
+                            severity="success"
+                            @click="acceptReturn"
+                            v-if="
+                                slotProps.data.transaction_type ===
+                                    'Outgoing' &&
+                                slotProps.data.status === 'return'
+                            "
+                        />
+                        <Button
+                            label="Reject Return"
+                            size="small"
+                            severity="danger"
+                            @click="rejectReturn"
+                            v-if="
+                                slotProps.data.transaction_type ===
+                                    'Outgoing' &&
+                                slotProps.data.status === 'return'
+                            "
+                        /> -->
                     </div>
                 </template>
             </Column>
@@ -223,52 +245,11 @@
                                 />
                             </template>
                         </Column>
-                        <Column field="price" header="Price">
+                        <Column field="price" header="Unit Price">
                             <template #body="itemSlotProps">
                                 {{ formatCurrency(itemSlotProps.data.price) }}
                             </template>
                         </Column>
-                        <!-- <Column header="Actions">
-                            <template #body="itemSlotProps">
-                                <div class="flex gap-1">
-                                    <Button
-                                        label="Dispatch"
-                                        @click="
-                                            checkConfirmation(() => {
-                                                dispatchOne(
-                                                    slotProps.data,
-                                                    itemSlotProps.data
-                                                );
-                                            }, 'dispatch_one')
-                                        "
-                                        size="small"
-                                        v-if="
-                                            slotProps.data.transaction_type ==
-                                                'Outgoing' &&
-                                            (slotProps.data.status == 'paid' ||
-                                                (itemSlotProps.data.status !=
-                                                    'transit' &&
-                                                    slotProps.data.status ==
-                                                        'partially-dispatched'))
-                                        "
-                                        :disabled="
-                                            slotProps.data.status == 'approved'
-                                        "
-                                    />
-                                    <Button
-                                        label="Return"
-                                        size="small"
-                                        severity="info"
-                                        v-if="
-                                            slotProps.data.transaction_type ==
-                                                'Incoming' &&
-                                            slotProps.data.status ===
-                                                'completed'
-                                        "
-                                    />
-                                </div>
-                            </template>
-                        </Column> -->
                     </DataTable>
                 </div>
             </template>
@@ -447,7 +428,8 @@ export default {
                 case "canceled":
                     return "danger";
                 case "return":
-                    return "warning";
+                case "returned":
+                    return "warn";
                 default:
                     return "danger";
             }

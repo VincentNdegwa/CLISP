@@ -21,7 +21,6 @@ class Transaction extends Model
         "receiver_customer_id",
         "lease_start_date",
         "lease_end_date",
-        // "idDeleted"
     ];
 
     public function details()
