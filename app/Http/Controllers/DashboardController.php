@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Business;
 use App\Models\Customer;
+use App\Models\ItemBusiness;
 use App\Models\Transaction;
 use App\Models\ResourceItem;
 use App\Models\Subscription;
@@ -49,11 +50,37 @@ class DashboardController extends Controller
                 ->groupBy('type')
                 ->get();
 
+            $lowStockItems = ItemBusiness::where('business_id', $business_id)
+                ->where('quantity', '<', 5)
+                ->get();
+
+            $revenueTrends = TransactionItem::select(
+                DB::raw('DATE_FORMAT(transaction_items.created_at, "%Y-%m") as month'),
+                DB::raw('SUM(transaction_items.price * transaction_items.quantity) as total_revenue')
+            )
+                ->join('transactions', 'transaction_items.transaction_id', '=', 'transactions.id')
+                ->where('transactions.initiator_id', $business_id)
+                ->groupBy('month')
+                ->orderBy('month', 'asc')
+                ->get();
+
+            $revenueByType = TransactionItem::select(
+                DB::raw('SUM(transaction_items.price * transaction_items.quantity) as revenue'),
+                'transactions.type'
+            )
+                ->join('transactions', 'transaction_items.transaction_id', '=', 'transactions.id')
+                ->where('transactions.initiator_id', $business_id)
+                ->groupBy('transactions.type')
+                ->get();
+
             $dashboardData = [
                 'totalRevenue' => $totalRevenue,
                 'newCustomers' => $newCustomers,
                 'sellingTransactionsByType' => $sellingTransactionsByType,
-                'buyingTransactionsByType' => $buyingTransactionsByType
+                'buyingTransactionsByType' => $buyingTransactionsByType,
+                'lowstockItems' => $lowStockItems,
+                'revenueTrends' => $revenueTrends,
+                'revenueByType' => $revenueByType,
 
             ];
 
