@@ -91,6 +91,9 @@ export default {
         const navigatePage = (count) => {
             filterParams.value.page = count;
         };
+        const changeRowCount = (rowCount) => {
+            filterParams.value.items_count = rowCount;
+        };
 
         const transactionData = (id) => {
             transactionStore.getSingleTransaction(id);
@@ -114,6 +117,7 @@ export default {
             navigatePage,
             transactionData,
             deleteTransaction,
+            changeRowCount,
         };
     },
     data() {
@@ -190,6 +194,13 @@ export default {
         },
         removeClickOutsideListener() {
             document.removeEventListener("click", this.handleClickOutside);
+        },
+        onPageChange(event) {
+            const newPage = event.page + 1; // PrimeVue Paginator is zero-based
+            this.navigatePage(newPage);
+        },
+        onRowChange(row) {
+            this.changeRowCount(row);
         },
     },
     mounted() {
@@ -308,7 +319,7 @@ export default {
             </div>
         </div>
 
-        <div id="outgoing">
+        <div class="h-[75vh] overflow-auto hide-overflow">
             <TransactionDisplay
                 :transactionStore="transactionStore"
                 :tableHeaders="tableHeaders"
@@ -317,49 +328,19 @@ export default {
                 @startDelete="startDelete"
             />
         </div>
-
-        <div
-            v-if="transactionStore.transactions?.data?.length > 0"
-            class="flex justify-between items-center"
-        >
-            <button
-                :class="[
-                    'py-2 px-4 rounded',
-                    transactionStore.transactions?.prev_page_url == null
-                        ? 'bg-gray-300 text-gray-700 cursor-not-allowed'
-                        : 'bg-slate-900 text-white',
-                ]"
-                :disabled="transactionStore.transactions?.prev_page_url == null"
-                @click="
-                    navigatePage(
-                        transactionStore.transactions?.current_page - 1
-                    )
+        <div v-if="transactionStore.transactions?.data?.length > 0">
+            <Paginator
+                :totalRecords="transactionStore.transactions?.total"
+                :rows="transactionStore.transactions?.per_page"
+                :first="
+                    (transactionStore.transactions?.current_page - 1) *
+                    transactionStore.transactions?.per_page
                 "
+                @page="onPageChange"
+                @update:rows="onRowChange"
+                :rowsPerPageOptions="[10, 20, 50]"
             >
-                Previous
-            </button>
-            <span>
-                Page {{ transactionStore.transactions?.current_page }} of
-                {{ transactionStore.transactions?.last_page }}
-            </span>
-            <button
-                :class="[
-                    'py-2 px-4 rounded',
-                    transactionStore.transactions?.next_page_url == null
-                        ? 'bg-gray-300 text-gray-700 cursor-not-allowed'
-                        : 'bg-slate-900 text-white',
-                ]"
-                :disabled="
-                    transactionStore.transactions?.next_page_url === null
-                "
-                @click="
-                    navigatePage(
-                        transactionStore.transactions?.current_page + 1
-                    )
-                "
-            >
-                Next
-            </button>
+            </Paginator>
         </div>
     </AuthenticatedLayout>
 </template>

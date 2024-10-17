@@ -1,5 +1,5 @@
 <template>
-    <div class="h-[80vh]">
+    <div class="h-full">
         <div class="table-display">
             <DataTable
                 v-if="

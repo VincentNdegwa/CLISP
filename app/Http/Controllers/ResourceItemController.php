@@ -84,6 +84,8 @@ class ResourceItemController extends Controller
 
         $search_text = $request->query('search');
         $category_id = $request->query('category');
+        $page = $request->query('page', 1);
+        $rows = $request->query('rows', 20);
 
         $newData = ResourceItem::whereHas('itemsBusiness', function ($query) use ($business_id) {
             $query->where('business_id', $business_id);
@@ -103,7 +105,8 @@ class ResourceItemController extends Controller
                     $query->where('business_id', $business_id)->select('item_id', 'quantity');
                 }
             ])
-            ->paginate(20);
+            ->paginate($rows, ['*'], 'page', $page);
+
 
         $newData->getCollection()->transform(function ($item) {
             if (isset($item->itemsBusiness[0])) {
@@ -115,25 +118,10 @@ class ResourceItemController extends Controller
             return $item;
         });
 
-
-
-
         return response()->json([
             'error' => false,
             'message' => 'Resource items fetched successfully.',
             'data' => $newData ?? [],
-        ]);
-
-
-
-
-
-
-        return response()->json([
-            'error' => false,
-            'message' => 'Resource items fetched successfully.',
-            'data' => $items,
-
         ]);
     }
 

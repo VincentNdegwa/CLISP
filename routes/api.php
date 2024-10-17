@@ -33,7 +33,6 @@ Route::prefix("item/{business_id}")->group(function () {
     Route::post("/update", [ResourceItemController::class, 'update']);
     Route::get('/resources/{id}', [ResourceItemController::class, 'getSingleResource']);
 });
-
 Route::delete("item/delete/{id}", [ResourceItemController::class, 'delete']);
 Route::delete("category/delete/{id}", [ResourceCategoryController::class, 'delete']);
 
