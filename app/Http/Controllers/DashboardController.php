@@ -105,8 +105,7 @@ class DashboardController extends Controller
                 ->count();
 
             // Total Items and Total Items Value
-            $totalItems = ItemBusiness::where('business_id', $business_id)
-                ->sum('quantity');
+            $totalItems = ItemBusiness::where('business_id', $business_id)->count();
 
             $totalItemsValue = ItemBusiness::join('resource_item', 'item_business.item_id', '=', 'resource_item.id')
                 ->where('item_business.business_id', $business_id)
@@ -152,10 +151,49 @@ class DashboardController extends Controller
                 ->groupBy('type')
                 ->get();
 
-            // New Customers in Last Month
-            $newCustomers = Customer::where('created_at', '>=', Carbon::now()->subMonth())
-                ->where('business_id', $business_id)
-                ->count();
+
+
+            $transactionTrends = ['Incomming', 'Outgoing'];
+            $transactionsPerDay = [];
+
+            for ($trend = 0; $trend < count($transactionTrends); $trend++) {
+                $startOfTheWeek = Carbon::now()->startOfWeek(Carbon::MONDAY);
+                $endOfTheWeek = Carbon::now()->endOfWeek(Carbon::SUNDAY);
+
+                for ($date = $startOfTheWeek->copy(); $date->lte($endOfTheWeek); $date->addDay()) {
+                    if ($transactionTrends[$trend] == 'Incomming') {
+                        $transactionCount = TransactionItem::join('transactions', 'transaction_items.transaction_id', '=', 'transactions.id')
+                            ->where('transactions.receiver_business_id', $business_id)
+                            ->whereDate('transactions.created_at', $date)
+                            ->count();
+
+                        $transactionsPerDay['Incomming'][$date->format('l')] = $transactionCount;
+                    } else if ($transactionTrends[$trend] == 'Outgoing') {
+                        $transactionCount = TransactionItem::join('transactions', 'transaction_items.transaction_id', '=', 'transactions.id')
+                            ->where('transactions.initiator_id', $business_id)
+                            ->whereDate('transactions.created_at', $date)
+                            ->count();
+
+                        $transactionsPerDay['Outgoing'][$date->format('l')] = $transactionCount;
+                    }
+                }
+            }
+
+
+            $revenueByTypeAndMonth = TransactionItem::select(
+                DB::raw('DATE_FORMAT(transactions.created_at, "%M") as month'),
+                DB::raw('SUM(transaction_items.price * transaction_items.quantity) as revenue'),
+                'transactions.type',
+            )
+                ->join('transactions', 'transaction_items.transaction_id', '=', 'transactions.id')
+                ->where('transactions.initiator_id', $business_id)
+                ->whereYear('transactions.created_at', now()->year)
+                ->groupBy('month', 'transactions.type')
+                ->get();
+
+
+
+
 
             // Prepare Dashboard Data
             $dashboardData = [
@@ -165,13 +203,14 @@ class DashboardController extends Controller
                     $todayYearRevenueSummary,
                 ],
                 'businessSummary' => $businessSummary,
+                'weeklyTransactionTrends' => $transactionsPerDay,
+                'revenueByTransaction' => $revenueByTypeAndMonth,
 
                 'lowStockItems' => $lowStockItems,
                 'revenueTrends' => $revenueTrends,
                 'revenueByType' => $revenueByType,
                 'sellingTransactionsByType' => $sellingTransactionsByType,
                 'buyingTransactionsByType' => $buyingTransactionsByType,
-                'newCustomers' => $newCustomers,
             ];
 
             // Return the response

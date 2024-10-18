@@ -9,6 +9,8 @@ import Column from "primevue/column";
 import { useDashboardStore } from "@/Store/DashboardStore";
 import RevenueSummary from "./RevenueSummary.vue";
 import BusinessSummary from "./BusinessSummary.vue";
+import WeeklyTransactionTrends from "./WeeklyTransactionTrends.vue";
+import RevenueByTransactionType from "./RevenueByTransactionType.vue";
 
 export default {
     props: ["business_id"],
@@ -36,6 +38,8 @@ export default {
         Column,
         RevenueSummary,
         BusinessSummary,
+        WeeklyTransactionTrends,
+        RevenueByTransactionType,
     },
 };
 </script>
@@ -56,18 +60,20 @@ export default {
         <div v-if="dashboardData && !loading" class="p-6">
             <RevenueSummary :revenueSummary="dashboardData.revenueSummary" />
             <BusinessSummary :businessSummary="dashboardData.businessSummary" />
-            <!-- New Customers Badge -->
-            <Card>
-                <template #title>New Customers</template>
-                <template #content>
-                    <div class="flex justify-between items-center">
-                        <Badge value="New" class="p-badge-success"></Badge>
-                        <span class="text-2xl font-extrabold text-blue-600">
-                            {{ dashboardData.newCustomers }}
-                        </span>
-                    </div>
-                </template>
-            </Card>
+            <div class="flex flex-col lg:flex-row gap-4 m-4">
+                <div class="w-full lg:w-2/5">
+                    <WeeklyTransactionTrends
+                        :trendData="dashboardData.weeklyTransactionTrends"
+                    />
+                </div>
+                <div class="w-full lg:w-3/5">
+                    <RevenueByTransactionType
+                        :revenueByTransaction="
+                            dashboardData.revenueByTransaction
+                        "
+                    />
+                </div>
+            </div>
 
             <!-- Selling Transactions by Type (Pie Chart) -->
             <Card>
