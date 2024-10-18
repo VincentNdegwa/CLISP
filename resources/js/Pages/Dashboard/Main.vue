@@ -7,6 +7,8 @@ import Badge from "primevue/badge";
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
 import { useDashboardStore } from "@/Store/DashboardStore";
+import RevenueSummary from "./RevenueSummary.vue";
+import BusinessSummary from "./BusinessSummary.vue";
 
 export default {
     props: ["business_id"],
@@ -32,6 +34,8 @@ export default {
         Badge,
         DataTable,
         Column,
+        RevenueSummary,
+        BusinessSummary,
     },
 };
 </script>
@@ -49,20 +53,9 @@ export default {
         </div>
 
         <!-- Dashboard Content -->
-        <div
-            v-if="dashboardData && !loading"
-            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6"
-        >
-            <!-- Total Revenue Card -->
-            <Card>
-                <template #title>Total Revenue</template>
-                <template #content>
-                    <div class="text-2xl font-extrabold text-green-600">
-                        ${{ dashboardData.totalRevenue }}
-                    </div>
-                </template>
-            </Card>
-
+        <div v-if="dashboardData && !loading" class="p-6">
+            <RevenueSummary :revenueSummary="dashboardData.revenueSummary" />
+            <BusinessSummary :businessSummary="dashboardData.businessSummary" />
             <!-- New Customers Badge -->
             <Card>
                 <template #title>New Customers</template>
