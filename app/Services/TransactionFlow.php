@@ -128,7 +128,7 @@ abstract class TransactionFlow
         try {
             $this->transaction->status = 'paid';
             $this->transaction->save();
-            return $this->createResponse(false, 'Payment completed successfully.', $this->transaction);
+            return $this->createResponse(false, 'Payment completed successfully. uyu', $this->transaction);
         } catch (\Exception $e) {
             return $this->createResponse(true, 'Failed to complete payment.', null, $e->getMessage());
         }

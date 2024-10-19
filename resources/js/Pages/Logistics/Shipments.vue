@@ -396,7 +396,7 @@ export default {
         clearFilters() {
             this.filterParams.incoming = "all";
             this.filterParams.search = "";
-            this.filterParams.status = null;
+            this.filterParams.status = "all";
         },
         collapseAll() {
             this.expandedRows = null;
