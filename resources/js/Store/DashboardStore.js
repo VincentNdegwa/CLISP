@@ -1,5 +1,6 @@
 import axios from "axios";
 import { defineStore } from "pinia";
+import { useUserStore } from "./UserStore";
 
 export const useDashboardStore = defineStore("dashboard_store", {
     state: () => ({
@@ -8,7 +9,14 @@ export const useDashboardStore = defineStore("dashboard_store", {
         error: null,
     }),
     actions: {
-        async fetchDashboardDetails(businessId) {
+        async fetchDashboardDetails(bId) {
+            const userStore = useUserStore();
+            const businessId = userStore.business;
+
+            if (!businessId) {
+                this.error = "Business ID not found.";
+                return;
+            }
             this.loading = true;
             this.error = null;
 
