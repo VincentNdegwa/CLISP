@@ -1,35 +1,37 @@
 <template>
     <Card>
-        <template #title>Revenue by Transaction Type</template>
+        <template #title>Revenue Trends</template>
         <template #content>
             <Chart
-                type="bar"
-                :options="chartOptions"
+                class="h-[30rem]"
+                type="line"
                 :data="{
-                    labels: revenueByType?.map((r) => r.type),
+                    labels: revenueTrends?.map((r) => r.month),
                     datasets: [
                         {
                             label: 'Revenue',
-                            data: revenueByType?.map((r) => r.revenue),
-                            backgroundColor: '#66BB6A',
+                            data: revenueTrends?.map((r) => r.total_revenue),
+                            fill: false,
+                            borderColor: '#42A5F5',
                         },
                     ],
                 }"
-                class="h-[30rem]"
+                :options="chartOptions"
             />
         </template>
     </Card>
 </template>
+
 <script>
 import Card from "primevue/card";
 import Chart from "primevue/chart";
 
 export default {
+    props: ["revenueTrends"],
     components: {
         Card,
         Chart,
     },
-    props: ["revenueByType"],
     data() {
         return {
             chartOptions: {

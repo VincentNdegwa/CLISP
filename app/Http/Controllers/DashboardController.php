@@ -2,17 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Business;
 use App\Models\BusinessConnection;
-use App\Models\Customer;
 use App\Models\ItemBusiness;
-use App\Models\Transaction;
-use App\Models\ResourceItem;
-use App\Models\Subscription;
 use App\Models\TransactionItem;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
-use Inertia\Inertia;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -21,6 +15,10 @@ class DashboardController extends Controller
     public function create(Request $request, $business_id)
     {
         try {
+            $transactionTrends = ['Incomming', 'Outgoing'];
+
+            $statusToRevenue = ['paid', 'partially-dispatched', 'dispatched', 'completed'];
+
             function calculatePercentageDifference($current, $previous)
             {
                 if ($previous == 0) {
@@ -36,12 +34,14 @@ class DashboardController extends Controller
             // Today's Revenue
             $todayRevenue = TransactionItem::join('transactions', 'transaction_items.transaction_id', '=', 'transactions.id')
                 ->where('transactions.initiator_id', $business_id)
+                ->whereIn('transactions.status', $statusToRevenue)
                 ->whereDate('transactions.created_at', Carbon::today())
                 ->sum(DB::raw('price * quantity'));
 
             // Yesterday's Revenue
             $yesterdayRevenue = TransactionItem::join('transactions', 'transaction_items.transaction_id', '=', 'transactions.id')
                 ->where('transactions.initiator_id', $business_id)
+                ->whereIn('transactions.status', $statusToRevenue)
                 ->whereDate('transactions.created_at', Carbon::yesterday())
                 ->sum(DB::raw('price * quantity'));
 
@@ -56,6 +56,7 @@ class DashboardController extends Controller
             // This Month's Revenue
             $monthRevenue = TransactionItem::join('transactions', 'transaction_items.transaction_id', '=', 'transactions.id')
                 ->where('transactions.initiator_id', $business_id)
+                ->whereIn('transactions.status', $statusToRevenue)
                 ->whereYear('transactions.created_at', Carbon::now()->year)
                 ->whereMonth('transactions.created_at', Carbon::now()->month)
                 ->sum(DB::raw('price * quantity'));
@@ -63,6 +64,7 @@ class DashboardController extends Controller
             // Last Month's Revenue
             $lastMonthRevenue = TransactionItem::join('transactions', 'transaction_items.transaction_id', '=', 'transactions.id')
                 ->where('transactions.initiator_id', $business_id)
+                ->whereIn('transactions.status', $statusToRevenue)
                 ->whereYear('transactions.created_at', Carbon::now()->subMonth()->year)
                 ->whereMonth('transactions.created_at', Carbon::now()->subMonth()->month)
                 ->sum(DB::raw('price * quantity'));
@@ -78,12 +80,14 @@ class DashboardController extends Controller
             // This Year's Revenue
             $yearRevenue = TransactionItem::join('transactions', 'transaction_items.transaction_id', '=', 'transactions.id')
                 ->where('transactions.initiator_id', $business_id)
+                ->whereIn('transactions.status', $statusToRevenue)
                 ->whereYear('transactions.created_at', Carbon::now()->year)
                 ->sum(DB::raw('price * quantity'));
 
             // Last Year's Revenue
             $lastYearRevenue = TransactionItem::join('transactions', 'transaction_items.transaction_id', '=', 'transactions.id')
                 ->where('transactions.initiator_id', $business_id)
+                ->whereIn('transactions.status', $statusToRevenue)
                 ->whereYear('transactions.created_at', Carbon::now()->subYear()->year)
                 ->sum(DB::raw('price * quantity'));
 
@@ -121,14 +125,18 @@ class DashboardController extends Controller
 
             // Revenue Trends (Month Wise)
             $revenueTrends = TransactionItem::select(
-                DB::raw('DATE_FORMAT(transaction_items.created_at, "%Y-%m") as month'),
+                DB::raw('DATE_FORMAT(transactions.created_at, "%M") as month'),
                 DB::raw('SUM(transaction_items.price * transaction_items.quantity) as total_revenue')
             )
                 ->join('transactions', 'transaction_items.transaction_id', '=', 'transactions.id')
                 ->where('transactions.initiator_id', $business_id)
+                ->whereIn('transactions.status', $statusToRevenue)
+                ->whereBetween('transactions.created_at', [Carbon::now()->startOfYear(), Carbon::now()->endOfYear()]) // Check within current year
                 ->groupBy('month')
-                ->orderBy('month', 'asc')
+                ->orderBy(DB::raw('MONTH(transactions.created_at)'), 'asc')
                 ->get();
+
+
 
             // Revenue By Transaction Type
             $revenueByType = TransactionItem::select(
@@ -137,23 +145,37 @@ class DashboardController extends Controller
             )
                 ->join('transactions', 'transaction_items.transaction_id', '=', 'transactions.id')
                 ->where('transactions.initiator_id', $business_id)
+                ->whereIn('transactions.status', $statusToRevenue)
                 ->groupBy('transactions.type')
                 ->get();
 
-            // Selling and Buying Transactions By Type
-            $sellingTransactionsByType = Transaction::select('type', DB::raw('count(*) as total'))
-                ->where('initiator_id', $business_id)
-                ->groupBy('type')
-                ->get();
 
-            $buyingTransactionsByType = Transaction::select('type', DB::raw('count(*) as total'))
-                ->where('receiver_business_id', $business_id)
-                ->groupBy('type')
-                ->get();
+            $currentYear = Carbon::now()->year;
+            $sellingTransactionsByType = [];
+            for ($trend = 0; $trend < count($transactionTrends); $trend++) {
+                $column = ($transactionTrends[$trend] == 'Incomming') ? 'transactions.receiver_business_id' : 'transactions.initiator_id';
+
+                for ($month = 1; $month <= 12; $month++) {
+                    $carbonDate = Carbon::create($currentYear, $month, 1);
+                    $monthName = $carbonDate->format('F');
+                    $formattedMonth = $carbonDate->format('Y-m');
+
+                    $sellingTransactionsByType[$transactionTrends[$trend]][$monthName] = TransactionItem::select(
+                        DB::raw('COUNT(*) as count'),
+                        'transactions.type',
+                        DB::raw('DATE_FORMAT(transactions.created_at, "%Y-%m") as month')
+                    )
+                        ->join('transactions', 'transaction_items.transaction_id', '=', 'transactions.id')
+                        ->where($column, $business_id)
+                        ->where(DB::raw('DATE_FORMAT(transactions.created_at, "%Y-%m")'), $formattedMonth)
+                        ->groupBy('month', 'transactions.type')
+                        ->get();
+                }
+            }
 
 
 
-            $transactionTrends = ['Incomming', 'Outgoing'];
+
             $transactionsPerDay = [];
 
             for ($trend = 0; $trend < count($transactionTrends); $trend++) {
@@ -187,6 +209,7 @@ class DashboardController extends Controller
             )
                 ->join('transactions', 'transaction_items.transaction_id', '=', 'transactions.id')
                 ->where('transactions.initiator_id', $business_id)
+                ->whereIn('transactions.status', $statusToRevenue)
                 ->whereYear('transactions.created_at', now()->year)
                 ->groupBy('month', 'transactions.type')
                 ->get();
@@ -205,12 +228,10 @@ class DashboardController extends Controller
                 'businessSummary' => $businessSummary,
                 'weeklyTransactionTrends' => $transactionsPerDay,
                 'revenueByTransaction' => $revenueByTypeAndMonth,
-
                 'lowStockItems' => $lowStockItems,
                 'revenueTrends' => $revenueTrends,
                 'revenueByType' => $revenueByType,
-                'sellingTransactionsByType' => $sellingTransactionsByType,
-                'buyingTransactionsByType' => $buyingTransactionsByType,
+                'transactionTypeCount' => $sellingTransactionsByType,
             ];
 
             // Return the response

@@ -10,6 +10,10 @@ import { useDashboardStore } from "@/Store/DashboardStore";
 import RevenueSummary from "./RevenueSummary.vue";
 import BusinessSummary from "./BusinessSummary.vue";
 import WeeklyTransactionTrends from "./WeeklyTransactionTrends.vue";
+import YearRevenueByTransactionType from "./YearRevenueByTransactionType.vue";
+import TransactionTypeCount from "./TransactionTypeCount.vue";
+import FullRevenueTrend from "./FullRevenueTrend.vue";
+import LowStockItems from "./LowStockItems.vue";
 import RevenueByTransactionType from "./RevenueByTransactionType.vue";
 
 export default {
@@ -39,6 +43,10 @@ export default {
         RevenueSummary,
         BusinessSummary,
         WeeklyTransactionTrends,
+        YearRevenueByTransactionType,
+        TransactionTypeCount,
+        FullRevenueTrend,
+        LowStockItems,
         RevenueByTransactionType,
     },
 };
@@ -67,7 +75,7 @@ export default {
                     />
                 </div>
                 <div class="w-full lg:w-3/5">
-                    <RevenueByTransactionType
+                    <YearRevenueByTransactionType
                         :revenueByTransaction="
                             dashboardData.revenueByTransaction
                         "
@@ -75,135 +83,39 @@ export default {
                 </div>
             </div>
 
-            <!-- Selling Transactions by Type (Pie Chart) -->
-            <Card>
-                <template #title>Selling Transactions by Type</template>
-                <template #content>
-                    <Chart
-                        type="pie"
-                        :data="{
-                            labels: dashboardData.sellingTransactionsByType?.map(
-                                (t) => t.type
-                            ),
-                            datasets: [
-                                {
-                                    data: dashboardData.sellingTransactionsByType?.map(
-                                        (t) => t.total
-                                    ),
-                                    backgroundColor: [
-                                        '#42A5F5',
-                                        '#66BB6A',
-                                        '#FFA726',
-                                        '#AB47BC',
-                                    ],
-                                },
-                            ],
-                        }"
-                        class="w-full mt-4"
+            <div class="flex flex-col lg:flex-row gap-4 m-4">
+                <div class="w-full">
+                    <TransactionTypeCount
+                        :transactionTypeCount="
+                            dashboardData.transactionTypeCount
+                        "
                     />
-                </template>
-            </Card>
+                </div>
+            </div>
 
-            <!-- Buying Transactions by Type (Bar Chart) -->
-            <Card>
-                <template #title>Buying Transactions by Type</template>
-                <template #content>
-                    <Chart
-                        type="bar"
-                        :data="{
-                            labels: dashboardData.buyingTransactionsByType?.map(
-                                (t) => t.type
-                            ),
-                            datasets: [
-                                {
-                                    label: 'Buying Transactions',
-                                    data: dashboardData.buyingTransactionsByType?.map(
-                                        (t) => t.total
-                                    ),
-                                    backgroundColor: '#29B6F6',
-                                },
-                            ],
-                        }"
-                        class="w-full mt-4"
+            <div class="flex flex-col lg:flex-row gap-4 m-4">
+                <div class="w-full lg:w-7/12">
+                    <!-- Revenue Trends Line Chart -->
+                    <FullRevenueTrend
+                        :revenueTrends="dashboardData.revenueTrends"
                     />
-                </template>
-            </Card>
-
-            <!-- Low Stock Items Table (PrimeVue DataTable) -->
-            <Card>
-                <template #title>Low Stock Items</template>
-                <template #content>
-                    <DataTable
-                        :value="dashboardData.lowstockItems"
-                        class="mt-4"
-                    >
-                        <Column field="item_id" header="Item ID"></Column>
-                        <Column field="quantity" header="Quantity"></Column>
-                        <Column field="source" header="Source"></Column>
-                        <Column
-                            field="created_at"
-                            header="Created At"
-                            :body="
-                                (data) =>
-                                    new Date(
-                                        data.created_at
-                                    ).toLocaleDateString()
-                            "
-                        ></Column>
-                    </DataTable>
-                </template>
-            </Card>
-
-            <!-- Revenue Trends Line Chart -->
-            <Card>
-                <template #title>Revenue Trends</template>
-                <template #content>
-                    <Chart
-                        type="line"
-                        :data="{
-                            labels: dashboardData.revenueTrends?.map(
-                                (r) => r.month
-                            ),
-                            datasets: [
-                                {
-                                    label: 'Revenue',
-                                    data: dashboardData.revenueTrends?.map(
-                                        (r) => r.total_revenue
-                                    ),
-                                    fill: false,
-                                    borderColor: '#42A5F5',
-                                },
-                            ],
-                        }"
-                        class="w-full mt-4"
+                </div>
+                <div class="w-full lg:w-5/12">
+                    <!-- Low Stock Items Table (PrimeVue DataTable) -->
+                    <LowStockItems
+                        :lowStockItems="dashboardData.lowStockItems"
                     />
-                </template>
-            </Card>
+                </div>
+            </div>
 
-            <!-- Revenue by Type (Grouped Bar Chart) -->
-            <Card>
-                <template #title>Revenue by Type</template>
-                <template #content>
-                    <Chart
-                        type="bar"
-                        :data="{
-                            labels: dashboardData.revenueByType?.map(
-                                (r) => r.type
-                            ),
-                            datasets: [
-                                {
-                                    label: 'Revenue',
-                                    data: dashboardData.revenueByType?.map(
-                                        (r) => r.revenue
-                                    ),
-                                    backgroundColor: '#66BB6A',
-                                },
-                            ],
-                        }"
-                        class="w-full mt-4"
+            <div class="flex flex-col lg:flex-row gap-4 m-4">
+                <!-- Revenue by Type (Grouped Bar Chart) -->
+                <div class="w-full lg:w-7/12">
+                    <RevenueByTransactionType
+                        :revenueByType="dashboardData.revenueByType"
                     />
-                </template>
-            </Card>
+                </div>
+            </div>
         </div>
     </Dashboard>
 </template>
