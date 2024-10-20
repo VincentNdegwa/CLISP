@@ -4,9 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Laravel\Cashier\Billable;
 
 class Business extends Model
 {
+    use Billable;
     use HasFactory;
     protected $table = 'business';
     protected $fillable = [

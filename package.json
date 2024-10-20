@@ -22,6 +22,7 @@
     "dependencies": {
         "@fortawesome/vue-fontawesome": "^3.0.8",
         "@primevue/themes": "^4.0.7",
+        "@stripe/stripe-js": "^4.8.0",
         "bootstrap-icons": "^1.11.3",
         "chart.js": "^4.4.5",
         "pinia": "^2.2.2",
