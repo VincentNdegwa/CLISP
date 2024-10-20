@@ -2,12 +2,14 @@
 
 namespace App\Services;
 
+use App\Http\Controllers\StripePaymentController;
 use App\Models\ItemBusiness;
 use App\Models\ResourceItem;
 use App\Models\Transaction;
 use App\Models\TransactionItem;
 use App\Models\TransactionItemHistory;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 abstract class TransactionFlow
 {
@@ -37,7 +39,7 @@ abstract class TransactionFlow
         try {
             $business_id = $this->businesId;
             $transaction_id = $this->transactionId;
-            $transaction = Transaction::with('details', 'initiator:business_id,business_name,email,phone_number,location', 'receiver_business:business_id,business_name,email,phone_number,location', 'receiver_customer')
+            $transaction = Transaction::with('details', 'initiator:business_id,business_name,email,phone_number,location,business_stripe_id', 'receiver_business:business_id,business_name,email,phone_number,location', 'receiver_customer')
                 ->with([
                     'items' => function ($query) {
                         $query->with('item:id,item_name');
@@ -126,9 +128,52 @@ abstract class TransactionFlow
     public function payTransaction()
     {
         try {
-            $this->transaction->status = 'paid';
-            $this->transaction->save();
-            return $this->createResponse(false, 'Payment completed successfully. uyu', $this->transaction);
+            $items = [];
+            $fullTransaction = $this->getFullTransaction();
+
+            foreach ($fullTransaction->items as $item) {
+                $modifiedItem = [
+                    'name'     => $item['item']['item_name'],
+                    'price'    => $item['price'],
+                    'quantity' => $item['quantity'],
+                ];
+
+                $items[] = $modifiedItem;
+            }
+
+            $stripeController = new StripePaymentController();
+            $paymentLinkResponse = null;
+
+            if ($fullTransaction->isB2B) {
+                $paymentLinkResponse = $stripeController->createPaymentLink($items, $fullTransaction->initiator, $fullTransaction->receiver_business);
+            } else {
+                $paymentLinkResponse = $stripeController->createPaymentLink($items, $fullTransaction->initiator, $fullTransaction->receiver_customer);
+            }
+            $responseData = $paymentLinkResponse->getData(true);
+            if ($responseData['error']) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $responseData['message'],
+                    'errors' => $responseData['errors'],
+                ], 500);
+            } else {
+                $paymentLink = $responseData['data'];
+
+                if (isset($paymentLink->url)) {
+                    $url = $paymentLink->url;
+
+                    return redirect($url);
+                    // return response()->json([
+                    //     'success' => true,
+                    //     'message' => 'Payment link created successfully.',
+                    //     'url' => $url,
+                    // ]);
+                }
+            }
+            // acct_1QC3jiRa7VI6WBN1
+
+            // $this->transaction->status = 'paid';
+            // $this->transaction->save();
         } catch (\Exception $e) {
             return $this->createResponse(true, 'Failed to complete payment.', null, $e->getMessage());
         }

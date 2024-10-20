@@ -35,6 +35,9 @@ Route::middleware('guest')->group(function () {
     Route::post('reset-password', [NewPasswordController::class, 'store'])
         ->name('password.store');
     Route::get('subscription', [SubscriptionController::class, 'create'])->name('view.subscriptions');
+
+    Route::get('stripe-payment/success')->name('success');
+    Route::get('stripe-payment/failed')->name('cancel');
 });
 
 Route::middleware('auth')->group(function () {
