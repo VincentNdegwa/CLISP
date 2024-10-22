@@ -13,6 +13,7 @@
         "laravel/pulse": "^1.2",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.9",
+        "paypal/paypal-server-sdk": "0.5.1",
         "stripe/stripe-php": "^16.1",
         "tightenco/ziggy": "^2.0"
     },

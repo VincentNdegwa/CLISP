@@ -21,6 +21,7 @@
     },
     "dependencies": {
         "@fortawesome/vue-fontawesome": "^3.0.8",
+        "@paypal/paypal-js": "^8.1.2",
         "@primevue/themes": "^4.0.7",
         "@stripe/stripe-js": "^4.8.0",
         "bootstrap-icons": "^1.11.3",

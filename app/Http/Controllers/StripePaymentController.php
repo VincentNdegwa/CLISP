@@ -75,7 +75,8 @@ class StripePaymentController extends Controller
         try {
 
             $stripeClient = new StripeClient(env('STRIPE_SECRET'));
-            
+            // $payeeBusiness->business_stripe_id
+
             $response = $stripeClient->checkout->sessions->create([
                 'mode' => 'payment',
                 'customer_email' => $payerDetails->email,
@@ -84,7 +85,7 @@ class StripePaymentController extends Controller
                 'cancel_url' => route('cancel'),
                 'payment_intent_data' => [
                     'transfer_data' => [
-                        'destination' => $payeeBusiness->business_stripe_id,
+                        'destination' => "acct_1QC60pGptDGJ881g",
                     ],
                 ],
             ]);

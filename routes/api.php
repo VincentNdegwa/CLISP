@@ -6,6 +6,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FileSystemController;
 use App\Http\Controllers\LogisticController;
+use App\Http\Controllers\PayPalController;
 use App\Http\Controllers\ResourceCategoryController;
 use App\Http\Controllers\ResourceItemController;
 use App\Http\Controllers\SubscriptionController;
@@ -84,3 +85,5 @@ Route::prefix('transactions/{business_id}')->group(function () {
     Route::post('/logistics/return-items', [LogisticController::class, 'returnItems']);
     Route::post('/logistics/reject-items', [LogisticController::class, 'rejectItems']);
 });
+Route::post('/paypal/create-order', [PayPalController::class, 'createOrder']);
+Route::post('/paypal/capture-order/{orderId}', [PayPalController::class, 'captureOrder']);

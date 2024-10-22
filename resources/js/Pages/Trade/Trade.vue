@@ -16,6 +16,9 @@ import { useResourceStore } from "@/Store/Resource";
 
 import Paginator from "primevue/paginator";
 import Select from "primevue/select";
+import PaymentMethods from "../Payment/PaymentMethods.vue";
+import PayPalComponent from "../Payment/PayPalComponent.vue";
+import { data } from "autoprefixer";
 
 export default {
     props: {
@@ -39,6 +42,8 @@ export default {
         NewTransactionForm,
         Paginator,
         Select,
+        PaymentMethods,
+        PayPalComponent,
     },
 
     setup(props) {
@@ -101,6 +106,9 @@ export default {
         const deleteTransaction = async (id) => {
             await transactionStore.deleteTransaction(id);
         };
+        const payTransaction = async (params) => {
+            await transactionStore.payTransaction(params);
+        };
 
         return {
             isDropdownOpen,
@@ -118,6 +126,7 @@ export default {
             transactionData,
             deleteTransaction,
             changeRowCount,
+            payTransaction,
         };
     },
     data() {
@@ -153,6 +162,11 @@ export default {
                 { label: "Incomming", value: "incoming" },
                 { label: "Outgoing", value: "outgoing" },
             ],
+            PaymentProcess: {
+                start: false,
+                data: null,
+                mode: null,
+            },
         };
     },
     methods: {
@@ -202,6 +216,39 @@ export default {
         onRowChange(row) {
             this.changeRowCount(row);
         },
+        payTransaction(transaction) {
+            this.PaymentProcess.start = true;
+            this.PaymentProcess.data = {
+                transactionId: transaction.id,
+                items: transaction.items.map((item) => {
+                    return {
+                        id: item.id,
+                        quantity: item.quantity,
+                        price: item.price,
+                    };
+                }),
+            };
+
+            this.openModal("PaymentProcess");
+        },
+        proceedPayment(mode) {
+            this.PaymentProcess.mode = mode;
+            switch (mode) {
+                case "PayPal":
+                    this.modal.component = "PayPalComponent";
+                    break;
+
+                default:
+                    this.closeModal();
+                    break;
+            }
+        },
+        completedPayment(mode) {
+            this.payTransaction({
+                transactionId: this.PaymentProcess.data.transactionId,
+                mode: mode,
+            });
+        },
     },
     mounted() {
         this.addClickOutsideListener();
@@ -249,6 +296,16 @@ export default {
             :newTransaction="false"
             :transactionData="transactionStore.singleTransaction"
             @closeMe="closeModal"
+        />
+        <PaymentMethods
+            v-if="modal.component == 'PaymentProcess'"
+            @close="proceedPayment"
+        />
+        <PayPalComponent
+            v-if="modal.component == 'PayPalComponent'"
+            :transaction="PaymentProcess.data"
+            @close="closeModal"
+            @completedPayment="completedPayment"
         />
     </Modal>
     <AuthenticatedLayout>
@@ -326,6 +383,7 @@ export default {
                 :isB2B="isB2B"
                 @startUpdate="startUpdate"
                 @startDelete="startDelete"
+                @payTransaction="payTransaction"
             />
         </div>
         <div v-if="transactionStore.transactions?.data?.length > 0">

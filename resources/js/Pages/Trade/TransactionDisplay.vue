@@ -133,7 +133,7 @@ import Menu from "primevue/menu";
 import NoRecords from "@/Components/NoRecords.vue";
 
 export default {
-    emits: ["startUpdate", "startDelete"],
+    emits: ["startUpdate", "startDelete", "payTransaction"],
     components: {
         TableDisplay,
         ConfirmationModal,
@@ -173,8 +173,6 @@ export default {
     },
     methods: {
         getActionItems(transactionId) {
-            console.log(transactionId);
-
             const defaultActionItems = [
                 {
                     label: "View",
@@ -222,7 +220,7 @@ export default {
                         "Are you sure you want to pay this transaction?",
                         "Pay Transaction",
                         () => {
-                            this.transactionStore.payTransaction(transactionId);
+                            this.$emit("payTransaction", data);
                         }
                     );
                 },

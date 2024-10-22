@@ -46,7 +46,9 @@ export default {
         },
         message: {
             handler(newValue) {
-                this.showAlert();
+                if (newValue) {
+                    this.showAlert();
+                }
             },
             deep: true,
         },

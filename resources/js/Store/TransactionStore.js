@@ -235,13 +235,16 @@ export const useTransactionStore = defineStore("transactionStore", {
 
         // Helper method to update transaction state
         updateTransactionState(transactionId, updatedTransaction) {
-            this.singleTransaction = {
-                ...this.singleTransaction,
-                status: updatedTransaction.status,
-            };
+            if (this.singleTransaction) {
+                this.singleTransaction = {
+                    ...this.singleTransaction,
+                    status: updatedTransaction.status,
+                };
+            }
             this.transactions.data = this.transactions?.data?.map(
                 (transaction) => {
                     if (transaction.id == transactionId) {
+                        console.log("transaction found");
                         return {
                             ...transaction,
                             status: updatedTransaction.status,
@@ -250,7 +253,6 @@ export const useTransactionStore = defineStore("transactionStore", {
                     return transaction;
                 }
             );
-            console.log(this.transactions.data);
         },
 
         // Accept transaction
@@ -302,19 +304,40 @@ export const useTransactionStore = defineStore("transactionStore", {
         },
 
         // Pay transaction
-        async payTransaction(transactionId) {
+        async payTransaction(params) {
+            const { transactionId, mode } = params;
             const url = `/api/transactions/${
                 useUserStore().business
             }/pay-transaction/${transactionId}`;
-            const transactionType = {
+            const transactionData = {
                 type: this.singleTransaction.type,
+                mode: mode,
             };
-            await this.handleTransactionRequest(
-                url,
-                transactionId,
-                transactionType,
-                "Transaction paid successfully."
-            );
+            axios.post(url, transactionData).then((response) => {
+                if (response.data.error) {
+                    this.error = response.data.message;
+                    if (response.data.errors) {
+                        this.error = response.data.errors;
+                    }
+                } else {
+                    this.success = response.data.message;
+                    let responseData = response.data.data;
+                    this.transactions.data = this.transactions.data.map(
+                        (transaction) => {
+                            if (transaction.id === responseData.id) {
+                                return {
+                                    ...transaction,
+                                    ...responseData,
+                                };
+                            }
+                            return transaction;
+                        }
+                    );
+
+                    console.log(this.transactions.data);
+                    console.log(responseData);
+                }
+            });
         },
 
         // Close transaction

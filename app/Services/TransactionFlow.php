@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Http\Controllers\PayPalController;
 use App\Http\Controllers\StripePaymentController;
 use App\Models\ItemBusiness;
 use App\Models\ResourceItem;
@@ -125,55 +126,14 @@ abstract class TransactionFlow
         }
     }
 
-    public function payTransaction()
+    public function payTransaction($mode)
     {
         try {
-            $items = [];
+
+            $this->transaction->status = 'paid';
+            $this->transaction->save();
             $fullTransaction = $this->getFullTransaction();
-
-            foreach ($fullTransaction->items as $item) {
-                $modifiedItem = [
-                    'name'     => $item['item']['item_name'],
-                    'price'    => $item['price'],
-                    'quantity' => $item['quantity'],
-                ];
-
-                $items[] = $modifiedItem;
-            }
-
-            $stripeController = new StripePaymentController();
-            $paymentLinkResponse = null;
-
-            if ($fullTransaction->isB2B) {
-                $paymentLinkResponse = $stripeController->createPaymentLink($items, $fullTransaction->initiator, $fullTransaction->receiver_business);
-            } else {
-                $paymentLinkResponse = $stripeController->createPaymentLink($items, $fullTransaction->initiator, $fullTransaction->receiver_customer);
-            }
-            $responseData = $paymentLinkResponse->getData(true);
-            if ($responseData['error']) {
-                return response()->json([
-                    'success' => false,
-                    'message' => $responseData['message'],
-                    'errors' => $responseData['errors'],
-                ], 500);
-            } else {
-                $paymentLink = $responseData['data'];
-
-                if (isset($paymentLink->url)) {
-                    $url = $paymentLink->url;
-
-                    return redirect($url);
-                    // return response()->json([
-                    //     'success' => true,
-                    //     'message' => 'Payment link created successfully.',
-                    //     'url' => $url,
-                    // ]);
-                }
-            }
-            // acct_1QC3jiRa7VI6WBN1
-
-            // $this->transaction->status = 'paid';
-            // $this->transaction->save();
+            return $this->createResponse(false, 'Sucessfully Paid Transaction',  $fullTransaction);
         } catch (\Exception $e) {
             return $this->createResponse(true, 'Failed to complete payment.', null, $e->getMessage());
         }

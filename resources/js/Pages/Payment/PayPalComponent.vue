@@ -1,0 +1,168 @@
+<template>
+    <div>
+        <div :class="loading ? '' : 'hidden'">
+            <LoadingUI />
+        </div>
+        <div :class="['h-fit relative p-8', loading ? 'hidden' : '']">
+            <div class="flex w-full flex-col">
+                <div id="paypal-button-container"></div>
+                <p id="result-message" class="text-slate-900">
+                    {{ resultMessage }}
+                </p>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script>
+import LoadingUI from "@/Components/LoadingUI.vue";
+
+export default {
+    name: "PayPalButton",
+    emits: ["close", "completedPayment"],
+    props: ["transaction"],
+    data() {
+        return {
+            resultMessage: "",
+            loading: true,
+        };
+    },
+    components: {
+        LoadingUI,
+    },
+    mounted() {
+        if (window.paypal) {
+            this.renderPayPalButton();
+        } else {
+            console.error("PayPal SDK not loaded.");
+        }
+    },
+    methods: {
+        renderPayPalButton() {
+            const totalValue = this.transaction.items
+                .reduce((total, item) => {
+                    return (
+                        total + parseFloat(item.price) * parseInt(item.quantity)
+                    );
+                }, 0)
+                .toFixed(2);
+
+            const orderPayload = {
+                intent: "CAPTURE",
+                purchase_units: [
+                    {
+                        amount: {
+                            currency_code: "USD",
+                            value: totalValue,
+                            breakdown: {
+                                item_total: {
+                                    currency_code: "USD",
+                                    value: totalValue,
+                                },
+                            },
+                        },
+                        items: this.transaction.items.map((item) => ({
+                            name: `Item ${item.id}`,
+                            unit_amount: {
+                                currency_code: "USD",
+                                value: item.price,
+                            },
+                            quantity: item.quantity,
+                        })),
+                    },
+                ],
+            };
+
+            // Render PayPal buttons
+
+            const self = this;
+            window.paypal
+                .Buttons({
+                    style: {
+                        shape: "rect",
+                        layout: "vertical",
+                        color: "gold",
+                        label: "paypal",
+                    },
+                    async createOrder() {
+                        try {
+                            const response = await fetch(
+                                "/api/paypal/create-order",
+                                {
+                                    method: "POST",
+                                    headers: {
+                                        "Content-Type": "application/json",
+                                    },
+                                    body: JSON.stringify(orderPayload),
+                                }
+                            );
+
+                            const orderData = await response.json();
+                            if (orderData.id) {
+                                return orderData.id;
+                            }
+
+                            const errorDetail = orderData?.details?.[0];
+                            const errorMessage = errorDetail
+                                ? `${errorDetail.issue} ${errorDetail.description} (${orderData.debug_id})`
+                                : JSON.stringify(orderData);
+
+                            throw new Error(errorMessage);
+                        } catch (error) {
+                            console.error("Error creating order:", error);
+                            this.resultMessage = `Error creating order: ${error.message}`;
+                        }
+                    },
+                    async onApprove(data, actions) {
+                        try {
+                            const response = await fetch(
+                                `/api/paypal/capture-order/${data.orderID}`,
+                                {
+                                    method: "POST",
+                                    headers: {
+                                        "Content-Type": "application/json",
+                                    },
+                                }
+                            );
+
+                            const orderData = await response.json();
+                            const errorDetail = orderData?.details?.[0];
+                            console.log(orderData);
+
+                            if (errorDetail?.issue === "INSTRUMENT_DECLINED") {
+                                return actions.restart();
+                            } else if (errorDetail) {
+                                throw new Error(
+                                    `${errorDetail.description} (${orderData.debug_id})`
+                                );
+                            } else if (!orderData.purchase_units) {
+                                throw new Error(JSON.stringify(orderData));
+                            } else {
+                                const transaction =
+                                    orderData?.purchase_units?.[0]?.payments
+                                        ?.captures?.[0];
+                                self.resultMessage = `Transaction ${transaction.status}: ${transaction.id}`;
+
+                                if (orderData.status === "COMPLETED") {
+                                    self.$emit("completedPayment", "paypal");
+                                }
+                                self.$emit("close");
+                            }
+                        } catch (error) {
+                            console.error("Error capturing order:", error);
+                            self.resultMessage = `Error capturing order: ${error.message}`;
+                        }
+                    },
+                })
+                .render("#paypal-button-container");
+
+            // Set loading to false once the buttons are rendered
+            self.loading = false;
+        },
+    },
+};
+</script>
+
+<style scoped>
+/* Add any styles you need for your PayPal button here */
+</style>

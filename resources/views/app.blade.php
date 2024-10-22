@@ -11,6 +11,10 @@
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
     <!-- Scripts -->
+    <script
+        src="https://www.paypal.com/sdk/js?client-id={{ config('paypal.client') }}&currency=USD&components=buttons&enable-funding=venmo,paylater,card">
+    </script>
+
     @routes
     @vite(['resources/js/app.js', "resources/js/Pages/{$page['component']}.vue"])
     @inertiaHead
