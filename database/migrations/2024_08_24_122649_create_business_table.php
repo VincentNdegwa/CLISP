@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id('business_id');
             $table->string('business_name');
             $table->string('business_type_id');
-            $table->string("business_stripe_id");
             $table->string('location');
             $table->string('phone_number');
             $table->string('email')->unique();

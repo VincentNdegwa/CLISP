@@ -19,7 +19,6 @@ class Business extends Model
         'email',
         'website',
         'industry_id',
-        'business_stripe_id',
         'registration_number',
         'logo',
         'date_registered',
@@ -56,5 +55,9 @@ class Business extends Model
     public function business_item()
     {
         return $this->hasMany(ItemBusiness::class, 'business_id');
+    }
+    public function payment_account()
+    {
+        return $this->hasMany(PaymentAccount::class, 'business_id');
     }
 }

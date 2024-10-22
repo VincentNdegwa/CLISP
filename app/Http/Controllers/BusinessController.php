@@ -10,8 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Stripe\Account;
-use Stripe\Stripe;
-use Stripe\StripeClient;
+
 
 class BusinessController extends Controller
 {
@@ -22,19 +21,10 @@ class BusinessController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
 
-    function setStripeApiKey()
-    {
-        Stripe::setApiKey(env('STRIPE_SECRET'));
-    }
 
-    function createStripeClient()
-    {
-        return new StripeClient(env('STRIPE_SECRET'));
-    }
 
     public function create(Request $request)
     {
-        $this->setStripeApiKey();
 
         try {
             $validatedData = $request->validate([
@@ -49,22 +39,8 @@ class BusinessController extends Controller
                 'user_id' => 'required|exists:users,id',
                 'logo' => 'nullable|string'
             ]);
-            $account = $this->createStripeClient()->accounts->create(
-                [
-                    'type' => "express",
-                    'email' => $validatedData['email'],
-                    'country' => "US",
-                    'business_type' => "individual",
-                    'capabilities' => [
-                        'card_payments' => ['requested' => true],
-                        'transfers' => ['requested' => true],
-                        'crypto_transfers' => ['requested' => true],
-                        'legacy_payments' => ['requested' => true],
-                    ],
-                ]
-            );
 
-            $validatedData['business_stripe_id'] = $account->id;
+
 
 
             $business = Business::create($validatedData);
