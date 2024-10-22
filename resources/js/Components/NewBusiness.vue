@@ -7,6 +7,8 @@ import PrimaryButton from "@/Components/PrimaryButton.vue";
 import axios from "axios";
 import Button from "primevue/button";
 import FileUpload from "primevue/fileupload";
+import Select from "primevue/select";
+import currencyCodes from "@/currency";
 
 export default {
     props: ["user"],
@@ -26,6 +28,7 @@ export default {
             date_registered: formattedDate,
             user_id: this.$page.props.auth.user.id,
             logo: null,
+            currency_code: "USD",
         });
 
         return {
@@ -38,6 +41,7 @@ export default {
                 status: "error",
             },
             logoFile: null,
+            currencyCodes,
         };
     },
     components: {
@@ -47,6 +51,7 @@ export default {
         PrimaryButton,
         Button,
         FileUpload,
+        Select,
     },
     mounted() {
         axios
@@ -60,6 +65,12 @@ export default {
             });
     },
     methods: {
+        getCurrencyName(code) {
+            const currency = this.currencyCodes.find(
+                (currency) => currency.code === code
+            );
+            return currency ? currency.code : "";
+        },
         async handleLogoUpload() {
             let formData = new FormData();
             formData.append("file", this.logoFile);
@@ -122,7 +133,7 @@ export default {
                         this.notification.message = res.data.message;
                         this.notification.status = "success";
 
-                        window.location.reload()
+                        window.location.reload();
                     }
 
                     if (res.data.error) {
@@ -192,7 +203,48 @@ export default {
                 />
                 <InputError class="mt-2" :message="form.errors.email" />
             </div>
+            <!-- Business Currency Code -->
+            <div class="mt-4">
+                <InputLabel
+                    for="email"
+                    value="Business Currency"
+                    required="true"
+                />
+                <p class="text-red-600 font-semibold">
+                    Please note: The selected currency will be used for all
+                    transactions. Ensure that you choose carefully, as changes
+                    cannot be made after your business is created.
+                </p>
 
+                <Select
+                    v-model="form.currency_code"
+                    :options="currencyCodes"
+                    filter
+                    optionLabel="name"
+                    optionValue="code"
+                    placeholder="Select a Currency"
+                    class="w-full"
+                >
+                    <template #value="slotProps">
+                        <div v-if="slotProps.value" class="flex items-center">
+                            <div>
+                                {{ getCurrencyName(slotProps.value) }}
+                            </div>
+                        </div>
+                        <span v-else>
+                            {{ slotProps.placeholder }}
+                        </span>
+                    </template>
+                    <template #option="slotProps">
+                        <div class="flex items-center">
+                            <div>{{ slotProps.option.code }}</div>
+                            <span>-</span>
+                            <div>{{ slotProps.option.name }}</div>
+                        </div>
+                    </template>
+                </Select>
+                <InputError class="mt-2" :message="form.errors.email" />
+            </div>
             <!-- Business Type -->
             <div>
                 <InputLabel

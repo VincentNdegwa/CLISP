@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->string('website')->nullable();
             $table->string('industry_id');
+            $table->string('currency_code');
             $table->string('registration_number')->unique();
             $table->string('logo')->nullable();
             $table->date('date_registered');

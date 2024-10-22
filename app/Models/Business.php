@@ -25,6 +25,7 @@ class Business extends Model
         'trust_score',
         'status',
         'subscription_plan',
+        'currency_code'
     ];
 
     public function businessType()
