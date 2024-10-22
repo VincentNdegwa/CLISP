@@ -131,6 +131,7 @@ import Tag from "primevue/tag";
 import Button from "primevue/button";
 import Menu from "primevue/menu";
 import NoRecords from "@/Components/NoRecords.vue";
+import { useUserStore } from "@/Store/UserStore";
 
 export default {
     emits: ["startUpdate", "startDelete", "payTransaction"],
@@ -319,10 +320,17 @@ export default {
             return new Date(date).toLocaleDateString(undefined, options);
         },
         convertCurrency(currency) {
-            return Number(currency).toLocaleString("en-US", {
+            const currencyCode = useUserStore().actualBusiness?.currency_code;
+
+            const numericAmount =
+                typeof currency === "string" ? parseFloat(currency) : currency;
+            if (isNaN(numericAmount)) {
+                return "0.0";
+            }
+            return new Intl.NumberFormat("en-US", {
                 style: "currency",
-                currency: "KES",
-            });
+                currency: currencyCode,
+            }).format(numericAmount);
         },
         confirmAction() {
             this.confirmation.method();

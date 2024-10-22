@@ -52,6 +52,7 @@
 </template>
 
 <script>
+import { useUserStore } from "@/Store/UserStore";
 import Card from "primevue/card";
 
 export default {
@@ -59,18 +60,20 @@ export default {
     components: {
         Card,
     },
+    setup() {},
     methods: {
         formatNumber(amount) {
-            if (amount) {
-                return (
-                    Intl.NumberFormat({
-                        style: "currency",
-                        currency: "KES",
-                    }).format(amount) || "0.0"
-                );
-            } else {
-                return 0;
+            const currencyCode = useUserStore().actualBusiness?.currency_code;
+
+            const numericAmount =
+                typeof amount === "string" ? parseFloat(amount) : amount;
+            if (isNaN(numericAmount)) {
+                return "0.0";
             }
+            return new Intl.NumberFormat("en-US", {
+                style: "currency",
+                currency: currencyCode,
+            }).format(numericAmount);
         },
     },
 };

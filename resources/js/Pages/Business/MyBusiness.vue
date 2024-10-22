@@ -173,6 +173,13 @@ export default {
                         </p>
                     </div>
                     <div class="flex items-center space-x-2 mt-2">
+                        <i class="pi pi-dollar" />
+                        <p class="font-semibold text-gray-700">Currency:</p>
+                        <p>
+                            {{ myBusiness?.business?.business?.currency_code }}
+                        </p>
+                    </div>
+                    <div class="flex items-center space-x-2 mt-2">
                         <i class="pi pi-check" />
                         <p class="font-semibold text-gray-700">Status:</p>
                         <Badge
