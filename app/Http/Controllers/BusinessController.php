@@ -7,7 +7,10 @@ use App\Models\BusinessUser;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
+use Stripe\Account;
+
 
 class BusinessController extends Controller
 {
@@ -17,6 +20,9 @@ class BusinessController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\JsonResponse
      */
+
+
+
     public function create(Request $request)
     {
 
@@ -33,6 +39,9 @@ class BusinessController extends Controller
                 'user_id' => 'required|exists:users,id',
                 'logo' => 'nullable|string'
             ]);
+
+
+
 
             $business = Business::create($validatedData);
 

@@ -5,8 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+
 class Business extends Model
 {
+
     use HasFactory;
     protected $table = 'business';
     protected $fillable = [
@@ -53,5 +55,9 @@ class Business extends Model
     public function business_item()
     {
         return $this->hasMany(ItemBusiness::class, 'business_id');
+    }
+    public function payment_account()
+    {
+        return $this->hasMany(PaymentAccount::class, 'business_id');
     }
 }

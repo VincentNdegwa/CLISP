@@ -18,6 +18,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 class TransactionController extends Controller
@@ -389,14 +390,26 @@ class TransactionController extends Controller
     public function payTransaction($business_id, $transaction, Request $request)
     {
         $transaction_type = $request->input('type');
+        if ($transaction_type == null) {
+            $trans = Transaction::find($transaction);
+            if ($trans == null) {
+                return response()->json(['error' => 'Transaction not found'], 404);
+            }
+            $transaction_type = $trans->type;
+        }
         $workflow = $this->getWorkflow($business_id, $transaction, $transaction_type);
-        return $workflow->payTransaction();
+        if ($workflow == null) {
+            return response()->json(['error' => 'Workflow not found'], 404);
+        }
+
+        return $workflow->payTransaction($request->input('mode'));
     }
+
     public function acceptAndPayTransaction($business_id, $transaction, Request $request)
     {
         $transaction_type = $request->input('type');
         $workflow = $this->getWorkflow($business_id, $transaction, $transaction_type);
-        return $workflow->payTransaction();
+        return $workflow->payTransaction($request->input('mode'));
     }
     public function closeTransaction($business_id, $transaction, Request $request)
     {

@@ -2,12 +2,14 @@
 
 namespace App\Services;
 
+
 use App\Models\ItemBusiness;
 use App\Models\ResourceItem;
 use App\Models\Transaction;
 use App\Models\TransactionItem;
 use App\Models\TransactionItemHistory;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 abstract class TransactionFlow
 {
@@ -37,7 +39,7 @@ abstract class TransactionFlow
         try {
             $business_id = $this->businesId;
             $transaction_id = $this->transactionId;
-            $transaction = Transaction::with('details', 'initiator:business_id,business_name,email,phone_number,location', 'receiver_business:business_id,business_name,email,phone_number,location', 'receiver_customer')
+            $transaction = Transaction::with('details', 'initiator:business_id,business_name,email,phone_number,location,business_stripe_id', 'receiver_business:business_id,business_name,email,phone_number,location', 'receiver_customer')
                 ->with([
                     'items' => function ($query) {
                         $query->with('item:id,item_name');
@@ -123,12 +125,14 @@ abstract class TransactionFlow
         }
     }
 
-    public function payTransaction()
+    public function payTransaction($mode)
     {
         try {
+
             $this->transaction->status = 'paid';
             $this->transaction->save();
-            return $this->createResponse(false, 'Payment completed successfully.', $this->transaction);
+            $fullTransaction = $this->getFullTransaction();
+            return $this->createResponse(false, 'Sucessfully Paid Transaction',  $fullTransaction);
         } catch (\Exception $e) {
             return $this->createResponse(true, 'Failed to complete payment.', null, $e->getMessage());
         }

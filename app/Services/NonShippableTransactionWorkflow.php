@@ -49,21 +49,7 @@ class NonShippableTransactionWorkflow extends TransactionFlow
             return $this->createResponse(true, $th->getMessage());
         }
     }
-    public function payTransaction()
-    {
-        try {
-            DB::beginTransaction();
 
-            $this->transaction->status = 'paid';
-            $this->transaction->save();
-
-
-            return $this->createResponse(false, 'Payment completed successfully.', $this->getFullTransaction());
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return $this->createResponse(true, 'Failed to complete payment.', null, $e->getMessage());
-        }
-    }
 
     public function rejectTransaction($params)
     {
