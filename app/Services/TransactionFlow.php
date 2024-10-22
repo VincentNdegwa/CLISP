@@ -2,8 +2,7 @@
 
 namespace App\Services;
 
-use App\Http\Controllers\PayPalController;
-use App\Http\Controllers\StripePaymentController;
+
 use App\Models\ItemBusiness;
 use App\Models\ResourceItem;
 use App\Models\Transaction;
