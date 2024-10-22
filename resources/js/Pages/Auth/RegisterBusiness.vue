@@ -7,6 +7,9 @@ import InputError from "@/Components/InputError.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import axios from "axios";
 import { router } from "@inertiajs/vue3";
+import currencyCodes from "@/currency";
+
+import Select from "primevue/select";
 
 export default {
     props: ["businessTypes", "industries", "user"],
@@ -24,11 +27,13 @@ export default {
             industry_id: "",
             registration_number: "",
             date_registered: formattedDate,
-            user_id: this.user.id,
+            user_id: this.user?.id,
+            currency_code: "USD",
         });
 
         return {
             form,
+            currencyCodes,
         };
     },
     components: {
@@ -38,6 +43,7 @@ export default {
         TextInput,
         InputError,
         PrimaryButton,
+        Select,
     },
     methods: {
         submit() {
@@ -57,6 +63,12 @@ export default {
                 }
             });
         },
+        getCurrencyName(code) {
+            const currency = this.currencyCodes.find(
+                (currency) => currency.code === code
+            );
+            return currency ? currency.code : "";
+        },
     },
 };
 </script>
@@ -67,18 +79,18 @@ export default {
     <div
         class="w-full max-h-screen h-screen overflow-y-scroll bg-white grid place-items-center text-slate-950"
     >
-        <ul class="steps hidden md:grid">
+        <ul class="steps hidden md:grid mt-1">
             <li class="step step-warning">Register</li>
             <li class="step step-warning">Register Business</li>
             <li class="step">Choose Plan</li>
             <li class="step">Make Payment</li>
             <li class="step">Complete</li>
         </ul>
-        <div class="flex flex-col w-full p-2 sm:p-0 sm:w-fit">
+        <div class="flex flex-col w-full p-2 sm:p-0 sm:w-fit mt-2">
             <div class="text-xl text-center">Register your business!</div>
             <form
                 @submit.prevent="submit"
-                class="bg-white p-3 text-slate-950 shadow-md rounded-md md:min-w-[40rem] sm:min-w-[30rem] min-w-full"
+                class="bg-white p-3 text-slate-950 shadow-md rounded-md md:min-w-[40rem] max-w-[50rem] sm:min-w-[30rem] min-w-full"
             >
                 <div class="mt-4">
                     <InputLabel
@@ -119,6 +131,51 @@ export default {
                         autocomplete="email"
                     />
 
+                    <InputError class="mt-2" :message="form.errors.email" />
+                </div>
+
+                <div class="mt-4">
+                    <InputLabel
+                        for="email"
+                        value="Business Currency"
+                        required="true"
+                    />
+                    <p class="text-red-600 font-semibold">
+                        Please note: The selected currency will be used for all
+                        transactions. Ensure that you choose carefully, as
+                        changes cannot be made after your business is created.
+                    </p>
+
+                    <Select
+                        v-model="form.currency_code"
+                        :options="currencyCodes"
+                        filter
+                        optionLabel="name"
+                        optionValue="code"
+                        placeholder="Select a Currency"
+                        class="w-full"
+                    >
+                        <template #value="slotProps">
+                            <div
+                                v-if="slotProps.value"
+                                class="flex items-center"
+                            >
+                                <div>
+                                    {{ getCurrencyName(slotProps.value) }}
+                                </div>
+                            </div>
+                            <span v-else>
+                                {{ slotProps.placeholder }}
+                            </span>
+                        </template>
+                        <template #option="slotProps">
+                            <div class="flex items-center">
+                                <div>{{ slotProps.option.code }}</div>
+                                <span>-</span>
+                                <div>{{ slotProps.option.name }}</div>
+                            </div>
+                        </template>
+                    </Select>
                     <InputError class="mt-2" :message="form.errors.email" />
                 </div>
 

@@ -5,6 +5,7 @@ import PrimaryRoseButton from "@/Components/PrimaryRoseButton.vue";
 import SplitButtonSelectCustom from "@/Components/SplitButtonSelectCustom.vue";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import { useTransactionStore } from "@/Store/TransactionStore";
+import { useUserStore } from "@/Store/UserStore";
 import { Head } from "@inertiajs/vue3";
 import Badge from "primevue/badge";
 import Tag from "primevue/tag";
@@ -128,16 +129,17 @@ export default {
     },
     methods: {
         convertCurrency(currency) {
-            if (currency) {
-                return (
-                    Intl.NumberFormat({
-                        style: "currency",
-                        currency: "KES",
-                    }).format(currency) || "0.0"
-                );
-            } else {
-                ("0.0");
+            const currencyCode = useUserStore().actualBusiness?.currency_code;
+
+            const numericAmount =
+                typeof currency === "string" ? parseFloat(currency) : currency;
+            if (isNaN(numericAmount)) {
+                return "0.0";
             }
+            return new Intl.NumberFormat("en-US", {
+                style: "currency",
+                currency: currencyCode,
+            }).format(numericAmount);
         },
         buttonDisplay(action) {
             const transaction_type =

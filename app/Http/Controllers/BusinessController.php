@@ -37,7 +37,8 @@ class BusinessController extends Controller
                 'industry_id' => 'required|exists:industries,id',
                 'location' => 'required',
                 'user_id' => 'required|exists:users,id',
-                'logo' => 'nullable|string'
+                'logo' => 'nullable|string',
+                'currency_code' => 'required|string'
             ]);
 
 
@@ -162,9 +163,17 @@ class BusinessController extends Controller
 
         try {
             $validate = $request->validate([
-                "userId" => 'required|exists:users,id'
+                "userId" => 'required|exists:users,id',
+                'businessId' => 'required|exists:business,business_id'
             ]);
-            $user_business = BusinessUser::where("user_id", $validate['userId'])->with('business')->get();
+            $user_business = BusinessUser::where("user_id", $validate['userId'])
+                ->where('business_id', $validate['businessId'])
+                ->with([
+
+                    'business' => function ($query) use ($validate) {
+                        $query->with(['businessType', 'industry', 'payment_account']);
+                    },
+                ])->first();
             return response()->json([
                 'error' => false,
                 'message' => 'Business fetched',

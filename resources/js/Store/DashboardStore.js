@@ -32,7 +32,6 @@ export const useDashboardStore = defineStore("dashboard_store", {
                 console.error("Error fetching dashboard data:", this.error);
             } finally {
                 this.loading = false;
-                console.log(this.dashboardData);
             }
         },
     },

@@ -8,22 +8,24 @@ export const useMyBusiness = defineStore("useMyBusiness", {
         loading: false,
         error: null,
         success: null,
+        business: {},
     }),
     actions: {
-        async fetchMyBusiness(userId) {
+        async fetchMyBusiness(params) {
             this.loading = true;
             this.error = null;
             this.success = null;
 
             try {
-                const response = await axios.post("/api/business/my-business", {
-                    userId: userId,
-                });
+                const response = await axios.post(
+                    "/api/business/my-business",
+                    params
+                );
 
                 if (response.error) {
                     this.error = response.data.error;
                 } else {
-                    this.data = response.data.data;
+                    this.business = response.data.data;
                 }
             } catch (error) {
                 this.error = error.response
