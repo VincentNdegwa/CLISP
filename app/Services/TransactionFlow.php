@@ -39,7 +39,7 @@ abstract class TransactionFlow
         try {
             $business_id = $this->businesId;
             $transaction_id = $this->transactionId;
-            $transaction = Transaction::with('details', 'initiator:business_id,business_name,email,phone_number,location,business_stripe_id', 'receiver_business:business_id,business_name,email,phone_number,location', 'receiver_customer')
+            $transaction = Transaction::with('details', 'initiator:business_id,business_name,email,phone_number,location', 'receiver_business:business_id,business_name,email,phone_number,location', 'receiver_customer')
                 ->with([
                     'items' => function ($query) {
                         $query->with('item:id,item_name');
@@ -52,7 +52,7 @@ abstract class TransactionFlow
                 ->where('id', $transaction_id)
                 ->first();
 
-            $transaction->totalPrice = $transaction->items->sum(function ($item) {
+            $transaction->totalPrice = $transaction?->items->sum(function ($item) {
                 return $item->quantity * $item->price;
             });
             if ($transaction->initiator && $transaction->initiator->business_id == $business_id) {

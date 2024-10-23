@@ -44,6 +44,7 @@
 </template>
 
 <script>
+import { currencyConvertor } from "@/Store/CurrencyConvertStore";
 import Card from "primevue/card";
 
 export default {
@@ -53,20 +54,7 @@ export default {
     },
     methods: {
         formatNumber(amount) {
-            // return Number(amount).toLocaleString("en-US", {
-            //     style: "currency",
-            //     currency: "KES",
-            // });
-            if (amount) {
-                return (
-                    Intl.NumberFormat({
-                        style: "currency",
-                        currency: "KES",
-                    }).format(amount) || "0.0"
-                );
-            } else {
-                return 0;
-            }
+            return currencyConvertor().convertMyCurrency(amount);
         },
         isNegative(difference) {
             let sign = Math.sign(difference);

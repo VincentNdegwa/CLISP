@@ -132,6 +132,7 @@ import Button from "primevue/button";
 import Menu from "primevue/menu";
 import NoRecords from "@/Components/NoRecords.vue";
 import { useUserStore } from "@/Store/UserStore";
+import { currencyConvertor } from "@/Store/CurrencyConvertStore";
 
 export default {
     emits: ["startUpdate", "startDelete", "payTransaction"],
@@ -320,17 +321,7 @@ export default {
             return new Date(date).toLocaleDateString(undefined, options);
         },
         convertCurrency(currency) {
-            const currencyCode = useUserStore().actualBusiness?.currency_code;
-
-            const numericAmount =
-                typeof currency === "string" ? parseFloat(currency) : currency;
-            if (isNaN(numericAmount)) {
-                return "0.0";
-            }
-            return new Intl.NumberFormat("en-US", {
-                style: "currency",
-                currency: currencyCode,
-            }).format(numericAmount);
+            return currencyConvertor().convertMyCurrency(currency);
         },
         confirmAction() {
             this.confirmation.method();

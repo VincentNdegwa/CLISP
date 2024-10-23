@@ -4,11 +4,15 @@ import PrimaryButton from "@/Components/PrimaryButton.vue";
 import PrimaryRoseButton from "@/Components/PrimaryRoseButton.vue";
 import SplitButtonSelectCustom from "@/Components/SplitButtonSelectCustom.vue";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
+import { currencyConvertor } from "@/Store/CurrencyConvertStore";
 import { useTransactionStore } from "@/Store/TransactionStore";
 import { useUserStore } from "@/Store/UserStore";
 import { Head } from "@inertiajs/vue3";
 import Badge from "primevue/badge";
 import Tag from "primevue/tag";
+import PayPalComponent from "../Payment/PayPalComponent.vue";
+import Modal from "@/Components/Modal.vue";
+import PaymentProcess from "../Payment/PaymentProcess.vue";
 
 export default {
     components: {
@@ -20,6 +24,9 @@ export default {
         Badge,
         SplitButtonSelectCustom,
         Tag,
+        Modal,
+        PayPalComponent,
+        PaymentProcess,
     },
     data() {
         return {
@@ -28,6 +35,16 @@ export default {
                 title: "",
                 message: "",
                 method: null,
+            },
+            modal: {
+                open: false,
+                maxWidth: "4xl",
+                component: "",
+            },
+            PaymentProcess: {
+                start: false,
+                data: null,
+                mode: null,
             },
             SelectItems: [
                 {
@@ -109,8 +126,8 @@ export default {
             await transactionStore.acceptAndPayTransaction(props.transactionId);
         };
 
-        const payTransaction = async () => {
-            await transactionStore.payTransaction(props.transactionId);
+        const payTransaction = async (params) => {
+            await transactionStore.payTransaction(params);
         };
 
         const closeTransaction = async () => {
@@ -129,17 +146,7 @@ export default {
     },
     methods: {
         convertCurrency(currency) {
-            const currencyCode = useUserStore().actualBusiness?.currency_code;
-
-            const numericAmount =
-                typeof currency === "string" ? parseFloat(currency) : currency;
-            if (isNaN(numericAmount)) {
-                return "0.0";
-            }
-            return new Intl.NumberFormat("en-US", {
-                style: "currency",
-                currency: currencyCode,
-            }).format(numericAmount);
+            return currencyConvertor().convertMyCurrency(currency);
         },
         buttonDisplay(action) {
             const transaction_type =
@@ -215,7 +222,7 @@ export default {
                         "Are you sure you want to complete the payment for this transaction?";
                     this.confirmation.title = "Pay Transaction";
                     this.confirmation.method = () => {
-                        this.payTransaction();
+                        this.startPaymentProcess();
                     };
                     break;
 
@@ -240,6 +247,43 @@ export default {
             this.confirmation.message = "";
             this.confirmation.title = "";
             this.confirmation.method = null;
+        },
+        openModal(component) {
+            this.modal.open = true;
+            this.modal.component = component;
+        },
+        closeModal() {
+            this.modal.open = false;
+            this.modal.component = "";
+        },
+        startPaymentProcess() {
+            this.modal.open = true;
+            this.modal.component = "PaymentProcess";
+            this.PaymentProcess.start = true;
+            this.PaymentProcess.data = {
+                transactionId: this.transactionStore.singleTransaction.id,
+                items: this.transactionStore.singleTransaction.items.map(
+                    (item) => {
+                        return {
+                            id: item.id,
+                            quantity: item.quantity,
+                            price: item.price,
+                        };
+                    }
+                ),
+            };
+        },
+        proceedPayment(mode) {
+            this.PaymentProcess.mode = mode;
+            switch (mode) {
+                case "PayPal":
+                    this.modal.component = "PayPalComponent";
+                    break;
+
+                default:
+                    this.closeModal();
+                    break;
+            }
         },
         async startAgreementPdf(action) {
             switch (action) {
@@ -318,6 +362,12 @@ export default {
         goBack() {
             window.history.back();
         },
+        completedPayment(mode) {
+            this.payTransaction({
+                transactionId: this.PaymentProcess.data.transactionId,
+                mode: mode,
+            });
+        },
     },
 };
 </script>
@@ -337,6 +387,18 @@ export default {
         "
         :status="transactionStore.success ? 'success' : 'error'"
     />
+    <Modal :show="modal.open" :maxWidth="modal.maxWidth" @close="closeModal">
+        <PaymentProcess
+            v-if="modal.component == 'PaymentProcess'"
+            @close="proceedPayment"
+        />
+        <PayPalComponent
+            v-if="modal.component == 'PayPalComponent'"
+            :transaction="PaymentProcess.data"
+            @close="closeModal"
+            @completedPayment="completedPayment"
+        />
+    </Modal>
     <ConfirmationModal
         :isOpen="confirmation.isOpen"
         :title="confirmation.title"

@@ -1,6 +1,6 @@
 <template>
     <div class="flex flex-col gap-2">
-        <div class="font-bold text-xl">Revenue Summary</div>
+        <div class="font-bold text-xl">Business Summary</div>
         <div
             class="flex md:flex-row flex-col justify-stretch gap-3 w-full md:p-4 overflow-x-scroll"
         >
@@ -52,7 +52,7 @@
 </template>
 
 <script>
-import { useUserStore } from "@/Store/UserStore";
+import { currencyConvertor } from "@/Store/CurrencyConvertStore";
 import Card from "primevue/card";
 
 export default {
@@ -63,17 +63,7 @@ export default {
     setup() {},
     methods: {
         formatNumber(amount) {
-            const currencyCode = useUserStore().actualBusiness?.currency_code;
-
-            const numericAmount =
-                typeof amount === "string" ? parseFloat(amount) : amount;
-            if (isNaN(numericAmount)) {
-                return "0.0";
-            }
-            return new Intl.NumberFormat("en-US", {
-                style: "currency",
-                currency: currencyCode,
-            }).format(numericAmount);
+            return currencyConvertor().convertMyCurrency(amount);
         },
     },
 };
