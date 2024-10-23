@@ -12,7 +12,7 @@ import Badge from "primevue/badge";
 import Tag from "primevue/tag";
 import PayPalComponent from "../Payment/PayPalComponent.vue";
 import Modal from "@/Components/Modal.vue";
-import PaymentMethods from "../Payment/PaymentMethods.vue";
+import PaymentProcess from "../Payment/PaymentProcess.vue";
 
 export default {
     components: {
@@ -26,7 +26,7 @@ export default {
         Tag,
         Modal,
         PayPalComponent,
-        PaymentMethods,
+        PaymentProcess,
     },
     data() {
         return {
@@ -388,7 +388,7 @@ export default {
         :status="transactionStore.success ? 'success' : 'error'"
     />
     <Modal :show="modal.open" :maxWidth="modal.maxWidth" @close="closeModal">
-        <PaymentMethods
+        <PaymentProcess
             v-if="modal.component == 'PaymentProcess'"
             @close="proceedPayment"
         />

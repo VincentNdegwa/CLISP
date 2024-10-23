@@ -16,7 +16,7 @@ import { useResourceStore } from "@/Store/Resource";
 
 import Paginator from "primevue/paginator";
 import Select from "primevue/select";
-import PaymentMethods from "../Payment/PaymentMethods.vue";
+import PaymentProcess from "../Payment/PaymentProcess.vue";
 import PayPalComponent from "../Payment/PayPalComponent.vue";
 import { data } from "autoprefixer";
 
@@ -42,7 +42,7 @@ export default {
         NewTransactionForm,
         Paginator,
         Select,
-        PaymentMethods,
+        PaymentProcess,
         PayPalComponent,
     },
 
@@ -227,6 +227,7 @@ export default {
                         price: item.price,
                     };
                 }),
+                transaction: transaction,
             };
 
             this.openModal("PaymentProcess");
@@ -297,9 +298,10 @@ export default {
             :transactionData="transactionStore.singleTransaction"
             @closeMe="closeModal"
         />
-        <PaymentMethods
+        <PaymentProcess
             v-if="modal.component == 'PaymentProcess'"
             @close="proceedPayment"
+            :PaymentProcess="PaymentProcess"
         />
         <PayPalComponent
             v-if="modal.component == 'PayPalComponent'"
