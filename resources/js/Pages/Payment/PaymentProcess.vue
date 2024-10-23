@@ -49,8 +49,12 @@
                     :transaction="PaymentProcess.data"
                     @cashPayment="handleCashPayment"
                 />
+                <div class="px-4 w-full">
+                    <PrimaryRoseButton class="w-full" @click="cancelPayment"
+                        >Close</PrimaryRoseButton
+                    >
+                </div>
             </div>
-            <div></div>
         </div>
 
         <div class="order w-full lg:w-5/12 rounded-sm">
@@ -130,6 +134,6 @@ export default {
 
 <style>
 .bg-black {
-    background-color: #ef4444 !important;
+    background-color: grey !important;
 }
 </style>
