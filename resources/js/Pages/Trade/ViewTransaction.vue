@@ -4,6 +4,7 @@ import PrimaryButton from "@/Components/PrimaryButton.vue";
 import PrimaryRoseButton from "@/Components/PrimaryRoseButton.vue";
 import SplitButtonSelectCustom from "@/Components/SplitButtonSelectCustom.vue";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
+import { currencyConvertor } from "@/Store/CurrencyConvertStore";
 import { useTransactionStore } from "@/Store/TransactionStore";
 import { useUserStore } from "@/Store/UserStore";
 import { Head } from "@inertiajs/vue3";
@@ -129,17 +130,7 @@ export default {
     },
     methods: {
         convertCurrency(currency) {
-            const currencyCode = useUserStore().actualBusiness?.currency_code;
-
-            const numericAmount =
-                typeof currency === "string" ? parseFloat(currency) : currency;
-            if (isNaN(numericAmount)) {
-                return "0.0";
-            }
-            return new Intl.NumberFormat("en-US", {
-                style: "currency",
-                currency: currencyCode,
-            }).format(numericAmount);
+            return currencyConvertor().convertMyCurrency(currency);
         },
         buttonDisplay(action) {
             const transaction_type =

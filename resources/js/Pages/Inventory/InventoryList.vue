@@ -15,6 +15,7 @@ import Column from "primevue/column";
 import Button from "primevue/button";
 import Menu from "primevue/menu";
 import Paginator from "primevue/paginator";
+import { currencyConvertor } from "@/Store/CurrencyConvertStore";
 
 export default {
     setup() {
@@ -200,6 +201,9 @@ export default {
             this.query.rows = row;
             this.makeQuery(this.query);
         },
+        convertCurrency(currency) {
+            return currencyConvertor().convertMyCurrency(currency);
+        },
     },
     components: {
         SearchInput,
@@ -350,7 +354,11 @@ export default {
                 <Column header="Unit" field="unit" />
 
                 <!-- Price -->
-                <Column header="Price" field="price" />
+                <Column header="Price" field="price">
+                    <template #body="slotProps">
+                        {{ convertCurrency(slotProps.data.price) }}
+                    </template>
+                </Column>
 
                 <!-- Date Added -->
                 <Column header="Date Added" field="date_added">
