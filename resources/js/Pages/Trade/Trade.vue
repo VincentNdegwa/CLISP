@@ -216,7 +216,7 @@ export default {
         onRowChange(row) {
             this.changeRowCount(row);
         },
-        payTransaction(transaction) {
+        startPayTransaction(transaction) {
             this.PaymentProcess.start = true;
             this.PaymentProcess.data = {
                 transactionId: transaction.id,
@@ -383,7 +383,7 @@ export default {
                 :isB2B="isB2B"
                 @startUpdate="startUpdate"
                 @startDelete="startDelete"
-                @payTransaction="payTransaction"
+                @payTransaction="startPayTransaction"
             />
         </div>
         <div v-if="transactionStore.transactions?.data?.length > 0">

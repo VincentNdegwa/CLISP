@@ -334,8 +334,12 @@ export const useTransactionStore = defineStore("transactionStore", {
                         }
                     );
 
-                    console.log(this.transactions.data);
-                    console.log(responseData);
+                    if (this.singleTransaction.id === responseData.id) {
+                        this.singleTransaction = {
+                            ...this.singleTransaction,
+                            ...responseData,
+                        };
+                    }
                 }
             });
         },
