@@ -129,7 +129,15 @@ class TransactionController extends Controller
                 "page" => 'integer',
             ]);
 
-            $transactionsQuery = Transaction::with('details', 'initiator:business_id,business_name', 'receiver_business:business_id,business_name', 'receiver_customer', 'items');
+            $transactionsQuery = Transaction::with([
+                'details',
+                'initiator:business_id,business_name',
+                'receiver_business:business_id,business_name',
+                'receiver_customer',
+                'items' => function ($query) {
+                    $query->with('item:id,item_name,description,item_image');
+                }
+            ]);
 
             if ($validatedData['isB2B'] === true) {
                 // B2B transactions: where receiver_business exists and receiver_customer is null
@@ -333,7 +341,7 @@ class TransactionController extends Controller
             $transaction = Transaction::with('details', 'initiator:business_id,business_name,email,phone_number,location', 'receiver_business:business_id,business_name,email,phone_number,location', 'receiver_customer')
                 ->with([
                     'items' => function ($query) {
-                        $query->with('item:id,item_name');
+                        $query->with('item:id,item_name,description,item_image');
                     }
                 ])
                 ->where(function ($query) use ($business_id) {

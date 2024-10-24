@@ -7,7 +7,7 @@
             <div class="text-xl font-bold">Payment Method</div>
             <div class="flex flex-col p-2 gap-2 mt-1">
                 <Card
-                    unstyled="false"
+                    :unstyled="styledCard"
                     v-for="method in paymentMethods"
                     :key="method.name"
                     @click="confirmPayment(method)"
@@ -57,8 +57,50 @@
             </div>
         </div>
 
-        <div class="order w-full lg:w-5/12 rounded-sm">
-            <p>Order Summary</p>
+        <div class="order w-full lg:w-5/12 rounded-sm p-1">
+            <div
+                class="flex flex-col gap-2 shadow-md h-full w-full rounded-lg p-1"
+            >
+                <p>Order Summary</p>
+                <div
+                    class="container-holder h-fit max-h-[75vh] overflow-y-scroll no-scrollbar w-full"
+                >
+                    <div class="p-2">
+                        <div
+                            class="product-detail flex flex-col border-b"
+                            v-for="(item, index) in PaymentProcess.data.items"
+                            :key="index"
+                        >
+                            <div class="text-l font-bold">
+                                {{ item.name }}
+                            </div>
+                            <small>{{ item.description }}</small>
+                            <div class="flex">
+                                <div class="flex-grow">
+                                    <div class="text-sm">{{ item.price }}</div>
+                                </div>
+                                <div class="flex-grow">
+                                    <div class="text-sm">
+                                        x{{ item.quantity }}
+                                    </div>
+                                </div>
+                                <div class="flex-grow">
+                                    <div class="text-sm">
+                                        {{ item.price * item.quantity }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-5 flex justify-between">
+                    <div>Display Price:</div>
+                    <div class="font-extrabold">
+                        {{ totalAmountToPay }}
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </template>
@@ -87,9 +129,14 @@ export default {
             required: true,
         },
     },
+    mounted() {
+        this.getTotalPrice();
+    },
     data() {
         return {
             selectedMethod: "Cash",
+            styledCard: true,
+            totalAmountToPay: 0,
             paymentMethods: [
                 {
                     name: "PayPal",
@@ -128,12 +175,22 @@ export default {
         confirm() {
             this.$emit("close", this.selectedMethod);
         },
+        getTotalPrice() {
+            this.totalAmountToPay = this.PaymentProcess.data.items.reduce(
+                (total, item) => {
+                    return (
+                        total + parseFloat(item.price) * parseInt(item.quantity)
+                    );
+                },
+                0
+            );
+        },
     },
 };
 </script>
 
 <style>
 .bg-black {
-    background-color: grey !important;
+    background-color: #94a3b8 !important;
 }
 </style>
