@@ -42,11 +42,13 @@
                 <MpesaComponent
                     v-if="selectedMethod == 'M-Pesa'"
                     :transaction="PaymentProcess.data"
+                    :totalAmountToPay="totalAmountToPay"
                     @stkPush="handleMpesaPayment"
                 />
                 <CashComponent
                     v-if="selectedMethod == 'Cash'"
                     :transaction="PaymentProcess.data"
+                    :totalAmountToPay="totalAmountToPay"
                     @cashPayment="handleCashPayment"
                 />
                 <div class="px-4 w-full">
