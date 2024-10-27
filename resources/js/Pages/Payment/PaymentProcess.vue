@@ -187,6 +187,9 @@ export default {
                 0
             );
         },
+        roundOffCurrency() {
+           
+        }
     },
 };
 </script>

@@ -238,19 +238,7 @@ export default {
 
             this.openModal("PaymentProcess", "6xl");
         },
-        proceedPayment(mode) {
-            this.PaymentProcess.mode = mode;
-            switch (mode) {
-                case "PayPal":
-                    this.modal.component = "PayPalComponent";
 
-                    break;
-
-                default:
-                    this.closeModal();
-                    break;
-            }
-        },
         completedPayment(mode) {
             this.payTransaction({
                 transactionId: this.PaymentProcess.data.transactionId,
@@ -307,7 +295,7 @@ export default {
         />
         <PaymentProcess
             v-if="modal.component == 'PaymentProcess'"
-            @close="proceedPayment"
+            @close="closeModal"
             :PaymentProcess="PaymentProcess"
         />
         <PayPalComponent
