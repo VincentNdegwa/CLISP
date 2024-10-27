@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-
+use App\Http\Controllers\TransactionController;
 use App\Models\ItemBusiness;
 use App\Models\ResourceItem;
 use App\Models\Transaction;
@@ -39,35 +39,9 @@ abstract class TransactionFlow
         try {
             $business_id = $this->businesId;
             $transaction_id = $this->transactionId;
-            $transaction = Transaction::with('details', 'initiator:business_id,business_name,email,phone_number,location', 'receiver_business:business_id,business_name,email,phone_number,location', 'receiver_customer')
-                ->with([
-                    'items' => function ($query) {
-                        $query->with('item:id,item_name');
-                    }
-                ])
-                ->where(function ($query) use ($business_id) {
-                    $query->where('initiator_id', $business_id)
-                        ->orWhere('receiver_business_id', $business_id);
-                })
-                ->where('id', $transaction_id)
-                ->first();
 
-            $transaction->totalPrice = $transaction?->items->sum(function ($item) {
-                return $item->quantity * $item->price;
-            });
-            if ($transaction->initiator && $transaction->initiator->business_id == $business_id) {
-                $transaction->transaction_type = 'Outgoing';
-            }
-
-            if ($transaction->receiver_business && $transaction->receiver_business->business_id == $business_id) {
-                $transaction->transaction_type = "Incoming";
-            }
-
-            if ($transaction->receiver_business != null && $transaction->receiver_customer == null) {
-                $transaction->isB2B = true;
-            } else if ($transaction->receiver_business == null && $transaction->receiver_customer != null) {
-                $transaction->isB2B = false;
-            }
+            $transactionController = new TransactionController();
+            $transaction = $transactionController->getFullTransaction($business_id, $transaction_id);
 
             return $transaction;
         } catch (\Exception $e) {
