@@ -300,6 +300,7 @@ import { onMounted, ref } from "vue";
 import ShipmentCounts from "./ShipmentCounts.vue";
 import ReceiveCount from "./ReceiveCount.vue";
 import NoRecords from "@/Components/NoRecords.vue";
+import { currencyConvertor } from "@/Store/CurrencyConvertStore";
 
 export default {
     components: {
@@ -406,10 +407,7 @@ export default {
             return new Date(date).toLocaleDateString(undefined, options);
         },
         formatCurrency(value) {
-            return Number(value).toLocaleString("en-US", {
-                style: "currency",
-                currency: "KES",
-            });
+            return currencyConvertor().convertMyCurrency(value);
         },
         getStatusSeverity(status) {
             switch (status) {

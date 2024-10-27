@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Mail\RequestApprovalMail;
+use App\Models\ExchangeRate;
 use App\Models\ItemBusiness;
 use App\Models\ResourceItem;
 use App\Models\Transaction;
@@ -18,6 +19,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Exception;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
@@ -72,21 +74,7 @@ class TransactionController extends Controller
             }
 
             DB::commit();
-
-            $transaction = Transaction::where('id', $new_transaction->id)
-                ->with('details', 'initiator', 'receiver_business', 'receiver_customer', 'items')
-                ->first();
-
-            $transaction->totalPrice = $transaction->items->sum(function ($item) {
-                return $item->quantity * $item->price;
-            });
-            if ($transaction->initiator && $transaction->initiator->business_id == $business_id) {
-                $transaction->transaction_type = 'Outgoing';
-            }
-
-            if ($transaction->receiver_business && $transaction->receiver_business->business_id == $business_id) {
-                $transaction->transaction_type = "Incoming";
-            }
+            $transaction = $this->getFullTransaction($business_id, $new_transaction->id);
 
             if ($transaction->receiver_business && isset($transaction->receiver_business)) {
 
@@ -117,6 +105,61 @@ class TransactionController extends Controller
         }
     }
 
+    private function modifyTransaction($transaction, $business_id)
+    {
+
+
+        if ($transaction->initiator && $transaction->initiator->business_id == $business_id) {
+            $transaction->transaction_type = 'Outgoing';
+        }
+
+        if ($transaction->receiver_business && $transaction->receiver_business->business_id == $business_id) {
+            $transaction->transaction_type = "Incoming";
+        }
+        if ($transaction->receiver_business != null && $transaction->receiver_customer == null) {
+            $transaction->isB2B = true;
+        } else if ($transaction->receiver_business == null && $transaction->receiver_customer != null) {
+            $transaction->isB2B = false;
+        }
+        if ($transaction->transaction_type == "Incoming" && $transaction->isB2B == true) {
+            if ($transaction->receiver_business->currency_code !== $transaction->initiator->currency_code) {
+                $from_code = $transaction->initiator->currency_code;
+                $to_code = $transaction->receiver_business->currency_code;
+
+                $transaction->items->each(function ($item) use ($from_code, $to_code) {
+                    $item->actualPrice = $from_code . " " . $item->price;
+                    $item->price = $this->convertCurrency($item->price, $from_code, $to_code);
+                });
+            }
+        }
+        $transaction->totalPrice = $transaction->items->sum(function ($item) {
+            return $item->quantity * $item->price;
+        });
+        return $transaction;
+    }
+    public function convertCurrency($from_amount, $from_currency_code, $to_currency_code)
+    {
+        $rates = ExchangeRate::whereIn('target_currency', [$from_currency_code, $to_currency_code])->get();
+
+        $from_rate = null;
+        $to_rate = null;
+
+        foreach ($rates as $rate) {
+            if ($rate->target_currency === $from_currency_code) {
+                $from_rate = $rate->rate;
+            } elseif ($rate->target_currency === $to_currency_code) {
+                $to_rate = $rate->rate;
+            }
+        }
+        if ($from_rate === null || $to_rate === null) {
+            throw new Exception('Exchange rate not found for one or both currencies.');
+        }
+        $base_amount = $from_amount / $from_rate;
+        $converted_amount = $base_amount * $to_rate;
+        return $converted_amount;
+    }
+
+
     public function getTransaction($business_id, Request $request)
     {
         try {
@@ -129,14 +172,20 @@ class TransactionController extends Controller
                 "page" => 'integer',
             ]);
 
-            $transactionsQuery = Transaction::with('details', 'initiator:business_id,business_name', 'receiver_business:business_id,business_name', 'receiver_customer', 'items');
+            $transactionsQuery = Transaction::with([
+                'details',
+                'initiator:business_id,business_name,email,phone_number,location,currency_code',
+                'receiver_business:business_id,business_name,email,phone_number,location,currency_code',
+                'receiver_customer',
+                'items' => function ($query) {
+                    $query->with('item:id,item_name,description,item_image');
+                }
+            ]);
 
             if ($validatedData['isB2B'] === true) {
-                // B2B transactions: where receiver_business exists and receiver_customer is null
                 $transactionsQuery->whereNotNull('receiver_business_id')
                     ->whereNull('receiver_customer_id');
             } elseif ($validatedData['isB2B'] === false) {
-                // B2C transactions: where receiver_customer exists and receiver_business is null
                 $transactionsQuery->whereNotNull('receiver_customer_id')
                     ->whereNull('receiver_business_id');
             }
@@ -166,22 +215,7 @@ class TransactionController extends Controller
                 ->orderBy('created_at', 'DESC')
                 ->paginate($itemsCount, ["*"], 'page', $request->input('page', 1));
             foreach ($transactions as $transaction) {
-                $transaction->totalPrice = $transaction->items->sum(function ($item) {
-                    return $item->quantity * $item->price;
-                });
-
-                if ($transaction->initiator && $transaction->initiator->business_id == $business_id) {
-                    $transaction->transaction_type = 'Outgoing';
-                }
-
-                if ($transaction->receiver_business && $transaction->receiver_business->business_id == $business_id) {
-                    $transaction->transaction_type = "Incoming";
-                }
-                if ($transaction->receiver_business != null && $transaction->receiver_customer == null) {
-                    $transaction->isB2B = true;
-                } else if ($transaction->receiver_business == null && $transaction->receiver_customer != null) {
-                    $transaction->isB2B = false;
-                }
+                $transaction = $this->modifyTransaction($transaction, $business_id);
             }
             return response()->json([
                 "error" => false,
@@ -262,19 +296,8 @@ class TransactionController extends Controller
 
             DB::commit();
 
-            $updatedTransaction = Transaction::where('id', $transaction->id)
-                ->with('details', 'initiator', 'receiver_business', 'receiver_customer', 'items')
-                ->first();
-            $updatedTransaction->totalPrice = $updatedTransaction->items->sum(function ($item) {
-                return $item->quantity * $item->price;
-            });
-            if ($updatedTransaction->initiator && $updatedTransaction->initiator->business_id == $business_id) {
-                $updatedTransaction->transaction_type = 'Outgoing';
-            }
 
-            if ($updatedTransaction->receiver_business && $updatedTransaction->receiver_business->business_id == $business_id) {
-                $updatedTransaction->transaction_type = "Incoming";
-            }
+            $updatedTransaction = $this->getFullTransaction($business_id, $transaction->id);
 
             return response()->json([
                 "error" => false,
@@ -330,36 +353,7 @@ class TransactionController extends Controller
     public function viewTransaction($business_id, $transaction_id)
     {
         try {
-            $transaction = Transaction::with('details', 'initiator:business_id,business_name,email,phone_number,location', 'receiver_business:business_id,business_name,email,phone_number,location', 'receiver_customer')
-                ->with([
-                    'items' => function ($query) {
-                        $query->with('item:id,item_name');
-                    }
-                ])
-                ->where(function ($query) use ($business_id) {
-                    $query->where('initiator_id', $business_id)
-                        ->orWhere('receiver_business_id', $business_id);
-                })
-                ->where('id', $transaction_id)
-                ->first();
-
-            $transaction->totalPrice = $transaction->items->sum(function ($item) {
-                return $item->quantity * $item->price;
-            });
-            if ($transaction->initiator && $transaction->initiator->business_id == $business_id) {
-                $transaction->transaction_type = 'Outgoing';
-            }
-
-            if ($transaction->receiver_business && $transaction->receiver_business->business_id == $business_id) {
-                $transaction->transaction_type = "Incoming";
-            }
-
-            if ($transaction->receiver_business != null && $transaction->receiver_customer == null) {
-                $transaction->isB2B = true;
-            } else if ($transaction->receiver_business == null && $transaction->receiver_customer != null) {
-                $transaction->isB2B = false;
-            }
-
+            $transaction = $this->getFullTransaction($business_id, $transaction_id);
             return response()->json([
                 "error" => false,
                 "data" => $transaction
@@ -372,6 +366,33 @@ class TransactionController extends Controller
                 "data" => []
             ]);
         }
+    }
+
+
+    public function getFullTransaction($business_id, $transaction_id)
+    {
+        try {
+            $transaction = Transaction::with([
+                'details',
+                'initiator:business_id,business_name,email,phone_number,location,currency_code',
+                'receiver_business:business_id,business_name,email,phone_number,location,currency_code',
+                'receiver_customer',
+                'items' => function ($query) {
+                    $query->with('item:id,item_name,description,item_image');
+                }
+            ])->where(function ($query) use ($business_id) {
+                $query->where('initiator_id', $business_id)
+                    ->orWhere('receiver_business_id', $business_id);
+            })
+                ->where('id', $transaction_id)
+                ->first();
+
+            $transaction = $this->modifyTransaction($transaction, $business_id);
+        } catch (\Throwable $th) {
+            throw new Exception($th->getMessage());
+        }
+
+        return $transaction;
     }
 
     public function acceptTransaction($business_id, $transaction, Request $request)
@@ -459,8 +480,8 @@ class TransactionController extends Controller
 
 
         $transaction = $transactionsQuery->with([
-            'initiator:business_id,business_name,email,phone_number,location',
-            'receiver_business:business_id,business_name,email,phone_number,location',
+            'initiator:business_id,business_name,email,phone_number,location,currency_code',
+            'receiver_business:business_id,business_name,email,phone_number,location,currency_code',
             'receiver_customer',
             'details',
             'items' => function ($query) {
@@ -470,10 +491,8 @@ class TransactionController extends Controller
 
         $imagePath = public_path('images/default-business-logo.png');
 
-        // Read the image file and encode it to base64
         $imageData = base64_encode(file_get_contents($imagePath));
 
-        // Create the base64 image source
         $imageBase64 = 'data:image/png;base64,' . $imageData;
         $transaction->logo = $imageBase64;
 
@@ -499,7 +518,6 @@ class TransactionController extends Controller
         if (!$transaction) {
             return redirect()->route('not-found');
         }
-
         return view('PreviewAgreement', compact('transaction'));
     }
 
@@ -510,9 +528,6 @@ class TransactionController extends Controller
             return redirect()->route('not-found');
         }
         $pdf = Pdf::loadView('agreement', compact('transaction'));
-
-        // return $pdf->stream('agreement.pdf');
-
         return view('agreement', compact('transaction'));
     }
 
@@ -534,9 +549,6 @@ class TransactionController extends Controller
             return redirect()->route('not-found');
         }
         $pdf = Pdf::loadView('receipt', compact('transaction'));
-
-        // return $pdf->stream('agreement.pdf');
-
         return view('receipt', compact('transaction'));
     }
 }

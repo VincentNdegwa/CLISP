@@ -170,9 +170,12 @@ export default {
         };
     },
     methods: {
-        openModal(component) {
+        openModal(component, width) {
             this.modal.open = true;
             this.modal.component = component;
+            if (width) {
+                this.modal.maxWidth = width;
+            }
         },
         closeModal() {
             this.modal.open = false;
@@ -225,25 +228,17 @@ export default {
                         id: item.id,
                         quantity: item.quantity,
                         price: item.price,
+                        description: item.item.description,
+                        name: item.item.item_name,
+                        image: item.item.item_image,
                     };
                 }),
                 transaction: transaction,
             };
 
-            this.openModal("PaymentProcess");
+            this.openModal("PaymentProcess", "6xl");
         },
-        proceedPayment(mode) {
-            this.PaymentProcess.mode = mode;
-            switch (mode) {
-                case "PayPal":
-                    this.modal.component = "PayPalComponent";
-                    break;
 
-                default:
-                    this.closeModal();
-                    break;
-            }
-        },
         completedPayment(mode) {
             this.payTransaction({
                 transactionId: this.PaymentProcess.data.transactionId,
@@ -300,7 +295,7 @@ export default {
         />
         <PaymentProcess
             v-if="modal.component == 'PaymentProcess'"
-            @close="proceedPayment"
+            @close="closeModal"
             :PaymentProcess="PaymentProcess"
         />
         <PayPalComponent

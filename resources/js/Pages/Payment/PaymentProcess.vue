@@ -7,7 +7,7 @@
             <div class="text-xl font-bold">Payment Method</div>
             <div class="flex flex-col p-2 gap-2 mt-1">
                 <Card
-                    unstyled="false"
+                    :unstyled="styledCard"
                     v-for="method in paymentMethods"
                     :key="method.name"
                     @click="confirmPayment(method)"
@@ -42,19 +42,73 @@
                 <MpesaComponent
                     v-if="selectedMethod == 'M-Pesa'"
                     :transaction="PaymentProcess.data"
+                    :totalAmountToPay="totalAmountToPay"
                     @stkPush="handleMpesaPayment"
                 />
                 <CashComponent
                     v-if="selectedMethod == 'Cash'"
                     :transaction="PaymentProcess.data"
+                    :totalAmountToPay="totalAmountToPay"
                     @cashPayment="handleCashPayment"
                 />
+                <div class="px-4 w-full">
+                    <PrimaryRoseButton class="w-full" @click="cancelPayment"
+                        >Close</PrimaryRoseButton
+                    >
+                </div>
             </div>
-            <div></div>
         </div>
 
-        <div class="order w-full lg:w-5/12 rounded-sm">
-            <p>Order Summary</p>
+        <div class="order w-full lg:w-5/12 rounded-sm p-1">
+            <div
+                class="flex flex-col gap-2 shadow-md h-full w-full rounded-lg p-1"
+            >
+                <p>Order Summary</p>
+                <div
+                    class="container-holder h-fit max-h-[75vh] overflow-y-scroll no-scrollbar w-full"
+                >
+                    <div class="p-2">
+                        <div
+                            class="product-detail flex flex-col border-b"
+                            v-for="(item, index) in PaymentProcess.data.items"
+                            :key="index"
+                        >
+                            <div class="text-l font-bold">
+                                {{ item.name }}
+                            </div>
+                            <small>{{ item.description }}</small>
+                            <div class="flex">
+                                <div class="flex-grow">
+                                    <div class="text-sm">
+                                        {{ roundOffCurrency(item.price) }}
+                                    </div>
+                                </div>
+                                <div class="flex-grow">
+                                    <div class="text-sm">
+                                        x{{ item.quantity }}
+                                    </div>
+                                </div>
+                                <div class="flex-grow">
+                                    <div class="text-sm">
+                                        {{
+                                            roundOffCurrency(
+                                                item.price * item.quantity
+                                            )
+                                        }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-5 flex justify-between">
+                    <div>Display Price:</div>
+                    <div class="font-extrabold">
+                        {{ totalAmountToPay }}
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </template>
@@ -66,6 +120,7 @@ import Card from "primevue/card";
 import PayPalComponent from "./PayPalComponent.vue";
 import MpesaComponent from "./MpesaComponent.vue";
 import CashComponent from "./CashComponent.vue";
+import { currencyConvertor } from "@/Store/CurrencyConvertStore";
 
 export default {
     emits: ["close"],
@@ -83,9 +138,14 @@ export default {
             required: true,
         },
     },
+    mounted() {
+        this.getTotalPrice();
+    },
     data() {
         return {
             selectedMethod: "Cash",
+            styledCard: true,
+            totalAmountToPay: 0,
             paymentMethods: [
                 {
                     name: "PayPal",
@@ -124,12 +184,40 @@ export default {
         confirm() {
             this.$emit("close", this.selectedMethod);
         },
+        getTotalPrice() {
+            this.totalAmountToPay = this.roundOffCurrency(
+                this.PaymentProcess.data.items.reduce((total, item) => {
+                    return (
+                        total + parseFloat(item.price) * parseInt(item.quantity)
+                    );
+                }, 0)
+            );
+        },
+        roundOffCurrency(value) {
+            let currency_code = null;
+            if (this.PaymentProcess.data.transaction.isB2B) {
+                currency_code =
+                    this.PaymentProcess.data.transaction.receiver_business
+                        .currency_code;
+            } else {
+                currency_code =
+                    this.PaymentProcess.data.transaction.initiator
+                        .currency_code;
+            }
+            if (currency_code) {
+                return currencyConvertor().convertOtherCurrency(
+                    value,
+                    currency_code
+                );
+            }
+            return parseFloat(value).toFixed(2);
+        },
     },
 };
 </script>
 
 <style>
 .bg-black {
-    background-color: #ef4444 !important;
+    background-color: #94a3b8 !important;
 }
 </style>

@@ -248,17 +248,16 @@ export default {
             this.confirmation.title = "";
             this.confirmation.method = null;
         },
-        openModal(component) {
+        openModal(component, maxWidth) {
             this.modal.open = true;
             this.modal.component = component;
+            this.modal.maxWidth = maxWidth;
         },
         closeModal() {
             this.modal.open = false;
             this.modal.component = "";
         },
         startPaymentProcess() {
-            this.modal.open = true;
-            this.modal.component = "PaymentProcess";
             this.PaymentProcess.start = true;
             this.PaymentProcess.data = {
                 transactionId: this.transactionStore.singleTransaction.id,
@@ -268,23 +267,18 @@ export default {
                             id: item.id,
                             quantity: item.quantity,
                             price: item.price,
+                            description: item.item.description,
+                            name: item.item.item_name,
+                            image: item.item.item_image,
                         };
                     }
                 ),
+                transaction: this.transactionStore.singleTransaction,
             };
-        },
-        proceedPayment(mode) {
-            this.PaymentProcess.mode = mode;
-            switch (mode) {
-                case "PayPal":
-                    this.modal.component = "PayPalComponent";
-                    break;
 
-                default:
-                    this.closeModal();
-                    break;
-            }
+            this.openModal("PaymentProcess", "6xl");
         },
+
         async startAgreementPdf(action) {
             switch (action) {
                 case "print":
@@ -390,13 +384,8 @@ export default {
     <Modal :show="modal.open" :maxWidth="modal.maxWidth" @close="closeModal">
         <PaymentProcess
             v-if="modal.component == 'PaymentProcess'"
-            @close="proceedPayment"
-        />
-        <PayPalComponent
-            v-if="modal.component == 'PayPalComponent'"
-            :transaction="PaymentProcess.data"
             @close="closeModal"
-            @completedPayment="completedPayment"
+            :PaymentProcess="PaymentProcess"
         />
     </Modal>
     <ConfirmationModal

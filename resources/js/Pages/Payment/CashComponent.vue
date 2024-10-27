@@ -6,7 +6,7 @@
             >
             <input
                 type="text"
-                :value="transaction.amount"
+                :value="totalAmountToPay"
                 class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-100 cursor-not-allowed sm:text-sm"
                 readonly
             />
@@ -21,7 +21,7 @@
                 v-model="amountReceived"
                 type="number"
                 id="amount-received"
-                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-indigo-500 sm:text-sm"
+                class="mt-1 block w-full px-3 py-2 border border-gray-300 focus:ring-slate-500 rounded-md shadow-sm sm:text-sm"
                 placeholder="Enter amount received"
             />
         </div>
@@ -38,6 +38,10 @@ export default {
             type: Object,
             required: true,
         },
+        totalAmountToPay: {
+            type: Number,
+            required: true,
+        },
     },
     components: {
         PrimaryButton,
@@ -45,14 +49,14 @@ export default {
     data() {
         return {
             amountReceived: 0,
+            amountPaying: this.totalAmountToPay,
         };
     },
     methods: {
         markAsPaid() {
-            // Emit an event to handle cash payment confirmation
             this.$emit("cashPayment", {
                 amountReceived: this.amountReceived,
-                amountToPay: this.transaction.amount,
+                amountToPay: this.amountPaying,
             });
         },
     },
