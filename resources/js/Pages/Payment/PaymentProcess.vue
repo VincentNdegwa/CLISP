@@ -79,7 +79,9 @@
                             <small>{{ item.description }}</small>
                             <div class="flex">
                                 <div class="flex-grow">
-                                    <div class="text-sm">{{ item.price }}</div>
+                                    <div class="text-sm">
+                                        {{ roundOffCurrency(item.price) }}
+                                    </div>
                                 </div>
                                 <div class="flex-grow">
                                     <div class="text-sm">
@@ -88,7 +90,11 @@
                                 </div>
                                 <div class="flex-grow">
                                     <div class="text-sm">
-                                        {{ item.price * item.quantity }}
+                                        {{
+                                            roundOffCurrency(
+                                                item.price * item.quantity
+                                            )
+                                        }}
                                     </div>
                                 </div>
                             </div>
@@ -114,6 +120,7 @@ import Card from "primevue/card";
 import PayPalComponent from "./PayPalComponent.vue";
 import MpesaComponent from "./MpesaComponent.vue";
 import CashComponent from "./CashComponent.vue";
+import { currencyConvertor } from "@/Store/CurrencyConvertStore";
 
 export default {
     emits: ["close"],
@@ -178,18 +185,33 @@ export default {
             this.$emit("close", this.selectedMethod);
         },
         getTotalPrice() {
-            this.totalAmountToPay = this.PaymentProcess.data.items.reduce(
-                (total, item) => {
+            this.totalAmountToPay = this.roundOffCurrency(
+                this.PaymentProcess.data.items.reduce((total, item) => {
                     return (
                         total + parseFloat(item.price) * parseInt(item.quantity)
                     );
-                },
-                0
+                }, 0)
             );
         },
-        roundOffCurrency() {
-           
-        }
+        roundOffCurrency(value) {
+            let currency_code = null;
+            if (this.PaymentProcess.data.transaction.isB2B) {
+                currency_code =
+                    this.PaymentProcess.data.transaction.receiver_business
+                        .currency_code;
+            } else {
+                currency_code =
+                    this.PaymentProcess.data.transaction.initiator
+                        .currency_code;
+            }
+            if (currency_code) {
+                return currencyConvertor().convertOtherCurrency(
+                    value,
+                    currency_code
+                );
+            }
+            return parseFloat(value).toFixed(2);
+        },
     },
 };
 </script>
