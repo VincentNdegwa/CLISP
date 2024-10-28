@@ -20,22 +20,27 @@ import LoadingUI from "@/Components/LoadingUI.vue";
 export default {
     name: "PayPalButton",
     emits: ["close", "completedPayment"],
-    props: ["transaction"],
+    props: {
+        transaction: {
+            type: Object,
+            required: true,
+        },
+        totalUsdPriceToPay: {
+            type: Number,
+            required: true,
+        },
+    },
     data() {
         return {
             resultMessage: "",
             loading: true,
-            currencyCode: "USD",
+            currency_code: "USD",
         };
     },
     components: {
         LoadingUI,
     },
     mounted() {
-        if (this.transaction.transaction.receiver_business != null) {
-            this.currencyCode =
-                this.transaction.transaction.receiver_business.currency_code;
-        }
         if (window.paypal) {
             this.renderPayPalButton();
         } else {
@@ -47,21 +52,29 @@ export default {
             const totalValue = this.transaction.items
                 .reduce((total, item) => {
                     return (
-                        total + parseFloat(item.price) * parseInt(item.quantity)
+                        total +
+                        parseFloat(item.usdPrice) * parseInt(item.quantity)
                     );
                 }, 0)
                 .toFixed(2);
+
+            if (totalValue != this.totalUsdPriceToPay) {
+                alert(
+                    `totalValue: ${totalValue}, usdPrice: ${this.totalUsdPriceToPay}`
+                );
+                return;
+            }
 
             const orderPayload = {
                 intent: "CAPTURE",
                 purchase_units: [
                     {
                         amount: {
-                            currency_code: this.currencyCode,
+                            currency_code: this.currency_code,
                             value: totalValue,
                             breakdown: {
                                 item_total: {
-                                    currency_code: this.currencyCode,
+                                    currency_code: this.currency_code,
                                     value: totalValue,
                                 },
                             },
@@ -69,8 +82,8 @@ export default {
                         items: this.transaction.items.map((item) => ({
                             name: `Item ${item.id}`,
                             unit_amount: {
-                                currency_code: this.currencyCode,
-                                value: item.price,
+                                currency_code: this.currency_code,
+                                value: item.usdPrice,
                             },
                             quantity: item.quantity,
                         })),

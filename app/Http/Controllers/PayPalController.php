@@ -69,7 +69,7 @@ class PayPalController extends Controller
                 'response' => $e->hasResponse() ? json_decode($e->getResponse()->getBody(), true) : null,
             ]);
 
-            return response()->json(['error' => 'Unable to create order'], 500);
+            return response()->json(['error' => true, 'message' => 'Unable to create order', "data" => $e->getMessage()], 500);
         }
     }
 
