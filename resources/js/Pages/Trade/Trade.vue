@@ -231,6 +231,7 @@ export default {
                         description: item.item.description,
                         name: item.item.item_name,
                         image: item.item.item_image,
+                        usdPrice: item.usdPrice,
                     };
                 }),
                 transaction: transaction,

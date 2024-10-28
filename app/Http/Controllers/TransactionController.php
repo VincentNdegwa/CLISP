@@ -121,20 +121,29 @@ class TransactionController extends Controller
         } else if ($transaction->receiver_business == null && $transaction->receiver_customer != null) {
             $transaction->isB2B = false;
         }
-        if ($transaction->transaction_type == "Incoming" && $transaction->isB2B == true) {
-            if ($transaction->receiver_business->currency_code !== $transaction->initiator->currency_code) {
-                $from_code = $transaction->initiator->currency_code;
-                $to_code = $transaction->receiver_business->currency_code;
+        $from_code = $transaction->initiator->currency_code;
+        $to_code = ($transaction->transaction_type === "Incoming" && $transaction->isB2B)
+            ? $transaction->receiver_business->currency_code
+            : $from_code;
 
-                $transaction->items->each(function ($item) use ($from_code, $to_code) {
-                    $item->actualPrice = $from_code . " " . $item->price;
-                    $item->price = $this->convertCurrency($item->price, $from_code, $to_code);
-                });
-            }
-        }
-        $transaction->totalPrice = $transaction->items->sum(function ($item) {
-            return $item->quantity * $item->price;
-        });
+        $setItemPrices = function ($item) use ($from_code, $to_code) {
+            $item->unConvertedPrice = (float)$item->price;
+
+            $item->price = ($from_code !== $to_code)
+                ? (float)round($this->convertCurrency($item->price, $from_code, $to_code), 2)
+                : (float)$item->price;
+
+            $item->usdPrice = ($to_code === 'USD')
+                ? (float)$item->price
+                : (float)round($this->convertCurrency($item->price, $to_code, 'USD'), 2);
+        };
+
+        $transaction->items->each($setItemPrices);
+
+        $transaction->totalPrice = $transaction->items->sum(fn($item) => $item->quantity * $item->price);
+        $transaction->totalUsdPrice = $transaction->items->sum(fn($item) => $item->quantity * $item->usdPrice);
+
+
         return $transaction;
     }
     public function convertCurrency($from_amount, $from_currency_code, $to_currency_code)

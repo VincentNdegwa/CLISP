@@ -36,6 +36,7 @@
                 <PayPalComponent
                     v-if="selectedMethod == 'PayPal'"
                     :transaction="PaymentProcess.data"
+                    :totalUsdPriceToPay="totalUsdPriceToPay"
                     @close="closeModal"
                     @completedPayment="completedPayment"
                 />
@@ -49,6 +50,7 @@
                     v-if="selectedMethod == 'Cash'"
                     :transaction="PaymentProcess.data"
                     :totalAmountToPay="totalAmountToPay"
+                    :currencyCode="currency_code"
                     @cashPayment="handleCashPayment"
                 />
                 <div class="px-4 w-full">
@@ -105,7 +107,7 @@
                 <div class="p-5 flex justify-between">
                     <div>Display Price:</div>
                     <div class="font-extrabold">
-                        {{ totalAmountToPay }}
+                        {{ formattedAmountToPay }}
                     </div>
                 </div>
             </div>
@@ -146,17 +148,20 @@ export default {
             selectedMethod: "Cash",
             styledCard: true,
             totalAmountToPay: 0,
+            formattedAmountToPay: 0,
+            currency_code: "",
+            totalUsdPriceToPay: 0,
             paymentMethods: [
                 {
                     name: "PayPal",
                     icon: "pi pi-paypal",
                     description: "Safe and easy way for online payment",
                 },
-                {
-                    name: "M-Pesa",
-                    icon: "pi pi-mobile",
-                    description: "Convenient mobile money transfer",
-                },
+                // {
+                //     name: "M-Pesa",
+                //     icon: "pi pi-mobile",
+                //     description: "Convenient mobile money transfer",
+                // },
                 {
                     name: "Cash",
                     icon: "pi pi-wallet",
@@ -185,29 +190,34 @@ export default {
             this.$emit("close", this.selectedMethod);
         },
         getTotalPrice() {
-            this.totalAmountToPay = this.roundOffCurrency(
-                this.PaymentProcess.data.items.reduce((total, item) => {
+            this.totalAmountToPay = this.PaymentProcess.data.items.reduce(
+                (total, item) => {
                     return (
                         total + parseFloat(item.price) * parseInt(item.quantity)
                     );
-                }, 0)
+                },
+                0
             );
+
+            this.formattedAmountToPay = this.roundOffCurrency(
+                this.totalAmountToPay
+            );
+
+            this.totalUsdPriceToPay =
+                this.PaymentProcess.data.transaction.totalUsdPrice;
         },
         roundOffCurrency(value) {
-            let currency_code = null;
             if (this.PaymentProcess.data.transaction.isB2B) {
-                currency_code =
-                    this.PaymentProcess.data.transaction.receiver_business
-                        .currency_code;
+                this.currency_code =
+                    this.PaymentProcess.data.transaction.receiver_business.currency_code;
             } else {
-                currency_code =
-                    this.PaymentProcess.data.transaction.initiator
-                        .currency_code;
+                this.currency_code =
+                    this.PaymentProcess.data.transaction.initiator.currency_code;
             }
-            if (currency_code) {
+            if (this.currency_code.trim()) {
                 return currencyConvertor().convertOtherCurrency(
                     value,
-                    currency_code
+                    this.currency_code
                 );
             }
             return parseFloat(value).toFixed(2);

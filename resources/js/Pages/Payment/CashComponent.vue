@@ -2,7 +2,7 @@
     <div class="flex flex-col gap-4 p-4">
         <div>
             <label class="block text-sm font-medium text-gray-700"
-                >Amount to Pay</label
+                >Amount to Pay ({{ currencyCode }})</label
             >
             <input
                 type="text"
@@ -42,15 +42,27 @@ export default {
             type: Number,
             required: true,
         },
+        currencyCode: {
+            type: String,
+            required: true,
+        },
     },
     components: {
         PrimaryButton,
     },
     data() {
         return {
-            amountReceived: 0,
+            amountReceived: this.totalAmountToPay,
             amountPaying: this.totalAmountToPay,
         };
+    },
+    watch: {
+        totalAmountToPay: {
+            handler(newValue, oldValue) {
+                this.amountReceived = newValue;
+                this.amountPaying = newValue;
+            },
+        },
     },
     methods: {
         markAsPaid() {
