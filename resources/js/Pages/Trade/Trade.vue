@@ -227,7 +227,7 @@ export default {
                     return {
                         id: item.id,
                         quantity: item.quantity,
-                        price: item.price,
+                        price: parseFloat(item.price).toFixed(2),
                         description: item.item.description,
                         name: item.item.item_name,
                         image: item.item.item_image,

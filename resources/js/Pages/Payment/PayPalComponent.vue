@@ -25,16 +25,19 @@ export default {
         return {
             resultMessage: "",
             loading: true,
-            currencyCode: "USD",
+            currency_code: null,
         };
     },
     components: {
         LoadingUI,
     },
     mounted() {
-        if (this.transaction.transaction.receiver_business != null) {
-            this.currencyCode =
+        if (this.transaction.transaction.isB2B) {
+            this.currency_code =
                 this.transaction.transaction.receiver_business.currency_code;
+        } else {
+            this.currency_code =
+                this.transaction.transaction.initiator.currency_code;
         }
         if (window.paypal) {
             this.renderPayPalButton();
@@ -57,11 +60,11 @@ export default {
                 purchase_units: [
                     {
                         amount: {
-                            currency_code: this.currencyCode,
+                            currency_code: this.currency_code,
                             value: totalValue,
                             breakdown: {
                                 item_total: {
-                                    currency_code: this.currencyCode,
+                                    currency_code: this.currency_code,
                                     value: totalValue,
                                 },
                             },
@@ -69,7 +72,7 @@ export default {
                         items: this.transaction.items.map((item) => ({
                             name: `Item ${item.id}`,
                             unit_amount: {
-                                currency_code: this.currencyCode,
+                                currency_code: this.currency_code,
                                 value: item.price,
                             },
                             quantity: item.quantity,
