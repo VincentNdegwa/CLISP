@@ -147,6 +147,11 @@ export default {
                 maxWidth: "4xl",
                 component: "",
             },
+            notification: {
+                open: false,
+                message: "",
+                status: "error",
+            },
             statuses: [
                 { label: "All", value: "all" },
                 { label: "Pending", value: "pending" },
@@ -241,10 +246,10 @@ export default {
         },
 
         completedPayment(mode) {
-            this.payTransaction({
-                transactionId: this.PaymentProcess.data.transactionId,
-                mode: mode,
-            });
+            const { error, message } = mode;
+            this.notification.open = true;
+            this.notification.message = message;
+            this.notification.status = error ? "error" : "success";
         },
     },
     mounted() {
@@ -268,6 +273,12 @@ export default {
                 : ''
         "
         :status="transactionStore.success ? 'success' : 'error'"
+    />
+
+    <AlertNotification
+        :open="notification.open"
+        :message="notification.message"
+        :status="notification.status"
     />
     <Modal :show="modal.open" :maxWidth="modal.maxWidth" @close="closeModal">
         <NewTransactionForm
@@ -296,14 +307,9 @@ export default {
         />
         <PaymentProcess
             v-if="modal.component == 'PaymentProcess'"
+            @paymentStatus="completedPayment"
             @close="closeModal"
             :PaymentProcess="PaymentProcess"
-        />
-        <PayPalComponent
-            v-if="modal.component == 'PayPalComponent'"
-            :transaction="PaymentProcess.data"
-            @close="closeModal"
-            @completedPayment="completedPayment"
         />
     </Modal>
     <AuthenticatedLayout>

@@ -54,7 +54,10 @@
                     @cashPayment="handleCashPayment"
                 />
                 <div class="px-4 w-full">
-                    <PrimaryRoseButton class="w-full" @click="cancelPayment"
+                    <PrimaryRoseButton
+                        class="w-full"
+                        @click="cancelPayment"
+                        :disabled="isLoading"
                         >Close</PrimaryRoseButton
                     >
                 </div>
@@ -112,6 +115,20 @@
                 </div>
             </div>
         </div>
+        <AlertNotification
+            :open="
+                paymentStore.successMessage != null ||
+                paymentStore.errorMessage != null
+            "
+            :message="
+                paymentStore.successMessage != null
+                    ? paymentStore.successMessage
+                    : '' || paymentStore.errorMessage != null
+                    ? paymentStore.errorMessage
+                    : ''
+            "
+            :status="paymentStore.successMessage ? 'success' : 'error'"
+        />
     </div>
 </template>
 
@@ -123,9 +140,10 @@ import PayPalComponent from "./PayPalComponent.vue";
 import MpesaComponent from "./MpesaComponent.vue";
 import CashComponent from "./CashComponent.vue";
 import { currencyConvertor } from "@/Store/CurrencyConvertStore";
+import { usePaymentStore } from "@/Store/PaymentStore";
 
 export default {
-    emits: ["close"],
+    emits: ["paymentStatus", "close"],
     components: {
         PrimaryButton,
         PrimaryRoseButton,
@@ -168,6 +186,21 @@ export default {
                     description: "Pay with cash upon delivery",
                 },
             ],
+            paymentDetails: {
+                payer_name: null,
+                payer_email: null,
+                payment_method: this.selectedMethod,
+                payment_reference: null,
+                paid_amount: null,
+                transaction_id: this.PaymentProcess.data.transaction.id,
+                remaining_balance: null,
+                payer_business:
+                    this.PaymentProcess.data.transaction.receiver_business
+                        .business_id,
+                payee_business:
+                    this.PaymentProcess.data.transaction.initiator.business_id,
+                currency_code: this.currency_code,
+            },
         };
     },
     methods: {
@@ -179,16 +212,19 @@ export default {
             // Handle the M-Pesa payment logic
         },
         handleCashPayment(paymentData) {
-            console.log("Cash payment received:", paymentData);
-            // Handle the cash payment logic
+            const { amountReceived, amountToPay, difference } = paymentData;
+            this.paymentDetails.currency_code = this.currency_code;
+            this.paymentDetails.payment_method = this.selectedMethod;
+            this.paymentDetails.paid_amount = amountReceived;
+            this.paymentDetails.remaining_balance = difference;
+            this.createPayment(this.paymentDetails);
+            this.closePaymentProcess();
         },
         cancelPayment() {
             this.selectedMethod = null;
             this.$emit("close", this.selectedMethod);
         },
-        confirm() {
-            this.$emit("close", this.selectedMethod);
-        },
+
         getTotalPrice() {
             this.totalAmountToPay = this.PaymentProcess.data.items.reduce(
                 (total, item) => {
@@ -222,6 +258,33 @@ export default {
             }
             return parseFloat(value).toFixed(2);
         },
+        closePaymentProcess() {
+            if (this.paymentStore.data != null) {
+                this.closeModal();
+                const { error, message, errors } = this.responseData?.data;
+                if (error == false) {
+                    this.$emit("paymentStatus", {
+                        error: error,
+                        message: message || errors,
+                    });
+                }
+            }
+        },
+    },
+    setup() {
+        const paymentStore = usePaymentStore();
+        const responseData = paymentStore.data;
+        const isLoading = paymentStore.isLoading;
+        const createPayment = async (params) => {
+            await paymentStore.createPayment(params);
+        };
+
+        return {
+            createPayment,
+            paymentStore,
+            responseData,
+            isLoading,
+        };
     },
 };
 </script>

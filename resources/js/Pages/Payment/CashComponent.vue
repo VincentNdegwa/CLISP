@@ -85,7 +85,7 @@ export default {
                 this.$emit("cashPayment", {
                     amountReceived: this.amountReceived,
                     amountToPay: this.totalAmountToPay,
-                    transaction: this.transaction,
+                    difference: this.amountReceived - this.totalAmountToPay,
                 });
             }
         },
