@@ -105,7 +105,7 @@ class TransactionController extends Controller
         }
     }
 
-    private function modifyTransaction($transaction, $business_id)
+    public function modifyTransaction($transaction, $business_id)
     {
 
 
@@ -127,7 +127,7 @@ class TransactionController extends Controller
             : $from_code;
 
         $setItemPrices = function ($item) use ($from_code, $to_code) {
-            $item->unConvertedPrice = (float)$item->price;
+            $item->unConvertedUnitPrice = (float)$item->price;
 
             $item->price = ($from_code !== $to_code)
                 ? (float)round($this->convertCurrency($item->price, $from_code, $to_code), 2)
