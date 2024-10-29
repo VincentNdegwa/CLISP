@@ -39,7 +39,7 @@
         </div>
         <PrimaryButton
             @click="markAsPaid"
-            :disabled="amountReceived < totalAmountToPay"
+            :disabled="amountReceived < totalAmountToPay || isLoading"
         >
             Mark as Paid
         </PrimaryButton>
@@ -61,6 +61,10 @@ export default {
         },
         currencyCode: {
             type: String,
+            required: true,
+        },
+        isLoading: {
+            type: Boolean,
             required: true,
         },
     },

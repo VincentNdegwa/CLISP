@@ -19,6 +19,7 @@ export const usePaymentStore = defineStore("paymentStore", {
                     "/api/payments/record-payment",
                     paymentData
                 );
+                this.data = response;
                 this.handleResponse(response);
             } catch (error) {
                 this.handleError(error);
@@ -34,7 +35,6 @@ export const usePaymentStore = defineStore("paymentStore", {
         },
 
         handleResponse(response) {
-            this.data = response;
             if (!response.data.error) {
                 this.successMessage =
                     response.data.message || "Payment created successfully!";

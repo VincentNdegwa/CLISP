@@ -51,13 +51,11 @@
                     :transaction="PaymentProcess.data"
                     :totalAmountToPay="totalAmountToPay"
                     :currencyCode="currency_code"
+                    :isLoading="paymentStore.isLoading"
                     @cashPayment="handleCashPayment"
                 />
                 <div class="px-4 w-full">
-                    <PrimaryRoseButton
-                        class="w-full"
-                        @click="cancelPayment"
-                        :disabled="isLoading"
+                    <PrimaryRoseButton class="w-full" @click="cancelPayment"
                         >Close</PrimaryRoseButton
                     >
                 </div>
@@ -78,9 +76,7 @@
                             v-for="(item, index) in PaymentProcess.data.items"
                             :key="index"
                         >
-                            <div class="text-l font-bold">
-                                {{ item.name }}
-                            </div>
+                            <div class="text-l font-bold">{{ item.name }}</div>
                             <small>{{ item.description }}</small>
                             <div class="flex">
                                 <div class="flex-grow">
@@ -109,24 +105,17 @@
 
                 <div class="p-5 flex justify-between">
                     <div>Display Price:</div>
-                    <div class="font-extrabold">
-                        {{ formattedAmountToPay }}
-                    </div>
+                    <div class="font-extrabold">{{ formattedAmountToPay }}</div>
                 </div>
             </div>
         </div>
+
         <AlertNotification
             :open="
                 paymentStore.successMessage != null ||
                 paymentStore.errorMessage != null
             "
-            :message="
-                paymentStore.successMessage != null
-                    ? paymentStore.successMessage
-                    : '' || paymentStore.errorMessage != null
-                    ? paymentStore.errorMessage
-                    : ''
-            "
+            :message="paymentStore.successMessage || paymentStore.errorMessage"
             :status="paymentStore.successMessage ? 'success' : 'error'"
         />
     </div>
@@ -141,6 +130,7 @@ import MpesaComponent from "./MpesaComponent.vue";
 import CashComponent from "./CashComponent.vue";
 import { currencyConvertor } from "@/Store/CurrencyConvertStore";
 import { usePaymentStore } from "@/Store/PaymentStore";
+import { watch } from "vue";
 
 export default {
     emits: ["paymentStatus", "close"],
@@ -161,6 +151,36 @@ export default {
     mounted() {
         this.getTotalPrice();
     },
+    setup(_, { emit }) {
+        const paymentStore = usePaymentStore();
+        const responseData = paymentStore.data;
+
+        const createPayment = async (params) => {
+            await paymentStore.createPayment(params);
+        };
+
+        watch(
+            () => paymentStore,
+            (newData) => {
+                const { error, message, errors, data } =
+                    newData.data?.data || {};
+                if (error === false) {
+                    emit("paymentStatus", {
+                        error: error,
+                        message: message || errors,
+                        data: data,
+                    });
+                }
+            },
+            { deep: true }
+        );
+
+        return {
+            createPayment,
+            paymentStore,
+            responseData,
+        };
+    },
     data() {
         return {
             selectedMethod: "Cash",
@@ -175,11 +195,6 @@ export default {
                     icon: "pi pi-paypal",
                     description: "Safe and easy way for online payment",
                 },
-                // {
-                //     name: "M-Pesa",
-                //     icon: "pi pi-mobile",
-                //     description: "Convenient mobile money transfer",
-                // },
                 {
                     name: "Cash",
                     icon: "pi pi-wallet",
@@ -209,7 +224,6 @@ export default {
         },
         handleMpesaPayment(paymentData) {
             console.log("M-Pesa payment initiated:", paymentData);
-            // Handle the M-Pesa payment logic
         },
         handleCashPayment(paymentData) {
             const { amountReceived, amountToPay, difference } = paymentData;
@@ -218,38 +232,29 @@ export default {
             this.paymentDetails.paid_amount = amountReceived;
             this.paymentDetails.remaining_balance = difference;
             this.createPayment(this.paymentDetails);
-            this.closePaymentProcess();
         },
         cancelPayment() {
             this.selectedMethod = null;
             this.$emit("close", this.selectedMethod);
         },
-
         getTotalPrice() {
             this.totalAmountToPay = this.PaymentProcess.data.items.reduce(
-                (total, item) => {
-                    return (
-                        total + parseFloat(item.price) * parseInt(item.quantity)
-                    );
-                },
+                (total, item) =>
+                    total + parseFloat(item.price) * parseInt(item.quantity),
                 0
             );
-
             this.formattedAmountToPay = this.roundOffCurrency(
                 this.totalAmountToPay
             );
-
             this.totalUsdPriceToPay =
                 this.PaymentProcess.data.transaction.totalUsdPrice;
         },
         roundOffCurrency(value) {
-            if (this.PaymentProcess.data.transaction.isB2B) {
-                this.currency_code =
-                    this.PaymentProcess.data.transaction.receiver_business.currency_code;
-            } else {
-                this.currency_code =
-                    this.PaymentProcess.data.transaction.initiator.currency_code;
-            }
+            this.currency_code = this.PaymentProcess.data.transaction.isB2B
+                ? this.PaymentProcess.data.transaction.receiver_business
+                      .currency_code
+                : this.PaymentProcess.data.transaction.initiator.currency_code;
+
             if (this.currency_code.trim()) {
                 return currencyConvertor().convertOtherCurrency(
                     value,
@@ -258,33 +263,6 @@ export default {
             }
             return parseFloat(value).toFixed(2);
         },
-        closePaymentProcess() {
-            if (this.paymentStore.data != null) {
-                this.closeModal();
-                const { error, message, errors } = this.responseData?.data;
-                if (error == false) {
-                    this.$emit("paymentStatus", {
-                        error: error,
-                        message: message || errors,
-                    });
-                }
-            }
-        },
-    },
-    setup() {
-        const paymentStore = usePaymentStore();
-        const responseData = paymentStore.data;
-        const isLoading = paymentStore.isLoading;
-        const createPayment = async (params) => {
-            await paymentStore.createPayment(params);
-        };
-
-        return {
-            createPayment,
-            paymentStore,
-            responseData,
-            isLoading,
-        };
     },
 };
 </script>

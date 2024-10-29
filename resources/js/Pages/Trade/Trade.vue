@@ -246,10 +246,17 @@ export default {
         },
 
         completedPayment(mode) {
-            const { error, message } = mode;
+            const { error, message, data } = mode;
             this.notification.open = true;
             this.notification.message = message;
             this.notification.status = error ? "error" : "success";
+
+            this.closeModal();
+
+            this.payTransaction({
+                transactionId: data.transaction_id,
+                mode: data.payment_method,
+            });
         },
     },
     mounted() {
