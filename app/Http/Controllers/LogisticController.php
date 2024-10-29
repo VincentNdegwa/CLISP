@@ -28,10 +28,15 @@ class LogisticController extends Controller
                 "page" => 'integer',
             ]);
 
-            $transactionsQuery = Transaction::with('details', 'initiator:business_id,business_name', 'receiver_business:business_id,business_name', 'receiver_customer')
-                ->with(['items' => function ($query) {
-                    $query->with('item:id,item_name');
-                }]);
+            $transactionsQuery = Transaction::with([
+                'details',
+                'initiator:business_id,business_name,email,phone_number,location,currency_code',
+                'receiver_business:business_id,business_name,email,phone_number,location,currency_code',
+                'receiver_customer',
+                'items' => function ($query) {
+                    $query->with('item:id,item_name,description,item_image');
+                }
+            ]);
 
             if ($validatedData['isB2B'] === 'business') {
                 // B2B transactions: where receiver_business exists and receiver_customer is null
@@ -74,17 +79,8 @@ class LogisticController extends Controller
                 ->paginate($itemsCount, ["*"], 'page', $request->input('page', 1));
 
             foreach ($transactions as $transaction) {
-                $transaction->totalPrice = $transaction->items->sum(function ($item) {
-                    return $item->quantity * $item->price;
-                });
-
-                if ($transaction->initiator && $transaction->initiator->business_id == $business_id) {
-                    $transaction->transaction_type = 'Outgoing';
-                }
-
-                if ($transaction->receiver_business && $transaction->receiver_business->business_id == $business_id) {
-                    $transaction->transaction_type = "Incoming";
-                }
+                $transactionController = new TransactionController();
+                $transaction = $transactionController->modifyTransaction($transaction, $business_id);
             }
             return response()->json([
                 "error" => false,

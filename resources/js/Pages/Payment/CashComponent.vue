@@ -1,12 +1,12 @@
 <template>
     <div class="flex flex-col gap-4 p-4">
         <div>
-            <label class="block text-sm font-medium text-gray-700"
-                >Amount to Pay ({{ currencyCode }})</label
-            >
+            <label class="block text-sm font-medium text-gray-700">
+                Amount to Pay ({{ currencyCode }})
+            </label>
             <input
                 type="text"
-                :value="totalAmountToPay"
+                :value="totalAmountToPay.toFixed(2)"
                 class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-100 cursor-not-allowed sm:text-sm"
                 readonly
             />
@@ -18,14 +18,31 @@
                 >Amount Received</label
             >
             <input
-                v-model="amountReceived"
+                v-model.number="amountReceived"
                 type="number"
                 id="amount-received"
                 class="mt-1 block w-full px-3 py-2 border border-gray-300 focus:ring-slate-500 rounded-md shadow-sm sm:text-sm"
                 placeholder="Enter amount received"
             />
+            <p
+                v-if="amountReceived < totalAmountToPay"
+                class="text-red-500 text-md font-bold mt-3"
+            >
+                Amount received cannot be less than the amount to pay.
+            </p>
+            <p
+                v-else-if="balance > 0"
+                class="text-green-500 text-md font-bold mt-3"
+            >
+                Change to give back: {{ balance.toFixed(2) }} {{ currencyCode }}
+            </p>
         </div>
-        <PrimaryButton @click="markAsPaid">Mark as Paid</PrimaryButton>
+        <PrimaryButton
+            @click="markAsPaid"
+            :disabled="amountReceived < totalAmountToPay || isLoading"
+        >
+            Mark as Paid
+        </PrimaryButton>
     </div>
 </template>
 
@@ -46,6 +63,10 @@ export default {
             type: String,
             required: true,
         },
+        isLoading: {
+            type: Boolean,
+            required: true,
+        },
     },
     components: {
         PrimaryButton,
@@ -53,23 +74,30 @@ export default {
     data() {
         return {
             amountReceived: this.totalAmountToPay,
-            amountPaying: this.totalAmountToPay,
         };
     },
-    watch: {
-        totalAmountToPay: {
-            handler(newValue, oldValue) {
-                this.amountReceived = newValue;
-                this.amountPaying = newValue;
-            },
+    computed: {
+        balance() {
+            return this.amountReceived > this.totalAmountToPay
+                ? this.amountReceived - this.totalAmountToPay
+                : 0;
         },
     },
     methods: {
         markAsPaid() {
-            this.$emit("cashPayment", {
-                amountReceived: this.amountReceived,
-                amountToPay: this.amountPaying,
-            });
+            if (this.amountReceived >= this.totalAmountToPay) {
+                this.$emit("cashPayment", {
+                    amountReceived: this.amountReceived,
+                    amountToPay: this.totalAmountToPay,
+                    difference: this.amountReceived - this.totalAmountToPay,
+                });
+            }
+        },
+    },
+    watch: {
+        totalAmountToPay(newValue) {
+            // Ensure amount received is not less than the total amount to pay
+            this.amountReceived = newValue;
         },
     },
 };

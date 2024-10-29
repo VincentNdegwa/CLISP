@@ -51,6 +51,7 @@
                     :transaction="PaymentProcess.data"
                     :totalAmountToPay="totalAmountToPay"
                     :currencyCode="currency_code"
+                    :isLoading="paymentStore.isLoading"
                     @cashPayment="handleCashPayment"
                 />
                 <div class="px-4 w-full">
@@ -75,9 +76,7 @@
                             v-for="(item, index) in PaymentProcess.data.items"
                             :key="index"
                         >
-                            <div class="text-l font-bold">
-                                {{ item.name }}
-                            </div>
+                            <div class="text-l font-bold">{{ item.name }}</div>
                             <small>{{ item.description }}</small>
                             <div class="flex">
                                 <div class="flex-grow">
@@ -106,12 +105,19 @@
 
                 <div class="p-5 flex justify-between">
                     <div>Display Price:</div>
-                    <div class="font-extrabold">
-                        {{ formattedAmountToPay }}
-                    </div>
+                    <div class="font-extrabold">{{ formattedAmountToPay }}</div>
                 </div>
             </div>
         </div>
+
+        <AlertNotification
+            :open="
+                paymentStore.successMessage != null ||
+                paymentStore.errorMessage != null
+            "
+            :message="paymentStore.successMessage || paymentStore.errorMessage"
+            :status="paymentStore.successMessage ? 'success' : 'error'"
+        />
     </div>
 </template>
 
@@ -123,9 +129,11 @@ import PayPalComponent from "./PayPalComponent.vue";
 import MpesaComponent from "./MpesaComponent.vue";
 import CashComponent from "./CashComponent.vue";
 import { currencyConvertor } from "@/Store/CurrencyConvertStore";
+import { usePaymentStore } from "@/Store/PaymentStore";
+import { watch } from "vue";
 
 export default {
-    emits: ["close"],
+    emits: ["paymentStatus", "close"],
     components: {
         PrimaryButton,
         PrimaryRoseButton,
@@ -143,6 +151,36 @@ export default {
     mounted() {
         this.getTotalPrice();
     },
+    setup(_, { emit }) {
+        const paymentStore = usePaymentStore();
+        const responseData = paymentStore.data;
+
+        const createPayment = async (params) => {
+            await paymentStore.createPayment(params);
+        };
+
+        watch(
+            () => paymentStore,
+            (newData) => {
+                const { error, message, errors, data } =
+                    newData.data?.data || {};
+                if (error === false) {
+                    emit("paymentStatus", {
+                        error: error,
+                        message: message || errors,
+                        data: data,
+                    });
+                }
+            },
+            { deep: true }
+        );
+
+        return {
+            createPayment,
+            paymentStore,
+            responseData,
+        };
+    },
     data() {
         return {
             selectedMethod: "Cash",
@@ -157,17 +195,27 @@ export default {
                     icon: "pi pi-paypal",
                     description: "Safe and easy way for online payment",
                 },
-                // {
-                //     name: "M-Pesa",
-                //     icon: "pi pi-mobile",
-                //     description: "Convenient mobile money transfer",
-                // },
                 {
                     name: "Cash",
                     icon: "pi pi-wallet",
                     description: "Pay with cash upon delivery",
                 },
             ],
+            paymentDetails: {
+                payer_name: null,
+                payer_email: null,
+                payment_method: this.selectedMethod,
+                payment_reference: null,
+                paid_amount: null,
+                transaction_id: this.PaymentProcess.data.transaction.id,
+                remaining_balance: null,
+                payer_business:
+                    this.PaymentProcess.data.transaction.receiver_business
+                        .business_id,
+                payee_business:
+                    this.PaymentProcess.data.transaction.initiator.business_id,
+                currency_code: this.currency_code,
+            },
         };
     },
     methods: {
@@ -176,44 +224,37 @@ export default {
         },
         handleMpesaPayment(paymentData) {
             console.log("M-Pesa payment initiated:", paymentData);
-            // Handle the M-Pesa payment logic
         },
         handleCashPayment(paymentData) {
-            console.log("Cash payment received:", paymentData);
-            // Handle the cash payment logic
+            const { amountReceived, amountToPay, difference } = paymentData;
+            this.paymentDetails.currency_code = this.currency_code;
+            this.paymentDetails.payment_method = this.selectedMethod;
+            this.paymentDetails.paid_amount = amountReceived;
+            this.paymentDetails.remaining_balance = difference;
+            this.createPayment(this.paymentDetails);
         },
         cancelPayment() {
             this.selectedMethod = null;
             this.$emit("close", this.selectedMethod);
         },
-        confirm() {
-            this.$emit("close", this.selectedMethod);
-        },
         getTotalPrice() {
             this.totalAmountToPay = this.PaymentProcess.data.items.reduce(
-                (total, item) => {
-                    return (
-                        total + parseFloat(item.price) * parseInt(item.quantity)
-                    );
-                },
+                (total, item) =>
+                    total + parseFloat(item.price) * parseInt(item.quantity),
                 0
             );
-
             this.formattedAmountToPay = this.roundOffCurrency(
                 this.totalAmountToPay
             );
-
             this.totalUsdPriceToPay =
                 this.PaymentProcess.data.transaction.totalUsdPrice;
         },
         roundOffCurrency(value) {
-            if (this.PaymentProcess.data.transaction.isB2B) {
-                this.currency_code =
-                    this.PaymentProcess.data.transaction.receiver_business.currency_code;
-            } else {
-                this.currency_code =
-                    this.PaymentProcess.data.transaction.initiator.currency_code;
-            }
+            this.currency_code = this.PaymentProcess.data.transaction.isB2B
+                ? this.PaymentProcess.data.transaction.receiver_business
+                      .currency_code
+                : this.PaymentProcess.data.transaction.initiator.currency_code;
+
             if (this.currency_code.trim()) {
                 return currencyConvertor().convertOtherCurrency(
                     value,
