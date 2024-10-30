@@ -23,6 +23,7 @@ return new class extends Migration
             $table->decimal('price', 10, 2);
             $table->timestamp('date_added')->default(Carbon::now());
             $table->string('item_image')->nullable();
+            $table->integer('cloned_id')->nullable();
             $table->timestamps();
         });
     }

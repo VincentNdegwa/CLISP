@@ -3,11 +3,14 @@
 
 namespace App\Services;
 
+use App\Http\Controllers\TransactionController;
 use App\Services\TransactionFlow;
 use App\Models\ItemBusiness;
+use App\Models\ResourceItem;
 use App\Models\TransactionItem;
 use App\Models\TransactionItemHistory;
 use Illuminate\Support\Facades\DB;
+use PhpParser\Node\Expr\Cast\Object_;
 
 class ShippableTransactionWorkflow extends TransactionFlow
 {
@@ -84,20 +87,48 @@ class ShippableTransactionWorkflow extends TransactionFlow
 
             foreach ($items as $item) {
                 $receiverBusinessItemExists = null;
-                $receiverBusinessItemExists = ItemBusiness::where('item_id', $item['item_id'])
-                    ->where('business_id', $fullTransaction->receiver_business->business_id)->first();
+
+                $receiverBusinessItemExists = ItemBusiness::where(
+                    'business_id',
+                    $fullTransaction->receiver_business->business_id
+                )->whereHas([
+                    'items' => function ($query) use ($item) {
+                        $query->where('clone_id', $item['item_id']);
+                    }
+                ]);
+
                 if (isset($receiverBusinessItemExists)) {
                     $receiverBusinessItemExists->quantity += $item['quantity_ship'];
                     $receiverBusinessItemExists->save();
                 } else {
+                    $originalItem = ResourceItem::where('id', $item['item_id'])->first();
+                    $newData = [];
+                    $newData["item_name"] = $originalItem->item_name;
+                    $newData["description"] = $originalItem->description;
+                    $newData["category_id"] = $originalItem->category_id;
+                    $newData["unit"] = $originalItem->unit;
+                    $newData["item_image"] = $originalItem->item_image;
+
+                    $from_code = $fullTransaction->initiator->currency_code;
+                    $to_code = $fullTransaction->receiver_business->currency_code;
+                    if ($from_code != $to_code) {
+                        $transactionController = new TransactionController();
+                        $newData["price"] = $transactionController->convertCurrency($originalItem->price, $from_code, $to_code);
+                        $newData["price_currency_code"] = $to_code;
+                    } else {
+                        $newData["price"] = $originalItem->price;
+                        $newData["price_currency_code"] = $originalItem->price_currency_code;
+                    }
+                    $clonedItem = ResourceItem::create($newData);
 
                     $receiverBusinessItemExists = ItemBusiness::create([
-                        'item_id' => $item['item_id'],
+                        'item_id' => $clonedItem->id,
                         'business_id' => $fullTransaction->receiver_business->business_id,
-                        'source' => 'Borrowed',
+                        'source' => $fullTransaction->type,
                         'quantity' => $item['quantity_ship']
                     ]);
                 }
+
 
                 TransactionItemHistory::create([
                     'item_business_id' => $receiverBusinessItemExists->id,
