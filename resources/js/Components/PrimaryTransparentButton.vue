@@ -1,5 +1,7 @@
 <template>
-    <button class="bg-transaparent p-3 rounded-md hover:bg-transparent border border-white text-white hover:bg-white hover:text-slate-950">
-        <slot/>
+    <button
+        class="bg-transaparent p-3 rounded-md border ring-1 ring-rose-500 text-white hover:bg-rose-500"
+    >
+        <slot />
     </button>
 </template>

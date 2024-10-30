@@ -31,7 +31,6 @@ const submit = () => {
 
 onMounted(() => {
     window.localStorage.removeItem("default_business");
-    console.log("mounted in login");
 });
 </script>
 
