@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('item_name');
             $table->text('description')->nullable();
             $table->string('category_id')->nullable();
-            // $table->integer('quantity');
+            $table->string('price_currency_code');
             $table->string('unit');
             $table->decimal('price', 10, 2);
             $table->timestamp('date_added')->default(Carbon::now());
