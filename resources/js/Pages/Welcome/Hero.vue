@@ -2,12 +2,14 @@
 import NavButton from "@/Components/NavButton.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import PrimaryRoseButton from "@/Components/PrimaryRoseButton.vue";
+import PrimaryTransparentButton from "@/Components/PrimaryTransparentButton.vue";
 import { router } from "@inertiajs/vue3";
 export default {
     components: {
         NavButton,
         PrimaryRoseButton,
         PrimaryButton,
+        PrimaryTransparentButton,
     },
     data() {
         return {

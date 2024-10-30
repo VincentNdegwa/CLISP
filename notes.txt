@@ -1,8 +1,1 @@
-  if (isset($updatedTransaction->receiver_business) &&  $updatedTransaction->receiver_business->currency_code !== $updatedTransaction->initiator->currency_code) {
-                $from_code = $updatedTransaction->initiator->currency_code;
-                $to_code = $updatedTransaction->receiver_business->currency_code;
-
-                $updatedTransaction->items->each(function ($item) use ($from_code, $to_code) {
-                    $item->price = $this->convertCurrency($item->price, $from_code, $to_code);
-                });
-            }
+receiving items from a business with different currency
