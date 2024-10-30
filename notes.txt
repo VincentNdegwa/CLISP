@@ -1,1 +1,3 @@
-receiving items from a business with different currency
+receiving items from a business with different currency ->fixed
+totals items in the dashboard is only counting the total itemBusiness->fixed
+in purchases while approving the item is reduced from the intiator

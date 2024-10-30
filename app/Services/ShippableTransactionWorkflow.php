@@ -110,6 +110,7 @@ class ShippableTransactionWorkflow extends TransactionFlow
                     $newData["category_id"] = $originalItem->category_id;
                     $newData["unit"] = $originalItem->unit;
                     $newData["item_image"] = $originalItem->item_image;
+                    $newData["cloned_id"] = $originalItem->id;
 
                     $from_code = $fullTransaction->initiator->currency_code;
                     $to_code = $fullTransaction->receiver_business->currency_code;
@@ -193,8 +194,17 @@ class ShippableTransactionWorkflow extends TransactionFlow
             $itemIds = [];
             foreach ($items as $item) {
 
-                $receiverBusinessItemExists = ItemBusiness::where('item_id', $item['item_id'])
-                    ->where('business_id', $fullTransaction->receiver_business->business_id)->first();
+
+                $receiverBusinessItemExists = ItemBusiness::where(
+                    'business_id',
+                    $fullTransaction->receiver_business->business_id
+                )->whereHas(
+                    'items',
+                    function ($query) use ($item) {
+                        $query->where('cloned_id', $item['item_id']);
+                    }
+                )->first();
+
                 if (isset($receiverBusinessItemExists)) {
                     $receiverBusinessItemExists->quantity -= $item['quantity_ship'];
                     $receiverBusinessItemExists->save();
@@ -227,7 +237,7 @@ class ShippableTransactionWorkflow extends TransactionFlow
             }
 
             $transaction = $this->transaction;
-            $transaction->status = 'return';
+            $transaction->status = 'returned';
             $transaction->save();
 
             TransactionItem::whereIn('item_id', $itemIds)->update([
