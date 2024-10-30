@@ -396,7 +396,7 @@ export const useTransactionStore = defineStore("transactionStore", {
         updateUiResponse(response) {
             this.refreshState();
             if (response.data.error) {
-                this.error = response.data.error;
+                this.error = response.data.message;
                 if (response.data.errors) {
                     this.error = response.data.errors;
                 }

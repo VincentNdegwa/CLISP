@@ -195,28 +195,6 @@
                                         'partially-dispatched')
                             "
                         />
-                        <!-- <Button
-                            label="Accept Return"
-                            size="small"
-                            severity="success"
-                            @click="acceptReturn"
-                            v-if="
-                                slotProps.data.transaction_type ===
-                                    'Outgoing' &&
-                                slotProps.data.status === 'return'
-                            "
-                        />
-                        <Button
-                            label="Reject Return"
-                            size="small"
-                            severity="danger"
-                            @click="rejectReturn"
-                            v-if="
-                                slotProps.data.transaction_type ===
-                                    'Outgoing' &&
-                                slotProps.data.status === 'return'
-                            "
-                        /> -->
                     </div>
                 </template>
             </Column>
@@ -278,6 +256,13 @@
             />
         </Modal>
     </AuthenticatedLayout>
+    <AlertNotification
+        :open="
+            transactionStore.success != null || transactionStore.error != null
+        "
+        :message="transactionStore.success || transactionStore.error"
+        :status="transactionStore.success ? 'success' : 'error'"
+    />
 </template>
 
 <script>

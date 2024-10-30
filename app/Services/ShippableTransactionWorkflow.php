@@ -91,11 +91,12 @@ class ShippableTransactionWorkflow extends TransactionFlow
                 $receiverBusinessItemExists = ItemBusiness::where(
                     'business_id',
                     $fullTransaction->receiver_business->business_id
-                )->whereHas([
-                    'items' => function ($query) use ($item) {
-                        $query->where('clone_id', $item['item_id']);
+                )->whereHas(
+                    'items',
+                    function ($query) use ($item) {
+                        $query->where('cloned_id', $item['item_id']);
                     }
-                ]);
+                )->first();
 
                 if (isset($receiverBusinessItemExists)) {
                     $receiverBusinessItemExists->quantity += $item['quantity_ship'];
@@ -103,6 +104,7 @@ class ShippableTransactionWorkflow extends TransactionFlow
                 } else {
                     $originalItem = ResourceItem::where('id', $item['item_id'])->first();
                     $newData = [];
+                    $newData["business_id"] = $fullTransaction->receiver_business->business_id;
                     $newData["item_name"] = $originalItem->item_name;
                     $newData["description"] = $originalItem->description;
                     $newData["category_id"] = $originalItem->category_id;
@@ -124,7 +126,7 @@ class ShippableTransactionWorkflow extends TransactionFlow
                     $receiverBusinessItemExists = ItemBusiness::create([
                         'item_id' => $clonedItem->id,
                         'business_id' => $fullTransaction->receiver_business->business_id,
-                        'source' => $fullTransaction->type,
+                        'source' => $this->getTransactionType($fullTransaction->type),
                         'quantity' => $item['quantity_ship']
                     ]);
                 }
@@ -157,7 +159,25 @@ class ShippableTransactionWorkflow extends TransactionFlow
             return $this->createResponse(false, 'Successfully Received Items', $fullTransaction);
         } catch (\Throwable $th) {
             DB::rollBack();
-            return $this->createResponse(true, 'Failed to Receive Items', $th->getMessage());
+            return $this->createResponse(true, 'Failed to Receive Items', null, $th->getMessage());
+        }
+    }
+
+    private function getTransactionType($type)
+    {
+        switch ($type) {
+            case 'purchase':
+                return "Purchased";
+                break;
+            case 'leasing':
+                return "Leased";
+                break;
+            case 'borrowing':
+                return "Borrowed";
+                break;
+            default:
+                return "Owned";
+                break;
         }
     }
 
