@@ -14,10 +14,11 @@ class ResourceItem extends Model
         'item_name',
         'description',
         'category_id',
-        'quantity',
         'unit',
         'price',
         'item_image',
+        'price_currency_code',
+        'cloned_id',
     ];
 
 

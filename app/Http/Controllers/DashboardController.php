@@ -109,7 +109,7 @@ class DashboardController extends Controller
                 ->count();
 
             // Total Items and Total Items Value
-            $totalItems = ItemBusiness::where('business_id', $business_id)->count();
+            $totalItems = ItemBusiness::where('business_id', $business_id)->whereHas("items")->count();
 
             $totalItemsValue = ItemBusiness::join('resource_item', 'item_business.item_id', '=', 'resource_item.id')
                 ->where('item_business.business_id', $business_id)

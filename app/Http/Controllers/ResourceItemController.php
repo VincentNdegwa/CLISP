@@ -27,7 +27,15 @@ class ResourceItemController extends Controller
             ]);
 
             $data = $request->all();
-            $data['business_id'] = $business_id;
+            $business = Business::where('business_id', $business_id)->first();
+            if (!isset($business)) {
+                return response()->json([
+                    'error' => true,
+                    'message' => 'Business not found.'
+                ]);
+            }
+            $data['business_id'] = $business->business_id;
+            $data['price_currency_code'] = $business->currency_code;
             unset($data['quantity']);
 
             $resourceItem = ResourceItem::create($data);
