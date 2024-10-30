@@ -14,7 +14,6 @@ class ShippableTransactionWorkflow extends TransactionFlow
 
     public function giveTransactionItem($params)
     {
-        // Borrowing-specific logic for giving the item
         DB::beginTransaction();
         try {
 
@@ -168,7 +167,7 @@ class ShippableTransactionWorkflow extends TransactionFlow
                     'quantity' => $item['quantity_ship'],
                     'transaction_time' => now(),
                 ]);
-                
+
                 if ($item['quantity'] == $item['quantity_ship']) {
                     $itemIds[] = $item['item_id'];
                 }
