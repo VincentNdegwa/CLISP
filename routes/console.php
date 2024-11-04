@@ -11,4 +11,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote')->daily();
 
 
-Schedule::command(UpdateExchangeRatesCommand::class)->everyMinute();
+Schedule::command(UpdateExchangeRatesCommand::class)->daily();

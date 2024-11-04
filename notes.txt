@@ -1,3 +1,9 @@
 receiving items from a business with different currency ->fixed
 totals items in the dashboard is only counting the total itemBusiness->fixed
 in purchases while approving the item is reduced from the intiator
+adding new payments in my business
+disable cash payment inincomming transaction
+add mark payment in outgoing transaction that will show the mode of payment the customer used and record payment
+send email receipt after the payment has been completed
+provide the edit business functionality
+change business connection be all in one list and  filter by incomming or outgoing
