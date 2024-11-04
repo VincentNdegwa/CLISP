@@ -11,25 +11,30 @@ import Select from "primevue/select";
 import currencyCodes from "@/currency";
 
 export default {
-    props: ["user"],
+    emits: ["close"],
+    props: ["user", "edit", "editData"],
     data() {
         const today = new Date();
         const formattedDate = today.toISOString().split("T")[0];
 
-        const form = useForm({
-            business_name: "",
-            business_type_id: "",
-            location: "",
-            phone_number: "",
-            email: "",
-            website: "",
-            industry_id: "",
-            registration_number: "",
-            date_registered: formattedDate,
-            user_id: this.$page.props.auth.user.id,
-            logo: null,
-            currency_code: "USD",
-        });
+        const form = useForm(
+            this.edit
+                ? { ...this.editData }
+                : {
+                      business_name: "",
+                      business_type_id: "",
+                      location: "",
+                      phone_number: "",
+                      email: "",
+                      website: "",
+                      industry_id: "",
+                      registration_number: "",
+                      date_registered: formattedDate,
+                      user_id: this.$page.props.auth.user.id,
+                      logo: null,
+                      currency_code: "USD",
+                  }
+        );
 
         return {
             form,
@@ -119,6 +124,9 @@ export default {
             for (const key in this.form) {
                 formData.append(key, this.form[key]);
             }
+            const url = this.edit
+                ? "/api/business/create"
+                : "/api/business/update";
 
             axios
                 .post("/api/business/create", formData, {
@@ -204,7 +212,7 @@ export default {
                 <InputError class="mt-2" :message="form.errors.email" />
             </div>
             <!-- Business Currency Code -->
-            <div class="mt-4">
+            <div class="mt-4" v-if="!this.edit">
                 <InputLabel
                     for="email"
                     value="Business Currency"
@@ -381,7 +389,7 @@ export default {
                     :class="{ 'opacity-25': form.processing }"
                     :disabled="form.processing"
                 >
-                    Register Business
+                    {{ this.edit ? "Update Business" : "Register Business" }}
                 </PrimaryButton>
                 <PrimaryButton
                     class="bg-rose-600 hover:bg-rose-500 text-white flex-1"

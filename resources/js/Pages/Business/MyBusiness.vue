@@ -1,4 +1,6 @@
 <script>
+import Modal from "@/Components/Modal.vue";
+import NewBusiness from "@/Components/NewBusiness.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import { useMyBusiness } from "@/Store/MyBusiness";
@@ -14,6 +16,8 @@ export default {
         Badge,
         PrimaryButton,
         Head,
+        Modal,
+        NewBusiness,
     },
     setup() {
         const { props } = usePage();
@@ -35,12 +39,34 @@ export default {
         getStatusSeverity(status) {
             return status === "active" ? "success" : "danger";
         },
+        closeModal() {
+            this.modal.open = false;
+            this.modal.component = "";
+        },
+        openEditBusiness() {
+            this.currentBusiness = this.myBusiness?.business?.business;
+            this.modal.open = true;
+            this.modal.component = "EditBusiness";
+        },
+    },
+    data() {
+        return {
+            modal: {
+                open: false,
+                component: "",
+            },
+            currentBusiness: this.myBusiness.business.business,
+
+        };
     },
 };
 </script>
 
 <template>
     <Head title="Business Information" />
+    <Modal :show="modal.open">
+        <NewBusiness @close="closeModal" :edit="true" :editData="currentBusiness" />
+    </Modal>
     <AuthenticatedLayout>
         <div class="text-2xl font-extrabold text-gray-800 mb-6">
             Business Information
@@ -51,7 +77,9 @@ export default {
                 <div class="bg-white p-6 rounded-lg shadow-md">
                     <div class="flex flex-col">
                         <div class="flex justify-end">
-                            <PrimaryButton> Edit Business </PrimaryButton>
+                            <PrimaryButton @click="openEditBusiness">
+                                Edit Business
+                            </PrimaryButton>
                         </div>
                         <div class="flex flex-col lg:flex-row">
                             <div class="lg:w-5/12 w-full">
