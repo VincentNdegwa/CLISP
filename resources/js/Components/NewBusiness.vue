@@ -11,6 +11,7 @@ import Select from "primevue/select";
 import currencyCodes from "@/currency";
 
 export default {
+    emits: ["close"],
     props: ["user"],
     data() {
         const today = new Date();
