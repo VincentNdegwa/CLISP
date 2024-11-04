@@ -44,6 +44,7 @@ export default {
             this.modal.component = "";
         },
         openEditBusiness() {
+            this.currentBusiness = this.myBusiness?.business?.business;
             this.modal.open = true;
             this.modal.component = "EditBusiness";
         },
@@ -54,6 +55,8 @@ export default {
                 open: false,
                 component: "",
             },
+            currentBusiness: this.myBusiness.business.business,
+
         };
     },
 };
@@ -61,7 +64,9 @@ export default {
 
 <template>
     <Head title="Business Information" />
-    <Modal :show="modal.open"> <NewBusiness @close="closeModal" /> </Modal>
+    <Modal :show="modal.open">
+        <NewBusiness @close="closeModal" :edit="true" :editData="currentBusiness" />
+    </Modal>
     <AuthenticatedLayout>
         <div class="text-2xl font-extrabold text-gray-800 mb-6">
             Business Information
