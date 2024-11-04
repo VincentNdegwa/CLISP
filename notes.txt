@@ -7,3 +7,7 @@ add mark payment in outgoing transaction that will show the mode of payment the 
 send email receipt after the payment has been completed
 provide the edit business functionality
 change business connection be all in one list and  filter by incomming or outgoing
+in dash
+
+provide revenue by business and customer
+provide business vs customers

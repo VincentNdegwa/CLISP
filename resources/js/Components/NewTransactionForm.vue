@@ -82,6 +82,7 @@
                         fluid
                         iconDisplay="input"
                         dateFormat="yy-mm-dd"
+                        :minDate="new Date()"
                     />
                 </div>
 

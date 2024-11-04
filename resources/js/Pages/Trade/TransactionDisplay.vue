@@ -183,13 +183,6 @@ export default {
                         this.getUrl();
                     },
                 },
-                {
-                    label: "Edit",
-                    icon: "pi pi-pencil",
-                    command: () => {
-                        this.startUpdate();
-                    },
-                },
             ];
             this.actionItem = defaultActionItems;
             const data = this.transactionStore.transactions.data.find(
@@ -199,6 +192,14 @@ export default {
             const transaction_type = data.transaction_type;
             const transaction_status = data.status;
             const isB2B = data.isB2B;
+
+            let edit = {
+                label: "Edit",
+                icon: "pi pi-pencil",
+                command: () => {
+                    this.startUpdate();
+                },
+            };
             let approve = {
                 label: "Approve",
                 icon: "pi pi-check",
@@ -265,6 +266,7 @@ export default {
                 },
             };
 
+            let canEdit = transaction_type === "Outgoing";
             let canApprove =
                 ((transaction_type == "Incoming" && isB2B == true) ||
                     (transaction_type == "Outgoing" && isB2B == false)) &&
@@ -280,7 +282,9 @@ export default {
             let canPrint = transaction_status == "paid";
 
             let canDelete = transaction_status == "canceled";
-
+            if (canEdit) {
+                defaultActionItems.push(edit);
+            }
             if (canApprove) {
                 defaultActionItems.push(approve);
             }
@@ -382,9 +386,9 @@ export default {
             }
         },
         toggle(transactionId, event) {
+            this.getActionItems(transactionId);
             this.$refs.menu.toggle(event);
             this.transactionId = transactionId;
-            this.getActionItems(transactionId);
         },
     },
 };
