@@ -1,60 +1,65 @@
 <template>
     <div
-        class="h-fit relative p-1 w-full flex flex-col lg:flex-row gap-1 max-h-[100vh] overflow-y-scroll"
+        class="h-fit relative p-2 w-full flex flex-col lg:flex-row gap-4 max-h-[100vh] overflow-y-scroll"
     >
         <!-- Payment Methods Section -->
-        <div class="methods w-full lg:w-7/12 rounded-sm flex flex-col">
-            <div class="text-xl font-bold">Payment Method</div>
-            <div class="flex flex-col p-2 gap-2 mt-1">
+        <div
+            class="methods w-full lg:w-7/12 rounded-sm flex flex-col bg-gray-100 p-4"
+        >
+            <h2 class="text-2xl font-semibold text-gray-700 mb-4">
+                Payment Method
+            </h2>
+            <div class="flex flex-col gap-3">
                 <Card
                     :unstyled="styledCard"
                     v-for="method in paymentMethods"
                     :key="method.name"
                     @click="confirmPayment(method)"
                     :class="[
-                        'p-0 cursor-pointer transition-colors duration-200 rounded shadow-lg',
+                        'p-4 cursor-pointer transition-colors duration-200 rounded-lg shadow',
                         selectedMethod === method.name
-                            ? 'bg-black'
-                            : 'bg-white',
+                            ? 'bg-slate-600 text-white'
+                            : 'bg-white text-gray-800',
                     ]"
                 >
                     <template #content>
-                        <div class="flex gap-5 items-center p-4">
-                            <i :class="method.icon"></i>
-                            <div class="flex flex-col">
-                                <div class="font-bold text-xl">
+                        <div class="flex gap-4 items-center">
+                            <i :class="method.icon" class="text-2xl"></i>
+                            <div>
+                                <h3 class="font-bold text-lg">
                                     {{ method.name }}
-                                </div>
-                                <small>{{ method.description }}</small>
+                                </h3>
+                                <p class="text-sm">{{ method.description }}</p>
                             </div>
                         </div>
                     </template>
                 </Card>
             </div>
 
-            <div class="payment-ui min-h-[20vh] mt-5">
+            <!-- Payment UI -->
+            <div class="payment-ui mt-6">
                 <PayPalComponent
-                    v-if="selectedMethod == 'PayPal'"
+                    v-if="selectedMethod === 'PayPal'"
                     :transaction="PaymentProcess.data"
                     :totalUsdPriceToPay="totalUsdPriceToPay"
                     @close="closeModal"
                     @completedPayment="completedPayment"
                 />
                 <MpesaComponent
-                    v-if="selectedMethod == 'M-Pesa'"
+                    v-if="selectedMethod === 'M-Pesa'"
                     :transaction="PaymentProcess.data"
                     :totalAmountToPay="totalAmountToPay"
                     @stkPush="handleMpesaPayment"
                 />
                 <CashComponent
-                    v-if="selectedMethod == 'Cash'"
+                    v-if="selectedMethod === 'Cash'"
                     :transaction="PaymentProcess.data"
                     :totalAmountToPay="totalAmountToPay"
                     :currencyCode="currency_code"
                     :isLoading="paymentStore.isLoading"
                     @cashPayment="handleCashPayment"
                 />
-                <div class="px-4 w-full">
+                <div class="w-full mt-4">
                     <PrimaryRoseButton class="w-full" @click="cancelPayment"
                         >Close</PrimaryRoseButton
                     >
@@ -62,54 +67,53 @@
             </div>
         </div>
 
-        <div class="order w-full lg:w-5/12 rounded-sm p-1">
-            <div
-                class="flex flex-col gap-2 shadow-md h-full w-full rounded-lg p-1"
-            >
-                <p>Order Summary</p>
+        <!-- Order Summary Section -->
+        <div class="order w-full lg:w-5/12 rounded-sm p-4 bg-gray-50">
+            <div class="flex flex-col gap-3 shadow-md h-full rounded-lg p-4">
+                <h2 class="text-2xl font-semibold text-gray-700">
+                    Order Summary
+                </h2>
                 <div
-                    class="container-holder h-fit max-h-[75vh] overflow-y-scroll no-scrollbar w-full"
+                    class="container-holder max-h-[75vh] overflow-y-scroll no-scrollbar w-full"
                 >
-                    <div class="p-2">
-                        <div
-                            class="product-detail flex flex-col border-b"
-                            v-for="(item, index) in PaymentProcess.data.items"
-                            :key="index"
-                        >
-                            <div class="text-l font-bold">{{ item.name }}</div>
-                            <small>{{ item.description }}</small>
-                            <div class="flex">
-                                <div class="flex-grow">
-                                    <div class="text-sm">
-                                        {{ roundOffCurrency(item.price) }}
-                                    </div>
-                                </div>
-                                <div class="flex-grow">
-                                    <div class="text-sm">
-                                        x{{ item.quantity }}
-                                    </div>
-                                </div>
-                                <div class="flex-grow">
-                                    <div class="text-sm">
-                                        {{
-                                            roundOffCurrency(
-                                                item.price * item.quantity
-                                            )
-                                        }}
-                                    </div>
-                                </div>
+                    <div
+                        class="p-3 border-b"
+                        v-for="(item, index) in PaymentProcess.data.items"
+                        :key="index"
+                    >
+                        <div class="flex justify-between">
+                            <div class="text-lg font-semibold">
+                                {{ item.name }}
+                            </div>
+                            <div class="text-gray-600 text-sm">
+                                x{{ item.quantity }}
+                            </div>
+                        </div>
+                        <p class="text-gray-500 text-sm mb-2">
+                            {{ item.description }}
+                        </p>
+                        <div class="flex justify-between text-sm">
+                            <div>{{ roundOffCurrency(item.price) }}</div>
+                            <div class="font-semibold">
+                                {{
+                                    roundOffCurrency(item.price * item.quantity)
+                                }}
                             </div>
                         </div>
                     </div>
                 </div>
-
-                <div class="p-5 flex justify-between">
-                    <div>Display Price:</div>
-                    <div class="font-extrabold">{{ formattedAmountToPay }}</div>
+                <div
+                    class="pt-4 flex justify-between items-center text-lg font-bold"
+                >
+                    <span>Total:</span>
+                    <span class="text-rose-600">{{
+                        formattedAmountToPay
+                    }}</span>
                 </div>
             </div>
         </div>
 
+        <!-- Notification Section -->
         <AlertNotification
             :open="
                 paymentStore.successMessage != null ||
@@ -183,7 +187,7 @@ export default {
     },
     data() {
         return {
-            selectedMethod: "Cash",
+            selectedMethod: "PayPal",
             styledCard: true,
             totalAmountToPay: 0,
             formattedAmountToPay: 0,
@@ -193,13 +197,13 @@ export default {
                 {
                     name: "PayPal",
                     icon: "pi pi-paypal",
-                    description: "Safe and easy way for online payment",
+                    description: "Safe and easy online payment",
                 },
-                {
-                    name: "Cash",
-                    icon: "pi pi-wallet",
-                    description: "Pay with cash upon delivery",
-                },
+                // {
+                //     name: "Cash",
+                //     icon: "pi pi-wallet",
+                //     description: "Pay with cash upon delivery",
+                // },
             ],
             paymentDetails: {
                 payer_name: null,
@@ -255,20 +259,19 @@ export default {
                       .currency_code
                 : this.PaymentProcess.data.transaction.initiator.currency_code;
 
-            if (this.currency_code.trim()) {
-                return currencyConvertor().convertOtherCurrency(
-                    value,
-                    this.currency_code
-                );
-            }
-            return parseFloat(value).toFixed(2);
+            return this.currency_code.trim()
+                ? currencyConvertor().convertOtherCurrency(
+                      value,
+                      this.currency_code
+                  )
+                : parseFloat(value).toFixed(2);
         },
     },
 };
 </script>
 
 <style>
-.bg-black {
-    background-color: #94a3b8 !important;
+.bg-slate-600 {
+    background-color: #475569 !important;
 }
 </style>

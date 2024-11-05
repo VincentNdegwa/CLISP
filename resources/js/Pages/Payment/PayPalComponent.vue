@@ -58,12 +58,12 @@ export default {
                 }, 0)
                 .toFixed(2);
 
-            if (totalValue != this.totalUsdPriceToPay) {
-                alert(
-                    `totalValue: ${totalValue}, usdPrice: ${this.totalUsdPriceToPay}`
-                );
-                return;
-            }
+            // if (totalValue != this.totalUsdPriceToPay) {
+            //     alert(
+            //         `totalValue: ${totalValue}, usdPrice: ${this.totalUsdPriceToPay}`
+            //     );
+            //     return;
+            // }
 
             const orderPayload = {
                 intent: "CAPTURE",

@@ -380,6 +380,9 @@ export default {
                 mode: mode,
             });
         },
+        handleSuccessPayment(data) {
+            this.transactionStore.singleTransaction = data.transaction;
+        },
     },
 };
 </script>
@@ -407,8 +410,9 @@ export default {
         />
 
         <SellerCheckout
-            v-if="(modal.component = 'SellerCheckout')"
+            v-if="modal.component == 'SellerCheckout'"
             @close="closeModal"
+            @successPayment="handleSuccessPayment"
             :transactionData="transactionStore.singleTransaction"
         />
     </Modal>
