@@ -27,6 +27,7 @@ class Business extends Model
         'subscription_plan',
         'currency_code'
     ];
+    protected $primaryKey = 'business_id';
 
     public function businessType()
     {

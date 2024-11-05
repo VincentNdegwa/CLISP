@@ -125,11 +125,11 @@ export default {
                 formData.append(key, this.form[key]);
             }
             const url = this.edit
-                ? "/api/business/create"
-                : "/api/business/update";
+                ? "/api/business/update"
+                : "/api/business/create";
 
             axios
-                .post("/api/business/create", formData, {
+                .post(url, formData, {
                     headers: {
                         "Content-Type": "multipart/form-data",
                     },
@@ -140,8 +140,9 @@ export default {
                         this.notification.open = true;
                         this.notification.message = res.data.message;
                         this.notification.status = "success";
-
-                        window.location.reload();
+                        if (!this.edit) {
+                            window.location.reload();
+                        }
                     }
 
                     if (res.data.error) {

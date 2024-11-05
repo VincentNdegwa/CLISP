@@ -93,6 +93,7 @@ class BusinessController extends Controller
             $business = Business::where('business_id', $validatedData['business_id'])->firstOrFail();
             $business->update($validatedData);
 
+
             return response()->json([
                 'error' => false,
                 'message' => 'Business updated successfully!',
