@@ -28,8 +28,16 @@ export default {
             businessId: useUserStore().business,
         });
 
+        const fetchUpdatedBusiness = () => {
+            myBusiness.fetchMyBusiness({
+                userId: props.auth.user.id,
+                businessId: useUserStore().business,
+            });
+        };
+
         return {
             myBusiness,
+            fetchUpdatedBusiness,
         };
     },
     methods: {
@@ -39,9 +47,13 @@ export default {
         getStatusSeverity(status) {
             return status === "active" ? "success" : "danger";
         },
-        closeModal() {
+        closeModal(data) {
             this.modal.open = false;
             this.modal.component = "";
+
+            if (data?.business_id) {
+                this.fetchUpdatedBusiness();
+            }
         },
         openEditBusiness() {
             this.currentBusiness = this.myBusiness?.business?.business;
@@ -56,7 +68,6 @@ export default {
                 component: "",
             },
             currentBusiness: this.myBusiness.business.business,
-
         };
     },
 };
@@ -65,7 +76,11 @@ export default {
 <template>
     <Head title="Business Information" />
     <Modal :show="modal.open">
-        <NewBusiness @close="closeModal" :edit="true" :editData="currentBusiness" />
+        <NewBusiness
+            @close="closeModal"
+            :edit="true"
+            :editData="currentBusiness"
+        />
     </Modal>
     <AuthenticatedLayout>
         <div class="text-2xl font-extrabold text-gray-800 mb-6">
