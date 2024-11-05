@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Payment;
 use App\Models\Transaction;
+use App\Services\NonShippableTransactionWorkflow;
 use Illuminate\Validation\ValidationException;
 
 class PaymentsController extends Controller
@@ -48,7 +49,12 @@ class PaymentsController extends Controller
                 "currency_code" => $validatedData['currency_code']
             ]);
 
-            return $this->createResponse(false, 'Payment created successfully', $payment);
+            $transactionFlow = new NonShippableTransactionWorkflow($validatedData['payee_business'], $validatedData['transaction_id']);
+            $transactionFlow->payTransaction($validatedData['payment_method']);
+            return $this->createResponse(false, 'Payment created successfully', [
+                "payment" => $payment,
+                "transaction" => $transactionFlow->getFullTransaction()
+            ]);
         } catch (ValidationException $e) {
             return $this->createResponse(true, 'Validation error', null, $e->errors());
         } catch (\Exception $e) {

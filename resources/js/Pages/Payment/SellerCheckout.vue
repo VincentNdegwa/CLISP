@@ -158,7 +158,7 @@ import axios from "axios";
 import InputNumber from "primevue/inputnumber";
 
 export default {
-    emits: ["close"],
+    emits: ["close", "successPayment"],
     props: {
         transactionData: {
             type: Object,
@@ -221,7 +221,7 @@ export default {
             this.notification.message = message;
             this.notification.status = status;
         },
-        recordPayment() {
+        async recordPayment() {
             if (!this.amountPaid || this.amountPaid <= 0) {
                 this.errorMessage = "Please enter a valid amount.";
                 this.openNotification(this.errorMessage, "error");
@@ -230,23 +230,28 @@ export default {
             if (!this.checkAmount(this.amountPaid)) {
                 return;
             }
+            this.canProceedCheckout = false;
             this.paymentDetails.paid_amount = this.amountPaid;
             this.paymentDetails.payment_method = this.selectedMethod;
+            this,
+                (this.paymentDetails.remaining_balance =
+                    this.transactionData.totalPrice - this.amountPaid);
+
             try {
-                this.canProceedCheckout = false;
-                axios
-                    .post("/api/payments/record-payment", this.paymentDetails)
-                    .then((response) => {
-                        let data = response.data;
-                        if (!data.error) {
-                            this.openNotification(data.message, "success");
-                        } else {
-                            this.openNotification(data.message, "error");
-                        }
-                    })
-                    .catch((error) => {
-                        this.openNotification(error, "error");
-                    });
+                const response = await axios.post(
+                    "/api/payments/record-payment",
+                    this.paymentDetails
+                );
+                let data = response.data;
+                if (!data.error) {
+                    this.openNotification(data.message, "success");
+                    this.$emit("successPayment", data.data);
+                    this.closeModal();
+                } else {
+                    this.openNotification(data.message, "error");
+                }
+            } catch (error) {
+                this.openNotification(error.message, "error");
             } finally {
                 this.canProceedCheckout = true;
             }

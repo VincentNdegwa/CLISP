@@ -11,3 +11,4 @@ in dash
 
 provide revenue by business and customer
 provide business vs customers
+in sellercheckou handle also customer ( add isb2b and payer_customer in payment table) also while checking out check if customer or business
