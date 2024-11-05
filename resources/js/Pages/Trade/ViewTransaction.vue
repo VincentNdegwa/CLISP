@@ -407,7 +407,7 @@ export default {
         />
 
         <SellerCheckout
-            v-if="(modal.component = 'SellerCheckout')"
+            v-if="modal.component == 'SellerCheckout'"
             @close="closeModal"
             :transactionData="transactionStore.singleTransaction"
         />
