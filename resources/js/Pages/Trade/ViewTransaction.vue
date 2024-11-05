@@ -13,6 +13,7 @@ import Tag from "primevue/tag";
 import PayPalComponent from "../Payment/PayPalComponent.vue";
 import Modal from "@/Components/Modal.vue";
 import PaymentProcess from "../Payment/PaymentProcess.vue";
+import SellerCheckout from "../Payment/SellerCheckout.vue";
 
 export default {
     components: {
@@ -27,6 +28,7 @@ export default {
         Modal,
         PayPalComponent,
         PaymentProcess,
+        SellerCheckout,
     },
     data() {
         return {
@@ -177,9 +179,13 @@ export default {
                     );
                 case "Pay":
                     return (
-                        ((transaction_type == "Incoming" && isB2B == true) ||
-                            (transaction_type == "Outgoing" &&
-                                isB2B == false)) &&
+                        transaction_type == "Incoming" &&
+                        isB2B == true &&
+                        transaction_status == "approved"
+                    );
+                case "Record Payment":
+                    return (
+                        transaction_type == "Outgoing" &&
                         transaction_status == "approved"
                     );
                 default:
@@ -223,6 +229,15 @@ export default {
                     this.confirmation.title = "Pay Transaction";
                     this.confirmation.method = () => {
                         this.startPaymentProcess();
+                    };
+                    break;
+                case "RecordPayment":
+                    this.confirmation.isOpen = true;
+                    this.confirmation.message =
+                        "Are you sure you want to record the payment for this transaction?";
+                    this.confirmation.title = "Record Payment";
+                    this.confirmation.method = () => {
+                        this.startSellerCheckout();
                     };
                     break;
 
@@ -277,6 +292,9 @@ export default {
             };
 
             this.openModal("PaymentProcess", "6xl");
+        },
+        startSellerCheckout() {
+            this.openModal("SellerCheckout");
         },
 
         async startAgreementPdf(action) {
@@ -387,6 +405,12 @@ export default {
             @close="closeModal"
             :PaymentProcess="PaymentProcess"
         />
+
+        <SellerCheckout
+            v-if="(modal.component = 'SellerCheckout')"
+            @close="closeModal"
+            :transactionData="transactionStore.singleTransaction"
+        />
     </Modal>
     <ConfirmationModal
         :isOpen="confirmation.isOpen"
@@ -453,6 +477,13 @@ export default {
                             class="bg-green-600 hover:bg-green-800 active:bg-green-600 focus:bg-green-600 h-10"
                         >
                             Pay
+                        </PrimaryButton>
+                        <PrimaryButton
+                            v-if="buttonDisplay('Record Payment')"
+                            @click="startMakingRequestChanges('RecordPayment')"
+                            class="bg-green-600 hover:bg-green-800 active:bg-green-600 focus:bg-green-600 h-10"
+                        >
+                            Record Payment
                         </PrimaryButton>
                     </div>
                 </div>

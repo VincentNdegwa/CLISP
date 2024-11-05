@@ -228,6 +228,13 @@ export default {
                     );
                 },
             };
+            let record_payment = {
+                label: "Record Payment",
+                icon: "pi pi-wallet",
+                command: () => {
+                    console.log("record payment");
+                },
+            };
             let cancel = {
                 label: "Cancel",
                 icon: "pi pi-times",
@@ -272,8 +279,11 @@ export default {
                     (transaction_type == "Outgoing" && isB2B == false)) &&
                 transaction_status == "pending";
             let canPay =
-                ((transaction_type == "Incoming" && isB2B == true) ||
-                    (transaction_type == "Outgoing" && isB2B == false)) &&
+                transaction_type == "Incoming" &&
+                isB2B == true &&
+                transaction_status == "approved";
+            let canRecordPayment =
+                transaction_type == "Outgoing" &&
                 transaction_status == "approved";
             let canCancel =
                 (transaction_type == "Incoming" ||
@@ -290,6 +300,9 @@ export default {
             }
             if (canPay) {
                 defaultActionItems.push(pay);
+            }
+            if (canRecordPayment) {
+                defaultActionItems.push(record_payment);
             }
             if (canCancel) {
                 defaultActionItems.push(cancel);
