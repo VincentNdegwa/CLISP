@@ -253,10 +253,18 @@ export default {
 
             this.closeModal();
 
-            this.payTransaction({
-                transactionId: data.transaction_id,
-                mode: data.payment_method,
-            });
+            const index = this.transactionStore.transactions.data.findIndex(
+                (transaction) => transaction.id === data.transaction.id
+            );
+            if (index !== -1) {
+                this.transactionStore.transactions.data[index] =
+                    data.transaction;
+            }
+
+            // this.payTransaction({
+            //     transactionId: data.transaction_id,
+            //     mode: data.payment_method,
+            // });
         },
     },
     mounted() {

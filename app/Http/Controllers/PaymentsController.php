@@ -33,7 +33,8 @@ class PaymentsController extends Controller
                 "remaining_balance" => 'nullable|numeric|min:0',
                 "payer_business" => 'required|integer|exists:business,business_id',
                 "payee_business" => 'required|integer|exists:business,business_id',
-                "currency_code" => "required|string|size:3"
+                "currency_code" => "required|string|size:3",
+                "business_id" => "required|exists:business,business_id"
             ]);
 
             $payment = Payment::create([
@@ -49,7 +50,7 @@ class PaymentsController extends Controller
                 "currency_code" => $validatedData['currency_code']
             ]);
 
-            $transactionFlow = new NonShippableTransactionWorkflow($validatedData['payee_business'], $validatedData['transaction_id']);
+            $transactionFlow = new NonShippableTransactionWorkflow($validatedData['business_id'], $validatedData['transaction_id']);
             $transactionFlow->payTransaction($validatedData['payment_method']);
             return $this->createResponse(false, 'Payment created successfully', [
                 "payment" => $payment,

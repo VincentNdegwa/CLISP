@@ -102,7 +102,7 @@ export const useTransactionStore = defineStore("transactionStore", {
                     (transaction) => transaction.id === transactionId
                 );
                 if (index !== -1) {
-                    this.transactions.data[index] = response.data.data; // Assuming the API returns the updated transaction
+                    this.transactions.data[index] = response.data.data;
                 }
 
                 this.success = "Transaction updated successfully.";

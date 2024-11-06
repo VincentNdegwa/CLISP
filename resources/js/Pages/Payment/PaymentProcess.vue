@@ -135,6 +135,7 @@ import CashComponent from "./CashComponent.vue";
 import { currencyConvertor } from "@/Store/CurrencyConvertStore";
 import { usePaymentStore } from "@/Store/PaymentStore";
 import { watch } from "vue";
+import { useUserStore } from "@/Store/UserStore";
 
 export default {
     emits: ["paymentStatus", "close"],
@@ -199,11 +200,11 @@ export default {
                     icon: "pi pi-paypal",
                     description: "Safe and easy online payment",
                 },
-                // {
-                //     name: "Cash",
-                //     icon: "pi pi-wallet",
-                //     description: "Pay with cash upon delivery",
-                // },
+                {
+                    name: "Cash",
+                    icon: "pi pi-wallet",
+                    description: "Pay with cash upon delivery",
+                },
             ],
             paymentDetails: {
                 payer_name: null,
@@ -219,6 +220,10 @@ export default {
                 payee_business:
                     this.PaymentProcess.data.transaction.initiator.business_id,
                 currency_code: this.currency_code,
+                business_id:
+                    useUserStore().business ||
+                    this.PaymentProcess.data.transaction.receiver_business
+                        .business_id,
             },
         };
     },
