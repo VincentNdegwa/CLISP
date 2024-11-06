@@ -14,6 +14,8 @@ class ExchangeRatesController extends Controller
         $token = env('EXCHANGERATE_API_KEY');
         $url = "https://v6.exchangerate-api.com/v6/$token/latest/USD";
 
+        Log::info("Exchange Rate API Key: $token");
+        Log::info("Request URL: $url");
         $response = Http::get($url);
 
         $data = $response->json();
