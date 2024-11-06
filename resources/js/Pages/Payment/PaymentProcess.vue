@@ -214,7 +214,7 @@ export default {
                 paid_amount: null,
                 transaction_id: this.PaymentProcess.data.transaction.id,
                 remaining_balance: null,
-                payer_business:
+                payer_id:
                     this.PaymentProcess.data.transaction.receiver_business
                         .business_id,
                 payee_business:
@@ -224,6 +224,7 @@ export default {
                     useUserStore().business ||
                     this.PaymentProcess.data.transaction.receiver_business
                         .business_id,
+                isB2B: true,
             },
         };
     },

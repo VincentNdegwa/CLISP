@@ -204,13 +204,13 @@ export default {
                 paid_amount: null,
                 transaction_id: this.transactionData.id,
                 remaining_balance: null,
-                payer_business:
-                    this.transactionData.receiver_business.business_id,
+                payer_id: this.getPayerId(),
                 payee_business: this.transactionData.initiator.business_id,
                 currency_code: this.transactionData.initiator.currency_code,
                 business_id:
                     useUserStore().business ||
                     this.transactionData.initiator.business_id,
+                isB2B: this.transactionData.receiver_business ? true : false,
             },
             canProceedCheckout: true,
         };
@@ -219,6 +219,14 @@ export default {
         selectMethod(method) {
             this.selectedMethod = method;
             this.amountPaid = this.transactionData.totalPrice;
+        },
+        getPayerId() {
+            if (this.transactionData.receiver_business) {
+                return this.transactionData.receiver_business.business_id;
+            }
+            if (this.transactionData.receiver_customer) {
+                return this.transactionData.receiver_customer.id;
+            }
         },
         openNotification(message, status) {
             this.notification.open = true;

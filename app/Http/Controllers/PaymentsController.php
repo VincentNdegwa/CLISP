@@ -31,10 +31,11 @@ class PaymentsController extends Controller
                 "paid_amount" => 'required|numeric|min:0',
                 "transaction_id" => 'required|integer|exists:transactions,id',
                 "remaining_balance" => 'nullable|numeric|min:0',
-                "payer_business" => 'required|integer|exists:business,business_id',
+                "payer_id" => 'required|integer',
                 "payee_business" => 'required|integer|exists:business,business_id',
                 "currency_code" => "required|string|size:3",
-                "business_id" => "required|exists:business,business_id"
+                "business_id" => "required|exists:business,business_id",
+                "isB2B" => "required|boolean"
             ]);
 
             $payment = Payment::create([
@@ -45,9 +46,10 @@ class PaymentsController extends Controller
                 "paid_amount" => $validatedData['paid_amount'],
                 "transaction_id" => $validatedData['transaction_id'],
                 "remaining_balance" => $validatedData['remaining_balance'] ?? 0,
-                "payer_business" => $validatedData['payer_business'],
+                "payer_id" => $validatedData['payer_id'],
                 "payee_business" => $validatedData['payee_business'],
-                "currency_code" => $validatedData['currency_code']
+                "currency_code" => $validatedData['currency_code'],
+                "isB2B" => $validatedData["isB2B"],
             ]);
 
             $transactionFlow = new NonShippableTransactionWorkflow($validatedData['business_id'], $validatedData['transaction_id']);
