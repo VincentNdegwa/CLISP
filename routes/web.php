@@ -29,7 +29,6 @@ Route::get('/', function () {
         'phpVersion' => PHP_VERSION,
     ]);
 });
-
 Route::get('/register-business', function () {
     return Inertia::render('Auth/RegisterBusiness', [
         "user" => session('user'),
@@ -44,22 +43,25 @@ Route::get('/choose-plan', function () {
     ]);
 })->name('choose-plan');
 
-
-Route::get('/dashboard', function () {
-    $user = Auth::user();
-    $business_users = BusinessUser::where('user_id', $user->id)->with(['business', 'user'])->get();
-
-    return Inertia::render('Dashboard/Main', [
-        "business_id" => $business_users->first()->business->business_id ?? null
-    ]);
-})->middleware(['auth', 'verified', 'check.business'])->name('dashboard');
+Route::middleware(['auth', 'verified', 'check.business'])->group(function () {
 
 
-Route::middleware('auth',)->group(function () {});
 
-Route::prefix('/dash')->group(function () {
-    Route::post('/details', [DashboardController::class, 'create'])->name("dashboard.details");
+    Route::get('/dashboard', function () {
+        $user = Auth::user();
+        $business_users = BusinessUser::where('user_id', $user->id)->with(['business', 'user'])->get();
+
+        return Inertia::render('Dashboard/Main', [
+            "business_id" => $business_users->first()->business->business_id ?? null
+        ]);
+    })->name('dashboard');
+
+    Route::prefix('/dash')->group(function () {
+        Route::post('/details', [DashboardController::class, 'create'])->name("dashboard.details");
+    });
 });
+
+
 
 Route::middleware(['auth', 'check.business'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
