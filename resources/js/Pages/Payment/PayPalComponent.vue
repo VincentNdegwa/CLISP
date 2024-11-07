@@ -43,7 +43,7 @@ export default {
                 payment_reference: null,
                 paid_amount: null,
                 transaction_fee: 0,
-                transaction_id: this.transaction.id,
+                transaction_id: this.transaction.transaction.id,
                 remaining_balance: null,
                 payer_id:
                     this.transaction.transaction.receiver_business.business_id,
@@ -189,12 +189,15 @@ export default {
                                     self.paymentDetails.payment_reference =
                                         orderData.id;
                                     self.paymentDetails.paid_amount =
-                                        purchase_units[0].payments.captures[0].seller_receivable_breakdown.gross_amount.value;
+                                        orderData.purchase_units[0].payments.captures[0].seller_receivable_breakdown.gross_amount.value;
                                     self.paymentDetails.remaining_balance =
                                         self.totalUsdPriceToPay -
                                         self.paymentDetails.paid_amount;
                                     self.paymentDetails.transaction_fee =
-                                        purchase_units[0].payments.captures[0].seller_receivable_breakdown.paypal_fee.value;
+                                        orderData.purchase_units[0].payments.captures[0].seller_receivable_breakdown.paypal_fee.value;
+
+                                    console.log("payment completed");
+
                                     self.$emit(
                                         "completedPayment",
                                         self.paymentDetails
