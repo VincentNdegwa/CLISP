@@ -79,7 +79,6 @@ class TransactionController extends Controller
             if ($transaction->receiver_business && isset($transaction->receiver_business)) {
 
                 Mail::to($transaction->receiver_business->email)
-                    ->cc('ndegwavincent7@gmail.com')
                     ->queue(new RequestApprovalMail($transaction, $transaction->totalPrice, $transaction->id));
             }
 

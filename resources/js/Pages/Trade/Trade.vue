@@ -251,22 +251,6 @@ export default {
             this.selectedTransaction = transaction;
             this.openModal("SellerCheckout");
         },
-
-        // completedPayment(data) {
-        //     this.notification.open = true;
-        //     this.notification.message = message;
-        //     this.notification.status = error ? "error" : "success";
-
-        //     this.closeModal();
-
-        //     const index = this.transactionStore.transactions.data.findIndex(
-        //         (transaction) => transaction.id === data.transaction.id
-        //     );
-        //     if (index !== -1) {
-        //         this.transactionStore.transactions.data[index] =
-        //             data.transaction;
-        //     }
-        // },
         handleSuccessPayment(data) {
             const index = this.transactionStore.transactions.data.findIndex(
                 (transaction) => transaction.id === data.transaction.id
@@ -275,6 +259,7 @@ export default {
                 this.transactionStore.transactions.data[index] =
                     data.transaction;
             }
+            this.closeModal();
         },
     },
     mounted() {
@@ -332,7 +317,7 @@ export default {
         />
         <PaymentProcess
             v-if="modal.component == 'PaymentProcess'"
-            @paymentStatus="handleSuccessPayment"
+            @successPayment="handleSuccessPayment"
             @close="closeModal"
             :PaymentProcess="PaymentProcess"
         />

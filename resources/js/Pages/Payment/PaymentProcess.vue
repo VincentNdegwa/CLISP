@@ -278,9 +278,10 @@ export default {
                   )
                 : parseFloat(value).toFixed(2);
         },
+        closeModal() {
+            this.$emit("close");
+        },
         async completedPayment(paymentData) {
-            console.log("from the emit");
-
             try {
                 const response = await axios.post(
                     "/api/payments/record-payment",
