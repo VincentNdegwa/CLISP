@@ -1,4 +1,9 @@
 <template>
+    <AlertNotification
+        :open="notification.open"
+        :status="notification.status"
+        :message="notification.message"
+    />
     <div
         class="h-fit relative p-2 w-full flex flex-col lg:flex-row gap-4 max-h-[100vh] overflow-y-scroll"
     >
@@ -138,7 +143,7 @@ import { watch } from "vue";
 import { useUserStore } from "@/Store/UserStore";
 
 export default {
-    emits: ["paymentStatus", "close"],
+    emits: ["paymentStatus", "close", "successPayment"],
     components: {
         PrimaryButton,
         PrimaryRoseButton,
@@ -194,6 +199,7 @@ export default {
             formattedAmountToPay: 0,
             currency_code: "",
             totalUsdPriceToPay: 0,
+            notification: { open: false, status: "error", message: "" },
             paymentMethods: [
                 {
                     name: "PayPal",
@@ -271,6 +277,31 @@ export default {
                       this.currency_code
                   )
                 : parseFloat(value).toFixed(2);
+        },
+        async completedPayment(paymentData) {
+            try {
+                const response = await axios.post(
+                    "/api/payments/record-payment",
+                    paymentData
+                );
+                let data = response.data;
+                if (!data.error) {
+                    this.openNotification(data.message, "success");
+                    this.$emit("successPayment", data.data);
+                    this.closeModal();
+                } else {
+                    this.openNotification(data.message, "error");
+                }
+            } catch (error) {
+                this.openNotification(error.message, "error");
+            } finally {
+                this.canProceedCheckout = true;
+            }
+        },
+        openNotification(message, status) {
+            this.notification.open = true;
+            this.notification.message = message;
+            this.notification.status = status;
         },
     },
 };

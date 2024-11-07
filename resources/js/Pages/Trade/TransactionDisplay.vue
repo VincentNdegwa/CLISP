@@ -209,7 +209,8 @@ export default {
                         "Approve Transaction",
                         () => {
                             this.transactionStore.acceptTransaction(
-                                transactionId
+                                transactionId,
+                                data.type
                             );
                         }
                     );

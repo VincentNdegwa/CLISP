@@ -16,6 +16,7 @@
 
 <script>
 import LoadingUI from "@/Components/LoadingUI.vue";
+import { useUserStore } from "@/Store/UserStore";
 
 export default {
     name: "PayPalButton",
@@ -35,6 +36,25 @@ export default {
             resultMessage: "",
             loading: true,
             currency_code: "USD",
+            paymentDetails: {
+                payer_name: null,
+                payer_email: null,
+                payment_method: "PayPal",
+                payment_reference: null,
+                paid_amount: null,
+                transaction_fee: 0,
+                transaction_id: this.transaction.id,
+                remaining_balance: null,
+                payer_id:
+                    this.transaction.transaction.receiver_business.business_id,
+                payee_business:
+                    this.transaction.transaction.initiator.business_id,
+                currency_code: "USD",
+                business_id:
+                    useUserStore().business ||
+                    this.transaction.transaction.initiator.business_id,
+                isB2B: true,
+            },
         };
     },
     components: {
@@ -162,7 +182,23 @@ export default {
                                 self.resultMessage = `Transaction ${transaction.status}: ${transaction.id}`;
 
                                 if (orderData.status === "COMPLETED") {
-                                    self.$emit("completedPayment", "paypal");
+                                    self.paymentDetails.payer_email =
+                                        orderData.payment_source.paypal.email_address;
+                                    self.paymentDetails.payer_name =
+                                        orderData.purchase_units[0].shipping.name.full_name;
+                                    self.paymentDetails.payment_reference =
+                                        orderData.id;
+                                    self.paymentDetails.paid_amount =
+                                        purchase_units[0].payments.captures[0].seller_receivable_breakdown.gross_amount.value;
+                                    self.paymentDetails.remaining_balance =
+                                        self.totalUsdPriceToPay -
+                                        self.paymentDetails.paid_amount;
+                                    self.paymentDetails.transaction_fee =
+                                        purchase_units[0].payments.captures[0].seller_receivable_breakdown.paypal_fee.value;
+                                    self.$emit(
+                                        "completedPayment",
+                                        self.paymentDetails
+                                    );
                                 }
                                 self.$emit("close");
                             }
