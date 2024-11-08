@@ -169,7 +169,7 @@ export default {
                 { label: "Incomming", value: "incoming" },
                 { label: "Outgoing", value: "outgoing" },
             ],
-            PaymentProcess: {
+            paymentProcess: {
                 start: false,
                 data: null,
                 mode: null,
@@ -228,8 +228,8 @@ export default {
             this.changeRowCount(row);
         },
         startPayTransaction(transaction) {
-            this.PaymentProcess.start = true;
-            this.PaymentProcess.data = {
+            this.paymentProcess.start = true;
+            this.paymentProcess.data = {
                 transactionId: transaction.id,
                 items: transaction.items.map((item) => {
                     return {
@@ -252,16 +252,28 @@ export default {
             this.openModal("SellerCheckout");
         },
         handleSuccessPayment(data) {
-            console.log(data);
-
-            const index = this.transactionStore.transactions.data.findIndex(
-                (transaction) => transaction.id === data.data.transaction.id
-            );
-            if (index !== -1) {
-                this.transactionStore.transactions.data[index] =
-                    data.data.transaction;
+            if (data.error) {
+                if (data.errors) {
+                    this.openNotification(data.errors, "error");
+                } else {
+                    this.openNotification(data.message, "error");
+                }
+            } else {
+                this.openNotification(data.message, "success");
+                const index = this.transactionStore.transactions.data.findIndex(
+                    (transaction) => transaction.id === data.data.transaction.id
+                );
+                if (index !== -1) {
+                    this.transactionStore.transactions.data[index] =
+                        data.data.transaction;
+                }
+                this.closeModal();
             }
-            this.closeModal();
+        },
+        openNotification(message, status) {
+            this.notification.open = true;
+            this.notification.message = message;
+            this.notification.status = status;
         },
     },
     mounted() {
@@ -321,7 +333,7 @@ export default {
             v-if="modal.component == 'PaymentProcess'"
             @paymentStatus="handleSuccessPayment"
             @close="closeModal"
-            :PaymentProcess="PaymentProcess"
+            :paymentProcess="paymentProcess"
         />
 
         <SellerCheckout

@@ -114,103 +114,106 @@ export default {
             // Render PayPal buttons
 
             const self = this;
-            window.paypal
-                .Buttons({
-                    style: {
-                        shape: "rect",
-                        layout: "vertical",
-                        color: "gold",
-                        label: "paypal",
-                    },
-                    async createOrder() {
-                        try {
-                            const response = await fetch(
-                                "/api/paypal/create-order",
-                                {
-                                    method: "POST",
-                                    headers: {
-                                        "Content-Type": "application/json",
-                                    },
-                                    body: JSON.stringify(orderPayload),
-                                }
-                            );
-
-                            const orderData = await response.json();
-                            if (orderData.id) {
-                                return orderData.id;
-                            }
-
-                            const errorDetail = orderData?.details?.[0];
-                            const errorMessage = errorDetail
-                                ? `${errorDetail.issue} ${errorDetail.description} (${orderData.debug_id})`
-                                : JSON.stringify(orderData);
-
-                            throw new Error(errorMessage);
-                        } catch (error) {
-                            console.error("Error creating order:", error);
-                            this.resultMessage = `Error creating order: ${error.message}`;
-                        }
-                    },
-                    async onApprove(data, actions) {
-                        try {
-                            const response = await fetch(
-                                `/api/paypal/capture-order/${data.orderID}`,
-                                {
-                                    method: "POST",
-                                    headers: {
-                                        "Content-Type": "application/json",
-                                    },
-                                }
-                            );
-
-                            const orderData = await response.json();
-                            const errorDetail = orderData?.details?.[0];
-                            console.log(orderData);
-
-                            if (errorDetail?.issue === "INSTRUMENT_DECLINED") {
-                                return actions.restart();
-                            } else if (errorDetail) {
-                                throw new Error(
-                                    `${errorDetail.description} (${orderData.debug_id})`
+            if (document.getElementById("paypal-button-container")) {
+                window.paypal
+                    .Buttons({
+                        style: {
+                            shape: "rect",
+                            layout: "vertical",
+                            color: "gold",
+                            label: "paypal",
+                        },
+                        async createOrder() {
+                            try {
+                                const response = await fetch(
+                                    "/api/paypal/create-order",
+                                    {
+                                        method: "POST",
+                                        headers: {
+                                            "Content-Type": "application/json",
+                                        },
+                                        body: JSON.stringify(orderPayload),
+                                    }
                                 );
-                            } else if (!orderData.purchase_units) {
-                                throw new Error(JSON.stringify(orderData));
-                            } else {
-                                const transaction =
-                                    orderData?.purchase_units?.[0]?.payments
-                                        ?.captures?.[0];
-                                self.resultMessage = `Transaction ${transaction.status}: ${transaction.id}`;
 
-                                if (orderData.status === "COMPLETED") {
-                                    self.paymentDetails.payer_email =
-                                        orderData.payment_source.paypal.email_address;
-                                    self.paymentDetails.payer_name =
-                                        orderData.purchase_units[0].shipping.name.full_name;
-                                    self.paymentDetails.payment_reference =
-                                        orderData.id;
-                                    self.paymentDetails.paid_amount =
-                                        orderData.purchase_units[0].payments.captures[0].seller_receivable_breakdown.gross_amount.value;
-                                    self.paymentDetails.remaining_balance =
-                                        self.totalUsdPriceToPay -
-                                        self.paymentDetails.paid_amount;
-                                    self.paymentDetails.transaction_fee =
-                                        orderData.purchase_units[0].payments.captures[0].seller_receivable_breakdown.paypal_fee.value;
-
-                                    self.$emit(
-                                        "completedPayment",
-                                        self.paymentDetails
-                                    );
+                                const orderData = await response.json();
+                                if (orderData.id) {
+                                    return orderData.id;
                                 }
-                                self.$emit("close");
-                            }
-                        } catch (error) {
-                            console.error("Error capturing order:", error);
-                            self.resultMessage = `Error capturing order: ${error.message}`;
-                        }
-                    },
-                })
-                .render("#paypal-button-container");
 
+                                const errorDetail = orderData?.details?.[0];
+                                const errorMessage = errorDetail
+                                    ? `${errorDetail.issue} ${errorDetail.description} (${orderData.debug_id})`
+                                    : JSON.stringify(orderData);
+
+                                throw new Error(errorMessage);
+                            } catch (error) {
+                                console.error("Error creating order:", error);
+                                this.resultMessage = `Error creating order: ${error.message}`;
+                            }
+                        },
+                        async onApprove(data, actions) {
+                            try {
+                                const response = await fetch(
+                                    `/api/paypal/capture-order/${data.orderID}`,
+                                    {
+                                        method: "POST",
+                                        headers: {
+                                            "Content-Type": "application/json",
+                                        },
+                                    }
+                                );
+
+                                const orderData = await response.json();
+                                const errorDetail = orderData?.details?.[0];
+
+                                if (
+                                    errorDetail?.issue === "INSTRUMENT_DECLINED"
+                                ) {
+                                    return actions.restart();
+                                } else if (errorDetail) {
+                                    throw new Error(
+                                        `${errorDetail.description} (${orderData.debug_id})`
+                                    );
+                                } else if (!orderData.purchase_units) {
+                                    throw new Error(JSON.stringify(orderData));
+                                } else {
+                                    const transaction =
+                                        orderData?.purchase_units?.[0]?.payments
+                                            ?.captures?.[0];
+                                    self.resultMessage = `Transaction ${transaction.status}: ${transaction.id}`;
+
+                                    if (orderData.status === "COMPLETED") {
+                                        self.paymentDetails.payer_email =
+                                            orderData.payment_source.paypal.email_address;
+                                        self.paymentDetails.payer_name =
+                                            orderData.purchase_units[0].shipping.name.full_name;
+                                        self.paymentDetails.payment_reference =
+                                            orderData.id;
+                                        self.paymentDetails.paid_amount =
+                                            orderData.purchase_units[0].payments.captures[0].seller_receivable_breakdown.gross_amount.value;
+                                        self.paymentDetails.remaining_balance =
+                                            self.totalUsdPriceToPay -
+                                            self.paymentDetails.paid_amount;
+                                        self.paymentDetails.transaction_fee =
+                                            orderData.purchase_units[0].payments.captures[0].seller_receivable_breakdown.paypal_fee.value;
+
+                                        self.$emit(
+                                            "completedPayment",
+                                            self.paymentDetails
+                                        );
+                                    }
+                                }
+                            } catch (error) {
+                                console.error("Error capturing order:", error);
+                                self.resultMessage = `Error capturing order: ${error.message}`;
+                            }
+                        },
+                    })
+                    .render("#paypal-button-container");
+            } else {
+                console.error("#paypal-button-container element not found.");
+            }
             // Set loading to false once the buttons are rendered
             self.loading = false;
         },

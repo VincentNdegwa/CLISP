@@ -45,20 +45,20 @@
             <div class="payment-ui mt-6">
                 <PayPalComponent
                     v-if="selectedMethod === 'PayPal'"
-                    :transaction="PaymentProcess.data"
+                    :transaction="paymentProcess.data"
                     :totalUsdPriceToPay="totalUsdPriceToPay"
                     @close="closeModal"
                     @completedPayment="completedPayment"
                 />
                 <MpesaComponent
                     v-if="selectedMethod === 'M-Pesa'"
-                    :transaction="PaymentProcess.data"
+                    :transaction="paymentProcess.data"
                     :totalAmountToPay="totalAmountToPay"
                     @stkPush="handleMpesaPayment"
                 />
                 <CashComponent
                     v-if="selectedMethod === 'Cash'"
-                    :transaction="PaymentProcess.data"
+                    :transaction="paymentProcess.data"
                     :totalAmountToPay="totalAmountToPay"
                     :currencyCode="currency_code"
                     :isLoading="paymentStore.isLoading"
@@ -83,7 +83,7 @@
                 >
                     <div
                         class="p-3 border-b"
-                        v-for="(item, index) in PaymentProcess.data.items"
+                        v-for="(item, index) in paymentProcess.data.items"
                         :key="index"
                     >
                         <div class="flex justify-between">
@@ -139,7 +139,7 @@ import MpesaComponent from "./MpesaComponent.vue";
 import CashComponent from "./CashComponent.vue";
 import { currencyConvertor } from "@/Store/CurrencyConvertStore";
 import { usePaymentStore } from "@/Store/PaymentStore";
-import { watch } from "vue";
+import { getCurrentInstance, watch } from "vue";
 import { useUserStore } from "@/Store/UserStore";
 
 export default {
@@ -153,7 +153,7 @@ export default {
         CashComponent,
     },
     props: {
-        PaymentProcess: {
+        paymentProcess: {
             type: Object,
             required: true,
         },
@@ -161,31 +161,23 @@ export default {
     mounted() {
         this.getTotalPrice();
     },
-    setup(_, { emit }) {
+    setup(props, context) {
         const paymentStore = usePaymentStore();
         const responseData = paymentStore.data;
 
         const createPayment = async (params) => {
-            console.log("creating payment...");
             await paymentStore.createPayment(params);
+            const responseData = paymentStore.data;
+
+            if (responseData) {
+                const { error, message, errors, data } = responseData;
+                context.emit("paymentStatus", {
+                    error,
+                    message: message || errors,
+                    data,
+                });
+            }
         };
-
-        watch(
-            () => paymentStore,
-            (newData) => {
-                console.log(newData);
-                const { error, message, errors, data } = newData?.data || {};
-
-                if (error === false) {
-                    emit("paymentStatus", {
-                        error: error,
-                        message: message || errors,
-                        data: data,
-                    });
-                }
-            },
-            { deep: true }
-        );
 
         return {
             createPayment,
@@ -220,17 +212,17 @@ export default {
                 payment_method: this.selectedMethod,
                 payment_reference: null,
                 paid_amount: null,
-                transaction_id: this.PaymentProcess.data.transaction.id,
+                transaction_id: this.paymentProcess.data.transaction.id,
                 remaining_balance: null,
                 payer_id:
-                    this.PaymentProcess.data.transaction.receiver_business
+                    this.paymentProcess.data.transaction.receiver_business
                         .business_id,
                 payee_business:
-                    this.PaymentProcess.data.transaction.initiator.business_id,
+                    this.paymentProcess.data.transaction.initiator.business_id,
                 currency_code: this.currency_code,
                 business_id:
                     useUserStore().business ||
-                    this.PaymentProcess.data.transaction.receiver_business
+                    this.paymentProcess.data.transaction.receiver_business
                         .business_id,
                 isB2B: true,
             },
@@ -256,7 +248,7 @@ export default {
             this.$emit("close", this.selectedMethod);
         },
         getTotalPrice() {
-            this.totalAmountToPay = this.PaymentProcess.data.items.reduce(
+            this.totalAmountToPay = this.paymentProcess.data.items.reduce(
                 (total, item) =>
                     total + parseFloat(item.price) * parseInt(item.quantity),
                 0
@@ -265,13 +257,13 @@ export default {
                 this.totalAmountToPay
             );
             this.totalUsdPriceToPay =
-                this.PaymentProcess.data.transaction.totalUsdPrice;
+                this.paymentProcess.data.transaction.totalUsdPrice;
         },
         roundOffCurrency(value) {
-            this.currency_code = this.PaymentProcess.data.transaction.isB2B
-                ? this.PaymentProcess.data.transaction.receiver_business
+            this.currency_code = this.paymentProcess.data.transaction.isB2B
+                ? this.paymentProcess.data.transaction.receiver_business
                       .currency_code
-                : this.PaymentProcess.data.transaction.initiator.currency_code;
+                : this.paymentProcess.data.transaction.initiator.currency_code;
 
             return this.currency_code.trim()
                 ? currencyConvertor().convertOtherCurrency(
@@ -283,26 +275,8 @@ export default {
         closeModal() {
             this.$emit("close");
         },
-        async completedPayment(paymentData) {
+        completedPayment(paymentData) {
             this.createPayment(paymentData);
-            // try {
-            //     const response = await axios.post(
-            //         "/api/payments/record-payment",
-            //         paymentData
-            //     );
-            //     let data = response.data;
-            //     if (!data.error) {
-            //         this.openNotification(data.message, "success");
-            //         this.$emit("successPayment", data.data);
-            //         this.closeModal();
-            //     } else {
-            //         this.openNotification(data.message, "error");
-            //     }
-            // } catch (error) {
-            //     this.openNotification(error.message, "error");
-            // } finally {
-            //     this.canProceedCheckout = true;
-            // }
         },
         openNotification(message, status) {
             this.notification.open = true;

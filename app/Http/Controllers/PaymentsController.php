@@ -53,10 +53,12 @@ class PaymentsController extends Controller
             ]);
 
             $transactionFlow = new NonShippableTransactionWorkflow($validatedData['business_id'], $validatedData['transaction_id']);
+            $transaction = $transactionFlow->getFullTransaction();
+            $transaction->status = "paid";
             // $transactionFlow->payTransaction($validatedData['payment_method']);
             return $this->createResponse(false, 'Payment created successfully', [
                 "payment" => $payment,
-                "transaction" => $transactionFlow->getFullTransaction()
+                "transaction" => $transaction
             ]);
         } catch (ValidationException $e) {
             return $this->createResponse(true, 'Validation error', null, $e->errors());
