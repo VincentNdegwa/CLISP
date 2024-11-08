@@ -19,7 +19,7 @@ export const usePaymentStore = defineStore("paymentStore", {
                     "/api/payments/record-payment",
                     paymentData
                 );
-                this.data = response;
+                this.data = response.data;
                 this.handleResponse(response);
             } catch (error) {
                 this.handleError(error);

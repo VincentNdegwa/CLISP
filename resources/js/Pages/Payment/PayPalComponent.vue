@@ -196,8 +196,6 @@ export default {
                                     self.paymentDetails.transaction_fee =
                                         orderData.purchase_units[0].payments.captures[0].seller_receivable_breakdown.paypal_fee.value;
 
-                                    console.log("payment completed");
-
                                     self.$emit(
                                         "completedPayment",
                                         self.paymentDetails

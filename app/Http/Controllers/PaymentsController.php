@@ -53,7 +53,7 @@ class PaymentsController extends Controller
             ]);
 
             $transactionFlow = new NonShippableTransactionWorkflow($validatedData['business_id'], $validatedData['transaction_id']);
-            $transactionFlow->payTransaction($validatedData['payment_method']);
+            // $transactionFlow->payTransaction($validatedData['payment_method']);
             return $this->createResponse(false, 'Payment created successfully', [
                 "payment" => $payment,
                 "transaction" => $transactionFlow->getFullTransaction()

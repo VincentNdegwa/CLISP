@@ -252,12 +252,14 @@ export default {
             this.openModal("SellerCheckout");
         },
         handleSuccessPayment(data) {
+            console.log(data);
+
             const index = this.transactionStore.transactions.data.findIndex(
-                (transaction) => transaction.id === data.transaction.id
+                (transaction) => transaction.id === data.data.transaction.id
             );
             if (index !== -1) {
                 this.transactionStore.transactions.data[index] =
-                    data.transaction;
+                    data.data.transaction;
             }
             this.closeModal();
         },
@@ -317,7 +319,7 @@ export default {
         />
         <PaymentProcess
             v-if="modal.component == 'PaymentProcess'"
-            @successPayment="handleSuccessPayment"
+            @paymentStatus="handleSuccessPayment"
             @close="closeModal"
             :PaymentProcess="PaymentProcess"
         />

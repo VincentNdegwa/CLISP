@@ -166,14 +166,16 @@ export default {
         const responseData = paymentStore.data;
 
         const createPayment = async (params) => {
+            console.log("creating payment...");
             await paymentStore.createPayment(params);
         };
 
         watch(
             () => paymentStore,
             (newData) => {
-                const { error, message, errors, data } =
-                    newData.data?.data || {};
+                console.log(newData);
+                const { error, message, errors, data } = newData?.data || {};
+
                 if (error === false) {
                     emit("paymentStatus", {
                         error: error,
@@ -282,24 +284,25 @@ export default {
             this.$emit("close");
         },
         async completedPayment(paymentData) {
-            try {
-                const response = await axios.post(
-                    "/api/payments/record-payment",
-                    paymentData
-                );
-                let data = response.data;
-                if (!data.error) {
-                    this.openNotification(data.message, "success");
-                    this.$emit("successPayment", data.data);
-                    this.closeModal();
-                } else {
-                    this.openNotification(data.message, "error");
-                }
-            } catch (error) {
-                this.openNotification(error.message, "error");
-            } finally {
-                this.canProceedCheckout = true;
-            }
+            this.createPayment(paymentData);
+            // try {
+            //     const response = await axios.post(
+            //         "/api/payments/record-payment",
+            //         paymentData
+            //     );
+            //     let data = response.data;
+            //     if (!data.error) {
+            //         this.openNotification(data.message, "success");
+            //         this.$emit("successPayment", data.data);
+            //         this.closeModal();
+            //     } else {
+            //         this.openNotification(data.message, "error");
+            //     }
+            // } catch (error) {
+            //     this.openNotification(error.message, "error");
+            // } finally {
+            //     this.canProceedCheckout = true;
+            // }
         },
         openNotification(message, status) {
             this.notification.open = true;
