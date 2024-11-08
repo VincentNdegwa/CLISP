@@ -125,7 +125,7 @@ export default {
                 </div>
 
                 <div
-                    class="nav-bar-holder flex flex-col h-[84vh] overflow-y-scroll hide-overflow"
+                    class="nav-bar-holder flex flex-col h-[84vh] no-scrollbar overflow-y-scroll hide-overflow"
                 >
                     <SideNavigations />
                 </div>

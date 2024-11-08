@@ -209,7 +209,8 @@ export default {
                         "Approve Transaction",
                         () => {
                             this.transactionStore.acceptTransaction(
-                                transactionId
+                                transactionId,
+                                data.type
                             );
                         }
                     );
@@ -232,7 +233,7 @@ export default {
                 label: "Record Payment",
                 icon: "pi pi-wallet",
                 command: () => {
-                    console.log("record payment");
+                    this.$emit("recordPayment", data);
                 },
             };
             let cancel = {

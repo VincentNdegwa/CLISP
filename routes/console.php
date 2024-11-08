@@ -1,6 +1,7 @@
 <?php
 
 use App\Console\Commands\UpdateExchangeRatesCommand;
+use App\Jobs\GetExchangeRatesJob;
 use App\Jobs\UpdateExchangeRatesJob;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
@@ -11,4 +12,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote')->daily();
 
 
-Schedule::command(UpdateExchangeRatesCommand::class)->daily();
+Schedule::job(new GetExchangeRatesJob)->daily();

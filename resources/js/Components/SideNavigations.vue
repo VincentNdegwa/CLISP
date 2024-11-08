@@ -233,7 +233,7 @@ export default {
             v-for="(item, index) in navItems"
             :key="index"
             :class="[
-                'w-full h-fit rounded-md p-2 mt-1 cursor-pointer transition-none ease-linear duration-1000',
+                'w-full h-fit p-3 mt-1 cursor-pointer transition-none ease-linear duration-1000',
                 item.open ? 'bg-gray-100' : '',
             ]"
         >

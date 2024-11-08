@@ -20,7 +20,8 @@ return new class extends Migration
             $table->decimal('paid_amount', 15, 2);
             $table->unsignedBigInteger('transaction_id');
             $table->decimal('remaining_balance', 15, 2)->default(0);
-            $table->unsignedBigInteger('payer_business');
+            $table->integer('payer_id');
+            $table->enum("isB2B", [true, false]);
             $table->unsignedBigInteger('payee_business');
             $table->string('currency_code', 3);
             $table->timestamps();
@@ -29,9 +30,7 @@ return new class extends Migration
                 ->references('id')->on('transactions')
                 ->onDelete('cascade');
 
-            $table->foreign('payer_business')
-                ->references('business_id')->on('business')
-                ->onDelete('cascade');
+
 
             $table->foreign('payee_business')
                 ->references('business_id')->on('business')

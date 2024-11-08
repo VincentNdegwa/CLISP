@@ -27,6 +27,7 @@ class BusinessController extends Controller
     {
 
         try {
+            DB::beginTransaction();
             $validatedData = $request->validate([
                 'business_name' => 'required|string|max:255',
                 'phone_number' => 'required|string|max:20',
@@ -47,24 +48,27 @@ class BusinessController extends Controller
             $business = Business::create($validatedData);
 
             BusinessUser::create([
-                "business_id" => $business->id,
+                "business_id" => $business->business_id,
                 "user_id" => $validatedData['user_id'],
                 'role' => 'Owner'
             ]);
 
-            $newBusiness = Business::with(['businessType', 'industry'])->where("business_id", $business->id)->first();
+            $newBusiness = Business::with(['businessType', 'industry'])->where("business_id", $business->business_id)->first();
+            DB::commit();
             return response()->json([
                 'error' => false,
                 'message' => 'Business created successfully!',
                 'data' => $newBusiness
             ]);
         } catch (ValidationException $e) {
+            DB::rollBack();
             return response()->json([
                 'error' => true,
                 'message' => 'Validation error.',
                 'errors' => $e->errors()
             ]);
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 'error' => true,
                 'message' => 'An unexpected error occurred.',

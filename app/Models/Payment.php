@@ -20,7 +20,8 @@ class Payment extends Model
         'paid_amount',
         'transaction_id',
         'remaining_balance',
-        'payer_business',
+        'payer_id',
+        'isB2B',
         'payee_business',
         'currency_code',
     ];
@@ -32,9 +33,13 @@ class Payment extends Model
     }
 
 
-    public function payerBusiness()
+    public function payer()
     {
-        return $this->belongsTo(Business::class, 'payer_business', "business_id");
+        if ($this->isb2b) {
+            return $this->belongsTo(Business::class, 'payer_id', "business_id");
+        } else {
+            return $this->belongsTo(Customer::class, 'payer_id');
+        }
     }
 
 

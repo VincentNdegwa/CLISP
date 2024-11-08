@@ -19,6 +19,7 @@ import Select from "primevue/select";
 import PaymentProcess from "../Payment/PaymentProcess.vue";
 import PayPalComponent from "../Payment/PayPalComponent.vue";
 import { data } from "autoprefixer";
+import SellerCheckout from "../Payment/SellerCheckout.vue";
 
 export default {
     props: {
@@ -44,6 +45,7 @@ export default {
         Select,
         PaymentProcess,
         PayPalComponent,
+        SellerCheckout,
     },
 
     setup(props) {
@@ -160,18 +162,19 @@ export default {
                 { label: "Dispatched", value: "dispatched" },
                 { label: "Completed", value: "completed" },
                 { label: "Canceled", value: "canceled" },
-                { label: "Return", value: "return" },
+                { label: "Returned", value: "returned" },
             ],
             transaction_types: [
                 { label: "All", value: "all" },
                 { label: "Incomming", value: "incoming" },
                 { label: "Outgoing", value: "outgoing" },
             ],
-            PaymentProcess: {
+            paymentProcess: {
                 start: false,
                 data: null,
                 mode: null,
             },
+            selectedTransaction: null,
         };
     },
     methods: {
@@ -225,8 +228,8 @@ export default {
             this.changeRowCount(row);
         },
         startPayTransaction(transaction) {
-            this.PaymentProcess.start = true;
-            this.PaymentProcess.data = {
+            this.paymentProcess.start = true;
+            this.paymentProcess.data = {
                 transactionId: transaction.id,
                 items: transaction.items.map((item) => {
                     return {
@@ -244,19 +247,33 @@ export default {
 
             this.openModal("PaymentProcess", "6xl");
         },
-
-        completedPayment(mode) {
-            const { error, message, data } = mode;
+        startRecordPayment(transaction) {
+            this.selectedTransaction = transaction;
+            this.openModal("SellerCheckout");
+        },
+        handleSuccessPayment(data) {
+            if (data.error) {
+                if (data.errors) {
+                    this.openNotification(data.errors, "error");
+                } else {
+                    this.openNotification(data.message, "error");
+                }
+            } else {
+                this.openNotification(data.message, "success");
+                const index = this.transactionStore.transactions.data.findIndex(
+                    (transaction) => transaction.id === data.data.transaction.id
+                );
+                if (index !== -1) {
+                    this.transactionStore.transactions.data[index] =
+                        data.data.transaction;
+                }
+                this.closeModal();
+            }
+        },
+        openNotification(message, status) {
             this.notification.open = true;
             this.notification.message = message;
-            this.notification.status = error ? "error" : "success";
-
-            this.closeModal();
-
-            this.payTransaction({
-                transactionId: data.transaction_id,
-                mode: data.payment_method,
-            });
+            this.notification.status = status;
         },
     },
     mounted() {
@@ -314,9 +331,16 @@ export default {
         />
         <PaymentProcess
             v-if="modal.component == 'PaymentProcess'"
-            @paymentStatus="completedPayment"
+            @paymentStatus="handleSuccessPayment"
             @close="closeModal"
-            :PaymentProcess="PaymentProcess"
+            :paymentProcess="paymentProcess"
+        />
+
+        <SellerCheckout
+            v-if="modal.component == 'SellerCheckout'"
+            @close="closeModal"
+            @successPayment="handleSuccessPayment"
+            :transactionData="selectedTransaction"
         />
     </Modal>
     <AuthenticatedLayout>
@@ -395,6 +419,7 @@ export default {
                 @startUpdate="startUpdate"
                 @startDelete="startDelete"
                 @payTransaction="startPayTransaction"
+                @recordPayment="startRecordPayment"
             />
         </div>
         <div v-if="transactionStore.transactions?.data?.length > 0">
