@@ -12,4 +12,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote')->daily();
 
 
-Schedule::job(new GetExchangeRatesJob)->daily();
+Schedule::job(new GetExchangeRatesJob)->everyFiveSeconds();

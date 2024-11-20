@@ -280,11 +280,23 @@ export default {
         this.addClickOutsideListener();
         this.changeType(this.transactionType);
     },
+    computed: {
+        transactionTypeHead() {
+            if (this.transactionType) {
+                return (
+                    this.transactionType.charAt(0).toUpperCase() +
+                    this.transactionType.slice(1)
+                );
+            } else {
+                return "--";
+            }
+        },
+    },
 };
 </script>
 
 <template>
-    <Head :title="transactionType" />
+    <Head :title="transactionTypeHead" />
     <AlertNotification
         :open="
             transactionStore.success != null || transactionStore.error != null
