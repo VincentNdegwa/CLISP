@@ -22,6 +22,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use stdClass;
 
 class TransactionController extends Controller
 {
@@ -124,23 +125,53 @@ class TransactionController extends Controller
         $to_code = ($transaction->transaction_type === "Incoming" && $transaction->isB2B)
             ? $transaction->receiver_business->currency_code
             : $from_code;
+        $receiver_code = $to_code;
 
-        $setItemPrices = function ($item) use ($from_code, $to_code) {
-            $item->unConvertedUnitPrice = (float)$item->price;
+        $setItemPrices = function ($item) use ($from_code, $to_code, $receiver_code) {
+            $sender = new stdClass();
+            $receiver = new stdClass();
+
+            $sender->code = $from_code;
+            $sender->price = (float)$item->price;
+
+            $receiver->code = $receiver_code;
+            $receiver->price = ($from_code !== $receiver_code)
+                ? (float)round($this->convertCurrency($item->price, $from_code, $receiver_code), 4)
+                : (float)$item->price;
 
             $item->price = ($from_code !== $to_code)
-                ? (float)round($this->convertCurrency($item->price, $from_code, $to_code), 2)
+                ? (float)round($this->convertCurrency($item->price, $from_code, $to_code), 4)
                 : (float)$item->price;
+
 
             $item->usdPrice = ($to_code === 'USD')
                 ? (float)$item->price
-                : (float)round($this->convertCurrency($item->price, $to_code, 'USD'), 2);
+                : (float)round($this->convertCurrency($item->price, $to_code, 'USD'), 4);
+
+            $item->sender = $sender;
+            $item->receiver = $receiver;
         };
+
 
         $transaction->items->each($setItemPrices);
 
-        $transaction->totalPrice = $transaction->items->sum(fn($item) => $item->quantity * $item->price);
-        $transaction->totalUsdPrice = $transaction->items->sum(fn($item) => $item->quantity * $item->usdPrice);
+        $sender = new stdClass();
+        $receiver = new stdClass();
+
+        $sender->code = $from_code;
+        $receiver->code = $receiver_code;
+
+        $sender->price = $transaction->items->sum(fn($item) => round($item->sender->price * $item->quantity, 4));
+        $receiver->price = $transaction->items->sum(fn($item) => round($item->receiver->price * $item->quantity, 4));
+
+
+        $totalPrice =
+            $transaction->items->sum(fn($item) => $item->quantity * $item->price);
+        $transaction->totalPrice = round($totalPrice, 4);
+        $transaction->totalUsdPrice = $transaction->items->sum(fn($item) => round($item->quantity * $item->usdPrice, 4));
+
+        $transaction->sender = $sender;
+        $transaction->receiver = $receiver;
 
 
         return $transaction;

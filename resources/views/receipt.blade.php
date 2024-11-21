@@ -15,12 +15,12 @@
         }
 
         .invoice-container {
-            max-width: 800px;
+            max-width: 900px;
             margin: 30px auto;
             background-color: #ffffff;
             border-radius: 8px;
-            padding: 30px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
         .header {
@@ -30,19 +30,20 @@
 
         .header h1 {
             margin: 0;
-            font-size: 24px;
+            font-size: 28px;
             color: #333;
         }
 
         .header p {
             margin: 5px 0;
             color: #777;
+            font-size: 16px;
         }
 
         .section-header {
             font-weight: bold;
-            font-size: 18px;
-            margin-top: 30px;
+            font-size: 20px;
+            margin-top: 25px;
             margin-bottom: 15px;
             color: #444;
             border-bottom: 2px solid #ddd;
@@ -53,7 +54,7 @@
             display: flex;
             justify-content: space-between;
             margin-bottom: 10px;
-            font-size: 14px;
+            font-size: 16px;
         }
 
         .info-row div {
@@ -81,7 +82,7 @@
         .total {
             margin-top: 20px;
             text-align: right;
-            font-size: 18px;
+            font-size: 20px;
             font-weight: bold;
             color: #333;
         }
@@ -91,6 +92,23 @@
             margin-top: 40px;
             color: #777;
             font-size: 14px;
+        }
+
+        .footer p {
+            margin: 5px 0;
+        }
+
+        .info-column {
+            width: 48%;
+        }
+
+        .invoice-header {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .invoice-header div {
+            width: 48%;
         }
     </style>
 </head>
@@ -105,32 +123,36 @@
         </div>
 
         <!-- Business and Customer Info -->
-        <div class="section">
-            <div class="section-header">Business Information</div>
-            <div class="info-row">
-                <div><strong>Business Name:</strong> {{ $transaction['initiator']['business_name'] }}</div>
-                <div><strong>Phone:</strong> {{ $transaction['initiator']['phone_number'] }}</div>
+        <div class="invoice-header">
+            <!-- Business Information -->
+            <div class="info-column">
+                <div class="section-header">Business Information</div>
+                <div class="info-row">
+                    <div><strong>Business Name:</strong> {{ $transaction['initiator']['business_name'] }}</div>
+                    <div><strong>Phone:</strong> {{ $transaction['initiator']['phone_number'] }}</div>
+                </div>
+                <div class="info-row">
+                    <div><strong>Email:</strong> {{ $transaction['initiator']['email'] }}</div>
+                    <div><strong>Location:</strong> {{ $transaction['initiator']['location'] }}</div>
+                </div>
             </div>
-            <div class="info-row">
-                <div><strong>Email:</strong> {{ $transaction['initiator']['email'] }}</div>
-                <div><strong>Location:</strong> {{ $transaction['initiator']['location'] }}</div>
-            </div>
-        </div>
 
-        <div class="section">
-            <div class="section-header">Customer Information</div>
-            @if ($transaction['isB2B'] && $transaction['receiver_business'])
-                <div class="info-row">
-                    <div><strong>Receiver (Business):</strong> {{ $transaction['receiver_business']['business_name'] }}
+            <!-- Customer Information -->
+            <div class="info-column">
+                <div class="section-header">Customer Information</div>
+                @if ($transaction['isB2B'] && $transaction['receiver_business'])
+                    <div class="info-row">
+                        <div><strong>Receiver (Business):</strong>
+                            {{ $transaction['receiver_business']['business_name'] }}</div>
+                        <div><strong>Location:</strong> {{ $transaction['receiver_business']['location'] }}</div>
                     </div>
-                    <div><strong>Location:</strong> {{ $transaction['receiver_business']['location'] }}</div>
-                </div>
-            @elseif(!$transaction['isB2B'] && $transaction['receiver_customer'])
-                <div class="info-row">
-                    <div><strong>Customer Name:</strong> {{ $transaction['receiver_customer']['full_names'] }}</div>
-                    <div><strong>Phone:</strong> {{ $transaction['receiver_customer']['phone_number'] }}</div>
-                </div>
-            @endif
+                @elseif(!$transaction['isB2B'] && $transaction['receiver_customer'])
+                    <div class="info-row">
+                        <div><strong>Customer Name:</strong> {{ $transaction['receiver_customer']['full_names'] }}</div>
+                        <div><strong>Phone:</strong> {{ $transaction['receiver_customer']['phone_number'] }}</div>
+                    </div>
+                @endif
+            </div>
         </div>
 
         <!-- Items Table -->
@@ -160,13 +182,15 @@
 
         <!-- Total Amount -->
         <div class="total">
-            Grand Total: {{ number_format($transaction['totalPrice'], 2) }} KES
+            Grand Total: {{ number_format($transaction['totalPrice'], 2) }} 
         </div>
 
         <!-- Footer -->
         <div class="footer">
             <p>Thank you for choosing our services!</p>
-            <p>If you have any questions, please contact us at {{ $transaction['initiator']['email'] }}.</p>
+            <p>If you have any questions, please contact us at <a
+                    href="mailto:{{ $transaction['initiator']['email'] }}">{{ $transaction['initiator']['email'] }}</a>.
+            </p>
         </div>
     </div>
 </body>

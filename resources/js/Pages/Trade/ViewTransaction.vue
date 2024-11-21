@@ -146,9 +146,20 @@ export default {
             closeTransaction,
         };
     },
+    computed: {
+        isSameCode() {
+            return (
+                this.transactionStore.singleTransaction?.sender?.code ===
+                this.transactionStore.singleTransaction?.receiver?.code
+            );
+        },
+    },
     methods: {
         convertCurrency(currency) {
             return currencyConvertor().convertMyCurrency(currency);
+        },
+        formatPrice(currency, code) {
+            return currencyConvertor().convertOtherCurrency(currency, code);
         },
         buttonDisplay(action) {
             const transaction_type =
@@ -426,72 +437,48 @@ export default {
     <AuthenticatedLayout>
         <div class="bg-white px-4 rounded-lg">
             <div class="flex justify-between">
+                <!-- Header Section -->
                 <div class="flex items-center gap-2">
                     <i
                         @click="goBack"
                         class="pi pi-arrow-left p-3 bg-slate-800 text-white rounded-full shadow-lg cursor-pointer hover:bg-slate-600"
                     ></i>
-
                     <h1 class="text-2xl font-semibold">
                         Transaction #{{ transactionStore.singleTransaction.id }}
                     </h1>
                 </div>
 
                 <div class="flex gap-1">
-                    <SplitButtonSelectCustom
-                        v-if="
-                            ['leasing', 'borrowing'].includes(
-                                transactionStore.singleTransaction.type
-                            )
-                        "
-                        class="flex h-fit"
-                        :SelectItems="SelectItems"
-                        :defaultItem="defaultItem"
-                    />
-                    <SplitButtonSelectCustom
-                        v-else
-                        class="flex h-fit"
-                        :SelectItems="selectedReceiptItems"
-                        :defaultItem="defaultSelectedReceiptItem"
-                    />
-                    <div class="flex gap-1">
-                        <PrimaryButton
-                            v-if="buttonDisplay('Approve')"
-                            @click="startMakingRequestChanges('Approve')"
-                            class="bg-yellow-500 hover:bg-yellow-600 focus:bg-yellow-600 active:bg-yellow-600 h-10"
-                            >Approve</PrimaryButton
-                        >
-                        <PrimaryRoseButton
-                            v-if="buttonDisplay('Cancel')"
-                            @click="startMakingRequestChanges('Cancel')"
-                            class="h-10"
-                            >Cancel
-                        </PrimaryRoseButton>
-
-                        <PrimaryButton
-                            v-if="buttonDisplay('Pay')"
-                            @click="startMakingRequestChanges('Pay')"
-                            class="bg-green-600 hover:bg-green-800 active:bg-green-600 focus:bg-green-600 h-10"
-                        >
-                            Pay
-                        </PrimaryButton>
-                        <PrimaryButton
-                            v-if="buttonDisplay('Record Payment')"
-                            @click="startMakingRequestChanges('RecordPayment')"
-                            class="bg-green-600 hover:bg-green-800 active:bg-green-600 focus:bg-green-600 h-10"
-                        >
-                            Record Payment
-                        </PrimaryButton>
-                    </div>
+                    <!-- Transaction Actions -->
+                    <PrimaryButton
+                        v-if="buttonDisplay('Approve')"
+                        @click="startMakingRequestChanges('Approve')"
+                        class="bg-yellow-500 hover:bg-yellow-600 focus:bg-yellow-600 active:bg-yellow-600 h-10"
+                        >Approve</PrimaryButton
+                    >
+                    <PrimaryRoseButton
+                        v-if="buttonDisplay('Cancel')"
+                        @click="startMakingRequestChanges('Cancel')"
+                        class="h-10"
+                        >Cancel</PrimaryRoseButton
+                    >
+                    <PrimaryButton
+                        v-if="buttonDisplay('Pay')"
+                        @click="startMakingRequestChanges('Pay')"
+                        class="bg-green-600 hover:bg-green-800 active:bg-green-600 focus:bg-green-600 h-10"
+                        >Pay</PrimaryButton
+                    >
                 </div>
             </div>
+
+            <!-- Transaction Details -->
             <div class="flex justify-between mt-5">
                 <div>
                     <p>
                         <strong>Type:</strong>
-                        <span class="capitalize">
-                            {{ transactionStore.singleTransaction.type }}
-                        </span>
+                        <span class="capitalize">{{
+                            transactionStore.singleTransaction.type
+                        }}</span>
                     </p>
                     <p>
                         <strong>Status:</strong>
@@ -508,10 +495,29 @@ export default {
                 </div>
                 <div class="text-right">
                     <p>
-                        <strong>Total Price:</strong>
+                        <strong
+                            >{{
+                                isSameCode
+                                    ? "Total Price"
+                                    : "Total Price (Seller's Currency)"
+                            }}:</strong
+                        >
                         {{
-                            convertCurrency(
-                                transactionStore.singleTransaction.totalPrice
+                            formatPrice(
+                                transactionStore.singleTransaction.sender
+                                    ?.price,
+                                transactionStore.singleTransaction.sender?.code
+                            )
+                        }}
+                    </p>
+                    <p v-if="!isSameCode">
+                        <strong>Total Price (Buyer's Currency):</strong>
+                        {{
+                            formatPrice(
+                                transactionStore.singleTransaction.receiver
+                                    ?.price,
+                                transactionStore.singleTransaction.receiver
+                                    ?.code
                             )
                         }}
                     </p>
@@ -523,129 +529,116 @@ export default {
                     </p>
                 </div>
             </div>
-        </div>
 
-        <!-- Initiator & Receiver Section -->
-        <div class="flex flex-col md:flex-row gap-6 mt-5 mb-3">
-            <!-- Initiator Card -->
-            <div class="bg-gray-50 p-4 rounded-lg shadow-sm flex-grow">
-                <span
-                    class="flex items-center gap-3 mb-3 w-full border border-t-0 border-s-0 border-e-0"
-                >
+            <!-- Initiator & Receiver Section -->
+            <div class="flex flex-col md:flex-row gap-6 mt-5 mb-3">
+                <!-- Initiator Card -->
+                <div class="bg-gray-50 p-4 rounded-lg shadow-sm flex-grow">
                     <h2 class="text-lg font-medium">Initiator</h2>
-                </span>
-                <p>
-                    <strong>Business Name:</strong>
-                    {{
-                        transactionStore.singleTransaction.initiator
-                            ?.business_name
-                    }}
-                </p>
-                <p>
-                    <strong>Business Email:</strong>
-                    {{ transactionStore.singleTransaction.initiator?.email }}
-                </p>
-                <p>
-                    <strong>Phone Number:</strong>
-                    {{
-                        transactionStore.singleTransaction.initiator
-                            ?.phone_number
-                    }}
-                </p>
-            </div>
+                    <p>
+                        <strong>Business Name:</strong>
+                        {{
+                            transactionStore.singleTransaction.initiator
+                                ?.business_name
+                        }}
+                    </p>
+                    <p>
+                        <strong>Business Email:</strong>
+                        {{
+                            transactionStore.singleTransaction.initiator?.email
+                        }}
+                    </p>
+                    <p>
+                        <strong>Phone Number:</strong>
+                        {{
+                            transactionStore.singleTransaction.initiator
+                                ?.phone_number
+                        }}
+                    </p>
+                </div>
 
-            <!-- Receiver Card -->
-            <div
-                class="bg-gray-50 p-4 rounded-lg shadow-sm flex-grow"
-                v-if="transactionStore.singleTransaction.receiver_business"
-            >
-                <span
-                    class="flex items-center gap-3 mb-3 w-full border border-t-0 border-s-0 border-e-0"
+                <!-- Receiver Card -->
+                <div
+                    v-if="transactionStore.singleTransaction.receiver_business"
+                    class="bg-gray-50 p-4 rounded-lg shadow-sm flex-grow"
                 >
                     <h2 class="text-lg font-medium">Receiver</h2>
-                    <Badge severity="warn" size="small">Business</Badge>
-                </span>
-                <p>
-                    <strong>Business Name:</strong>
-                    {{
-                        transactionStore.singleTransaction.receiver_business
-                            ?.business_name
-                    }}
-                </p>
-
-                <p>
-                    <strong>Business Email:</strong>
-                    {{
-                        transactionStore.singleTransaction.receiver_business
-                            ?.email
-                    }}
-                </p>
-
-                <p>
-                    <strong>Phone Number:</strong>
-                    {{
-                        transactionStore.singleTransaction.receiver_business
-                            ?.phone_number
-                    }}
-                </p>
-            </div>
-
-            <div
-                class="bg-gray-50 p-4 rounded-lg shadow-sm flex-grow"
-                v-if="transactionStore.singleTransaction.receiver_customer"
-            >
-                <span
-                    class="flex items-center gap-3 mb-3 w-full border border-t-0 border-s-0 border-e-0"
+                    <p>
+                        <strong>Business Name:</strong>
+                        {{
+                            transactionStore.singleTransaction.receiver_business
+                                ?.business_name
+                        }}
+                    </p>
+                    <p>
+                        <strong>Business Email:</strong>
+                        {{
+                            transactionStore.singleTransaction.receiver_business
+                                ?.email
+                        }}
+                    </p>
+                    <p>
+                        <strong>Phone Number:</strong>
+                        {{
+                            transactionStore.singleTransaction.receiver_business
+                                ?.phone_number
+                        }}
+                    </p>
+                </div>
+                <div
+                    class="bg-gray-50 p-4 rounded-lg shadow-sm flex-grow"
+                    v-if="transactionStore.singleTransaction.receiver_customer"
                 >
-                    <h2 class="text-lg font-medium">Receiver</h2>
-                    <Badge severity="info" size="small">Customer</Badge>
-                </span>
-                <p>
-                    <strong>Full Name:</strong>
-                    {{
-                        transactionStore.singleTransaction.receiver_customer
-                            ?.full_names
-                    }}
-                </p>
+                    <span
+                        class="flex items-center gap-3 mb-3 w-full border border-t-0 border-s-0 border-e-0"
+                    >
+                        <h2 class="text-lg font-medium">Receiver</h2>
+                        <Badge severity="info" size="small">Customer</Badge>
+                    </span>
+                    <p>
+                        <strong>Full Name:</strong>
+                        {{
+                            transactionStore.singleTransaction.receiver_customer
+                                ?.full_names
+                        }}
+                    </p>
 
-                <p>
-                    <strong>Customer Email:</strong>
-                    {{
-                        transactionStore.singleTransaction.receiver_customer
-                            ?.email
-                    }}
-                </p>
+                    <p>
+                        <strong>Customer Email:</strong>
+                        {{
+                            transactionStore.singleTransaction.receiver_customer
+                                ?.email
+                        }}
+                    </p>
 
-                <p>
-                    <strong>Phone Number:</strong>
-                    {{
-                        transactionStore.singleTransaction.receiver_customer
-                            ?.phone_number
-                    }}
-                </p>
+                    <p>
+                        <strong>Phone Number:</strong>
+                        {{
+                            transactionStore.singleTransaction.receiver_customer
+                                ?.phone_number
+                        }}
+                    </p>
+                </div>
             </div>
-        </div>
 
-        <!-- Details Section -->
-        <div class="bg-white p-4 rounded-lg shadow-sm mb-8">
-            <h2 class="text-lg font-medium mb-4">Details</h2>
-            <p>
-                <strong>Shipping Fees:</strong> ${{
-                    transactionStore.singleTransaction.details?.shipping_fees
-                }}
-            </p>
-        </div>
-
-        <!-- Items Section -->
-        <div class="p-4 max-h-[40vh] h-fit rounded-lg shadow-sm mb-8">
-            <h2 class="text-lg font-medium mb-4">Items</h2>
-            <div class="relative max-h-[35vh] h-fit overflow-scroll">
-                <table class="w-full table-auto text-left overflow-x-auto">
-                    <thead class="border-b sticky top-0 w-full bg-slate-600">
+            <!-- Items Section -->
+            <div class="p-4 max-h-[40vh] h-fit rounded-lg shadow-sm mb-8">
+                <h2 class="text-lg font-medium mb-4">Items</h2>
+                <table class="w-full table-auto text-left">
+                    <thead class="border-b bg-slate-600 text-white">
                         <tr>
                             <th class="px-4 py-2">Item Name</th>
                             <th class="px-4 py-2">Quantity</th>
-                            <th class="px-4 py-2">Price</th>
+                            <th class="px-4 py-2">
+                                {{
+                                    isSameCode
+                                        ? "Unit Price"
+                                        : "Unit Price (Seller)"
+                                }}
+                            </th>
+                            <th v-if="!isSameCode" class="px-4 py-2">
+                                Unit Price (Buyer)
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
@@ -655,16 +648,83 @@ export default {
                             :key="item.id"
                             class="hover:bg-gray-50"
                         >
-                            <td class="px-4 py-2">
-                                {{ item.item?.item_name }}
-                            </td>
+                            <td class="px-4 py-2">{{ item.item.item_name }}</td>
                             <td class="px-4 py-2">{{ item.quantity }}</td>
                             <td class="px-4 py-2">
-                                {{ convertCurrency(item.price) }}
+                                {{
+                                    formatPrice(
+                                        item.sender?.price,
+                                        item.sender?.code
+                                    )
+                                }}
+                            </td>
+                            <td v-if="!isSameCode" class="px-4 py-2">
+                                {{
+                                    formatPrice(
+                                        item.receiver?.price,
+                                        item.receiver?.code
+                                    )
+                                }}
                             </td>
                         </tr>
                     </tbody>
+                    <tfoot>
+                        <tr class="font-bold border-t bg-gray-100">
+                            <td class="px-4 py-2">Total</td>
+                            <td class="px-4 py-2">
+                                {{
+                                    transactionStore.singleTransaction?.items?.reduce(
+                                        (total, item) =>
+                                            total + parseFloat(item.quantity),
+                                        0
+                                    )
+                                }}
+                            </td>
+                            <td class="px-4 py-2">
+                                {{
+                                    formatPrice(
+                                        transactionStore.singleTransaction
+                                            .sender?.price,
+                                        transactionStore.singleTransaction
+                                            .sender?.code
+                                    )
+                                }}
+                            </td>
+                            <td v-if="!isSameCode" class="px-4 py-2">
+                                {{
+                                    formatPrice(
+                                        transactionStore.singleTransaction
+                                            .receiver?.price,
+                                        transactionStore.singleTransaction
+                                            .receiver?.code
+                                    )
+                                }}
+                            </td>
+                        </tr>
+                    </tfoot>
                 </table>
+            </div>
+
+            <!-- Summary Section -->
+            <div class="bg-white p-4 rounded-lg shadow-sm mb-8">
+                <h2 class="text-lg font-medium">Transaction Summary</h2>
+                <p>
+                    <strong>Shipping Fees:</strong>
+                    {{
+                        transactionStore.singleTransaction.details
+                            ?.shipping_fees
+                    }}
+                </p>
+                <p>
+                    <strong>Late Fees:</strong>
+                    {{ transactionStore.singleTransaction.details?.late_fees }}
+                </p>
+                <p>
+                    <strong>Damage Fees:</strong>
+                    {{
+                        transactionStore.singleTransaction.details?.damage_fees
+                    }}
+                </p>
             </div>
         </div>
 

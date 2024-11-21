@@ -15,6 +15,8 @@ export const currencyConvertor = defineStore("currencyConvertorStore", {
             return new Intl.NumberFormat("en-US", {
                 style: "currency",
                 currency: currencyCode,
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 4,
             }).format(numericAmount);
         },
         convertOtherCurrency(currency, code) {
