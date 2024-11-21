@@ -21,7 +21,7 @@ return new class extends Migration
             $table->unsignedBigInteger('transaction_id');
             $table->decimal('remaining_balance', 15, 2)->default(0);
             $table->integer('payer_id');
-            $table->enum("isB2B", [true, false]);
+            $table->boolean('isB2B')->default(false);
             $table->unsignedBigInteger('payee_business');
             $table->string('currency_code', 3);
             $table->timestamps();

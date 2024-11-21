@@ -13,3 +13,4 @@ provide revenue by business and customer
 provide business vs customers
 in sellercheckout handle also customer ( add isb2b and payer_customer in payment table) also while checking out check if customer or business
 business logo update not working
+error after checking out
