@@ -480,11 +480,11 @@ class TransactionController extends Controller
     {
         $transactionsQuery = Transaction::where('id', $transactionId);
 
-        if ($isAgreemet) {
-            $transactionsQuery->whereIn('type', ['leasing', 'borrowing']);
-        } else {
-            $transactionsQuery->whereIn('type', ['purchase', 'sale']);
-        }
+        // if ($isAgreemet) {
+        //     $transactionsQuery->whereIn('type', ['leasing', 'borrowing']);
+        // } else {
+        //     $transactionsQuery->whereIn('type', ['purchase', 'sale']);
+        // }
 
 
         $transaction = $transactionsQuery->with([

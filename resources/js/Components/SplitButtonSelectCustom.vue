@@ -1,8 +1,8 @@
 <template>
     <div class="card flex justify-center">
         <SplitButton
-            :label="defaulItem.label"
-            @click="defaulItem.method"
+            :label="defaultItem.label"
+            @click="defaultItem.method"
             :model="items"
             severity="contrast"
         />
@@ -19,7 +19,7 @@ export default {
             type: Array,
             required: true,
         },
-        defaulItem: {
+        defaultItem: {
             type: Object,
             required: true,
         },

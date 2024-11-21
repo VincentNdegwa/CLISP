@@ -70,18 +70,18 @@ export default {
                     method: () => this.startAgreementPdf("share"),
                 },
             ],
-            defaulItem: {
+            defaultItem: {
                 label: "Print Agreement",
                 method: () => this.startAgreementPdf("print"),
             },
             selectedReceiptItems: [
                 {
-                    label: "Print Receipt",
+                    label: "Invoice",
                     method: () => this.startReceipt("print"),
                 },
             ],
             defaultSelectedReceiptItem: {
-                label: "Print Receipt",
+                label: "Invoice",
                 method: () => this.startReceipt("print"),
             },
         };
@@ -343,9 +343,9 @@ export default {
                         `/transaction/view-receipt/print/${this.transactionStore.singleTransaction.id}`,
                         "_blank"
                     );
-                    printWindow.addEventListener("load", () => {
-                        printWindow.print();
-                    });
+                    // printWindow.addEventListener("load", () => {
+                    //     printWindow.print();
+                    // });
                     break;
                 default:
                     break;
@@ -446,22 +446,15 @@ export default {
                         "
                         class="flex h-fit"
                         :SelectItems="SelectItems"
-                        :defaulItem="defaulItem"
+                        :defaultItem="defaultItem"
                     />
                     <SplitButtonSelectCustom
                         v-else
                         class="flex h-fit"
                         :SelectItems="selectedReceiptItems"
-                        :defaulItem="defaultSelectedReceiptItem"
+                        :defaultItem="defaultSelectedReceiptItem"
                     />
                     <div class="flex gap-1">
-                        <!--  -->
-                        <!-- <PrimaryButton
-                v-if="buttonDisplay('Approve_and_Pay')"
-                @click="startMakingRequestChanges('Approve_and_Pay')"
-                class="bg-orange-600 hover:bg-orange-500 active:bg-orange-500 focus:bg-orange-500 h-10"
-                >Approve and Pay</PrimaryButton
-            > -->
                         <PrimaryButton
                             v-if="buttonDisplay('Approve')"
                             @click="startMakingRequestChanges('Approve')"

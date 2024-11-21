@@ -216,19 +216,19 @@ export default {
                     );
                 },
             };
-            let pay = {
-                label: "Pay",
-                icon: "pi pi-wallet",
-                command: () => {
-                    this.startMakingRequestChanges(
-                        "Are you sure you want to pay this transaction?",
-                        "Pay Transaction",
-                        () => {
-                            this.$emit("payTransaction", data);
-                        }
-                    );
-                },
-            };
+            // let pay = {
+            //     label: "Pay",
+            //     icon: "pi pi-wallet",
+            //     command: () => {
+            //         this.startMakingRequestChanges(
+            //             "Are you sure you want to pay this transaction?",
+            //             "Pay Transaction",
+            //             () => {
+            //                 this.$emit("payTransaction", data);
+            //             }
+            //         );
+            //     },
+            // };
             let record_payment = {
                 label: "Record Payment",
                 icon: "pi pi-wallet",
@@ -253,16 +253,16 @@ export default {
                 },
             };
             let print = {
-                label: "Print",
-                icon: "pi pi-print",
+                label: "Invoice",
+                icon: "pi pi-receipt",
                 command: () => {
                     const printWindow = window.open(
                         `/transaction/view-receipt/print/${transactionId}`,
                         "_blank"
                     );
-                    printWindow.addEventListener("load", () => {
-                        printWindow.print();
-                    });
+                    // printWindow.addEventListener("load", () => {
+                    //     printWindow.print();
+                    // });
                 },
             };
 
@@ -290,7 +290,7 @@ export default {
                 (transaction_type == "Incoming" ||
                     transaction_type == "Outgoing") &&
                 transaction_status == "approved";
-            let canPrint = transaction_status == "paid";
+            let canViewInvoice = true;
 
             let canDelete = transaction_status == "canceled";
             if (canEdit) {
@@ -308,7 +308,7 @@ export default {
             if (canCancel) {
                 defaultActionItems.push(cancel);
             }
-            if (canPrint) {
+            if (canViewInvoice) {
                 defaultActionItems.push(print);
             }
             if (canDelete) {
