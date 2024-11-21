@@ -86,6 +86,10 @@
             color: #28a745;
         }
 
+        .status-paid {
+            color: #28a745;
+        }
+
         .status-cancelled {
             color: #dc3545;
         }
@@ -138,6 +142,9 @@
 </head>
 
 <body>
+    @php
+        $isSameCode = $transaction['sender']->code === $transaction['receiver']->code;
+    @endphp
     <div class="invoice-container">
         <!-- Header -->
         <div class="header">
@@ -145,20 +152,20 @@
             <p>Invoice #: {{ $transaction['id'] }}</p>
             <p>Date: {{ \Carbon\Carbon::parse($transaction['created_at'])->format('F j, Y, g:i a') }}</p>
             <!-- Transaction Status -->
-            <div class="transaction-status ">
+            <div class="transaction-status">
                 <div class="status-{{ $transaction['status'] }}">
                     {{ ucfirst($transaction['status']) }}
                 </div>
             </div>
-        </div>
 
+        </div>
 
         <!-- Business and Receiver Info -->
         <div class="info-section">
             <!-- Initiator Info -->
             <div class="info-box">
                 <h3>Business (Initiator)</h3>
-                <p><strong>Name:</strong> {{ $transaction['initiator']['business_name'] }}</p>
+                <p><strong>Business Name:</strong> {{ $transaction['initiator']['business_name'] }}</p>
                 <p><strong>Email:</strong> {{ $transaction['initiator']['email'] }}</p>
                 <p><strong>Phone:</strong> {{ $transaction['initiator']['phone_number'] }}</p>
                 <p><strong>Location:</strong> {{ $transaction['initiator']['location'] }}</p>
@@ -190,8 +197,15 @@
                     <th>Item Name</th>
                     <th>Description</th>
                     <th>Quantity</th>
-                    <th>Unit Price (KES)</th>
-                    <th>Total (KES)</th>
+                    @if ($isSameCode)
+                        <th>Unit Price ({{ $transaction['sender']->code }})</th>
+                        <th>Total ({{ $transaction['sender']->code }})</th>
+                    @else
+                        <th>Unit Price (Sender - {{ $transaction['sender']->code }})</th>
+                        <th>Total (Sender - {{ $transaction['sender']->code }})</th>
+                        <th>Unit Price (Receiver - {{ $transaction['receiver']->code }})</th>
+                        <th>Total (Receiver - {{ $transaction['receiver']->code }})</th>
+                    @endif
                 </tr>
             </thead>
             <tbody>
@@ -200,8 +214,15 @@
                         <td>{{ $item['item']['item_name'] }}</td>
                         <td>{{ $item['item']['description'] ?? 'N/A' }}</td>
                         <td>{{ $item['quantity'] }}</td>
-                        <td>{{ number_format($item['price'], 2) }}</td>
-                        <td>{{ number_format($item['quantity'] * $item['price'], 2) }}</td>
+                        @if ($isSameCode)
+                            <td>{{ $item['sender']->price }}</td>
+                            <td>{{ $item['quantity'] * $item['sender']->price }}</td>
+                        @else
+                            <td>{{ $item['sender']->price }}</td>
+                            <td>{{ $item['quantity'] * $item['sender']->price }}</td>
+                            <td>{{ $item['receiver']->price }}</td>
+                            <td>{{ $item['quantity'] * $item['receiver']->price }}</td>
+                        @endif
                     </tr>
                 @endforeach
             </tbody>
@@ -209,9 +230,15 @@
 
         <!-- Totals -->
         <div class="totals">
-            <p><strong>Subtotal:</strong> {{ number_format($transaction['totalPrice'], 2) }} KES</p>
-            <p><strong>Taxes:</strong> 0.00 KES</p>
-            <p><strong>Grand Total:</strong> {{ number_format($transaction['totalPrice'], 2) }} KES</p>
+            @if ($transaction['sender']->code !== $transaction['receiver']->code)
+                <p>
+                    <strong>Subtotal:</strong>
+                    {{ $transaction['sender']->price }} {{ $transaction['sender']->code }} ||
+                    {{ $transaction['receiver']->price }} {{ $transaction['receiver']->code }}
+                </p>
+            @else
+                <p><strong>Subtotal:</strong> {{ $transaction['totalPrice'] }} KES</p>
+            @endif
         </div>
 
         <!-- Footer -->
@@ -220,6 +247,8 @@
             <p>If you have any questions, please contact {{ $transaction['initiator']['email'] }}.</p>
         </div>
     </div>
+
+
 </body>
 
 </html>
