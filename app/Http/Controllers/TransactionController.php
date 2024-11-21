@@ -507,7 +507,7 @@ class TransactionController extends Controller
         }
     }
 
-    public function retrieveTransaction($transactionId, $isAgreemet)
+    public function retrieveTransaction($transactionId, $isAgreemet, $business_id = null)
     {
         $transactionsQuery = Transaction::where('id', $transactionId);
 
@@ -516,17 +516,22 @@ class TransactionController extends Controller
         // } else {
         //     $transactionsQuery->whereIn('type', ['purchase', 'sale']);
         // }
+        $transaction = null;
 
+        if ($business_id) {
+            $transaction = $this->getFullTransaction($business_id, $transactionId);
+        } else {
+            $transaction = $transactionsQuery->with([
+                'initiator:business_id,business_name,email,phone_number,location,currency_code',
+                'receiver_business:business_id,business_name,email,phone_number,location,currency_code',
+                'receiver_customer',
+                'details',
+                'items' => function ($query) {
+                    $query->with('item');
+                }
+            ])->first();
+        }
 
-        $transaction = $transactionsQuery->with([
-            'initiator:business_id,business_name,email,phone_number,location,currency_code',
-            'receiver_business:business_id,business_name,email,phone_number,location,currency_code',
-            'receiver_customer',
-            'details',
-            'items' => function ($query) {
-                $query->with('item');
-            }
-        ])->first();
 
         $imagePath = public_path('images/default-business-logo.png');
 
@@ -581,9 +586,9 @@ class TransactionController extends Controller
         return $pdf->stream('agreement.pdf');
     }
 
-    public function printPreviewReceipt($transactionId)
+    public function printPreviewReceipt($transactionId, $business_id)
     {
-        $transaction = $this->retrieveTransaction($transactionId, false);
+        $transaction = $this->retrieveTransaction($transactionId, false, $business_id);
         if (!$transaction) {
             return redirect()->route('not-found');
         }

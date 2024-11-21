@@ -137,7 +137,7 @@ Route::middleware(['auth', 'check.business'])->group(function () {
             Route::get('/download-agreement/{transaction_id}', [TransactionController::class, 'downloadAgreement']);
             Route::get('/pdf-preview/{transaction_id}', [TransactionController::class, 'pdfPreviewAgreement']);
 
-            Route::get('/view-receipt/print/{transaction_id}', [TransactionController::class, 'printPreviewReceipt']);
+            Route::get('/view-receipt/print/{transaction_id}/{business_id}', [TransactionController::class, 'printPreviewReceipt']);
         });
     });
 

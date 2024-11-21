@@ -3,7 +3,6 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Invoice #{{ $transaction['id'] }}</title>
     <style>
@@ -11,104 +10,129 @@
             font-family: 'Arial', sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f8f9fa;
+            background-color: #f4f6f9;
         }
 
         .invoice-container {
             max-width: 900px;
+            position: relative;
             margin: 30px auto;
             background-color: #ffffff;
-            border-radius: 8px;
-            padding: 40px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            padding: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            color: #333;
         }
 
         .header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
 
         .header h1 {
             margin: 0;
             font-size: 28px;
-            color: #333;
+            color: #4a4a4a;
         }
 
         .header p {
             margin: 5px 0;
-            color: #777;
-            font-size: 16px;
+            font-size: 14px;
+            color: #666;
         }
 
-        .section-header {
-            font-weight: bold;
-            font-size: 20px;
-            margin-top: 25px;
-            margin-bottom: 15px;
-            color: #444;
+        .info-section {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .info-box {
+            width: 48%;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+        }
+
+        .info-box h3 {
+            margin: 0 0 10px;
+            font-size: 16px;
+            color: #4a4a4a;
             border-bottom: 2px solid #ddd;
             padding-bottom: 5px;
         }
 
-        .info-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            font-size: 16px;
+        .info-box p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #555;
         }
 
-        .info-row div {
-            color: #555;
+        .transaction-status {
+            font-size: 16px;
+            font-weight: bold;
+            color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+
+        }
+
+        .status-pending {
+            color: #ffc107;
+        }
+
+        .status-completed {
+            color: #28a745;
+        }
+
+        .status-cancelled {
+            color: #dc3545;
         }
 
         .items-table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
+            margin-bottom: 20px;
         }
 
         .items-table th,
         .items-table td {
-            padding: 12px;
+            padding: 10px;
             border: 1px solid #ddd;
             text-align: left;
         }
 
         .items-table th {
-            background-color: #f2f2f2;
-            color: #333;
+            background-color: #f1f1f1;
+            font-weight: bold;
         }
 
-        .total {
-            margin-top: 20px;
+        .items-table td {
+            font-size: 14px;
+        }
+
+        .totals {
             text-align: right;
-            font-size: 20px;
-            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .totals p {
+            margin: 5px 0;
+            font-size: 16px;
             color: #333;
         }
 
         .footer {
             text-align: center;
-            margin-top: 40px;
-            color: #777;
+            margin-top: 30px;
             font-size: 14px;
+            color: #666;
         }
 
         .footer p {
             margin: 5px 0;
-        }
-
-        .info-column {
-            width: 48%;
-        }
-
-        .invoice-header {
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .invoice-header div {
-            width: 48%;
         }
     </style>
 </head>
@@ -118,79 +142,82 @@
         <!-- Header -->
         <div class="header">
             <h1>Invoice</h1>
-            <p>Invoice #{{ $transaction['id'] }}</p>
+            <p>Invoice #: {{ $transaction['id'] }}</p>
             <p>Date: {{ \Carbon\Carbon::parse($transaction['created_at'])->format('F j, Y, g:i a') }}</p>
-        </div>
-
-        <!-- Business and Customer Info -->
-        <div class="invoice-header">
-            <!-- Business Information -->
-            <div class="info-column">
-                <div class="section-header">Business Information</div>
-                <div class="info-row">
-                    <div><strong>Business Name:</strong> {{ $transaction['initiator']['business_name'] }}</div>
-                    <div><strong>Phone:</strong> {{ $transaction['initiator']['phone_number'] }}</div>
-                </div>
-                <div class="info-row">
-                    <div><strong>Email:</strong> {{ $transaction['initiator']['email'] }}</div>
-                    <div><strong>Location:</strong> {{ $transaction['initiator']['location'] }}</div>
+            <!-- Transaction Status -->
+            <div class="transaction-status ">
+                <div class="status-{{ $transaction['status'] }}">
+                    {{ ucfirst($transaction['status']) }}
                 </div>
             </div>
+        </div>
 
-            <!-- Customer Information -->
-            <div class="info-column">
-                <div class="section-header">Customer Information</div>
+
+        <!-- Business and Receiver Info -->
+        <div class="info-section">
+            <!-- Initiator Info -->
+            <div class="info-box">
+                <h3>Business (Initiator)</h3>
+                <p><strong>Name:</strong> {{ $transaction['initiator']['business_name'] }}</p>
+                <p><strong>Email:</strong> {{ $transaction['initiator']['email'] }}</p>
+                <p><strong>Phone:</strong> {{ $transaction['initiator']['phone_number'] }}</p>
+                <p><strong>Location:</strong> {{ $transaction['initiator']['location'] }}</p>
+            </div>
+
+            <!-- Receiver Info -->
+            <div class="info-box">
+                <h3>Receiver</h3>
                 @if ($transaction['isB2B'] && $transaction['receiver_business'])
-                    <div class="info-row">
-                        <div><strong>Receiver (Business):</strong>
-                            {{ $transaction['receiver_business']['business_name'] }}</div>
-                        <div><strong>Location:</strong> {{ $transaction['receiver_business']['location'] }}</div>
-                    </div>
-                @elseif(!$transaction['isB2B'] && $transaction['receiver_customer'])
-                    <div class="info-row">
-                        <div><strong>Customer Name:</strong> {{ $transaction['receiver_customer']['full_names'] }}</div>
-                        <div><strong>Phone:</strong> {{ $transaction['receiver_customer']['phone_number'] }}</div>
-                    </div>
+                    <p><strong>Business Name:</strong> {{ $transaction['receiver_business']['business_name'] }}</p>
+                    <p><strong>Email:</strong> {{ $transaction['receiver_business']['email'] }}</p>
+                    <p><strong>Phone:</strong> {{ $transaction['receiver_business']['phone_number'] }}</p>
+                    <p><strong>Location:</strong> {{ $transaction['receiver_business']['location'] }}</p>
+                @elseif (!$transaction['isB2B'] && $transaction['receiver_customer'])
+                    <p><strong>Name:</strong> {{ $transaction['receiver_customer']['full_names'] }}</p>
+                    <p><strong>Email:</strong> {{ $transaction['receiver_customer']['email'] }}</p>
+                    <p><strong>Phone:</strong> {{ $transaction['receiver_customer']['phone_number'] }}</p>
+                    <p><strong>Address:</strong> {{ $transaction['receiver_customer']['address'] }}</p>
+                @else
+                    <p>No Receiver Information Available</p>
                 @endif
             </div>
         </div>
 
-        <!-- Items Table -->
-        <div class="section">
-            <div class="section-header">Items</div>
-            <table class="items-table">
-                <thead>
+        <!-- Items -->
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th>Item Name</th>
+                    <th>Description</th>
+                    <th>Quantity</th>
+                    <th>Unit Price (KES)</th>
+                    <th>Total (KES)</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($transaction['items'] as $item)
                     <tr>
-                        <th>Item</th>
-                        <th>Quantity</th>
-                        <th>Unit Price (KES)</th>
-                        <th>Total (KES)</th>
+                        <td>{{ $item['item']['item_name'] }}</td>
+                        <td>{{ $item['item']['description'] ?? 'N/A' }}</td>
+                        <td>{{ $item['quantity'] }}</td>
+                        <td>{{ number_format($item['price'], 2) }}</td>
+                        <td>{{ number_format($item['quantity'] * $item['price'], 2) }}</td>
                     </tr>
-                </thead>
-                <tbody>
-                    @foreach ($transaction['items'] as $item)
-                        <tr>
-                            <td>{{ $item['item']['item_name'] }}</td>
-                            <td>{{ $item['quantity'] }} {{ $item['item']['unit'] }}</td>
-                            <td>{{ number_format($item['price'], 2) }}</td>
-                            <td>{{ number_format($item['quantity'] * $item['price'], 2) }}</td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
+                @endforeach
+            </tbody>
+        </table>
 
-        <!-- Total Amount -->
-        <div class="total">
-            Grand Total: {{ number_format($transaction['totalPrice'], 2) }} 
+        <!-- Totals -->
+        <div class="totals">
+            <p><strong>Subtotal:</strong> {{ number_format($transaction['totalPrice'], 2) }} KES</p>
+            <p><strong>Taxes:</strong> 0.00 KES</p>
+            <p><strong>Grand Total:</strong> {{ number_format($transaction['totalPrice'], 2) }} KES</p>
         </div>
 
         <!-- Footer -->
         <div class="footer">
-            <p>Thank you for choosing our services!</p>
-            <p>If you have any questions, please contact us at <a
-                    href="mailto:{{ $transaction['initiator']['email'] }}">{{ $transaction['initiator']['email'] }}</a>.
-            </p>
+            <p>Thank you for doing business with us!</p>
+            <p>If you have any questions, please contact {{ $transaction['initiator']['email'] }}.</p>
         </div>
     </div>
 </body>

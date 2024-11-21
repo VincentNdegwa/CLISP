@@ -351,7 +351,9 @@ export default {
             switch (action) {
                 case "print":
                     const printWindow = window.open(
-                        `/transaction/view-receipt/print/${this.transactionStore.singleTransaction.id}`,
+                        `/transaction/view-receipt/print/${
+                            this.transactionStore.singleTransaction.id
+                        }/${useUserStore().business}`,
                         "_blank"
                     );
                     // printWindow.addEventListener("load", () => {

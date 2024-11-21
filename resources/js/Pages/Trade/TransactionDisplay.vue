@@ -257,7 +257,9 @@ export default {
                 icon: "pi pi-receipt",
                 command: () => {
                     const printWindow = window.open(
-                        `/transaction/view-receipt/print/${transactionId}`,
+                        `/transaction/view-receipt/print/${transactionId}/${
+                            useUserStore().business
+                        }`,
                         "_blank"
                     );
                     // printWindow.addEventListener("load", () => {
