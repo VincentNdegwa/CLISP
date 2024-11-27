@@ -92,6 +92,7 @@ class BusinessController extends Controller
                 'phone_number' => 'required|string|max:20',
                 'email' => 'required|email|max:255',
                 'date_registered' => 'required|date',
+                "logo" => "nullable|string"
             ]);
 
             $business = Business::where('business_id', $validatedData['business_id'])->firstOrFail();
