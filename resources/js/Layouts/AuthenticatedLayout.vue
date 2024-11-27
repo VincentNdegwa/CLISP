@@ -4,6 +4,7 @@ import DropdownLink from "@/Components/DropdownLink.vue";
 import Modal from "@/Components/Modal.vue";
 import NewBusiness from "@/Components/NewBusiness.vue";
 import SideNavigations from "@/Components/SideNavigations.vue";
+import Popover from "primevue/popover";
 
 export default {
     data() {
@@ -21,7 +22,9 @@ export default {
         SideNavigations,
         Modal,
         NewBusiness,
+        Popover,
     },
+
     mounted() {
         const def_business = JSON.parse(
             window.localStorage.getItem("default_business")
@@ -64,6 +67,9 @@ export default {
         },
         closeModal() {
             this.modal.open = false;
+        },
+        toggle(event) {
+            this.$refs.op.toggle(event);
         },
     },
 };
@@ -125,9 +131,47 @@ export default {
                 </div>
 
                 <div
-                    class="nav-bar-holder flex flex-col h-[84vh] no-scrollbar overflow-y-scroll hide-overflow"
+                    class="nav-bar-holder flex flex-col h-[86vh] no-scrollbar overflow-y-scroll hide-overflow"
                 >
                     <SideNavigations />
+                </div>
+
+                <div class="profile h-13 flex items-center p-2 gap-3 relative">
+                    <div
+                        class="flex items-center ring-1 ring-slate-200 rounded-md h-full w-full cursor-pointer gap-2 p-2"
+                        @click="toggle"
+                    >
+                        <div class="avatar online">
+                            <div class="w-10 h-10 rounded-full">
+                                <img
+                                    :src="
+                                        $page.props.auth.user.profile_image ||
+                                        'https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp'
+                                    "
+                                />
+                            </div>
+                        </div>
+                        <div
+                            class="flex text-ellipsis items-center h-full w-full"
+                        >
+                            <div class="text-md">
+                                {{ $page.props.auth.user.name }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <Popover ref="op" class="w-56 -ms-1 p-0">
+                        <DropdownLink :href="route('profile.edit')">
+                            Profile
+                        </DropdownLink>
+                        <DropdownLink
+                            :href="route('logout')"
+                            method="post"
+                            as="button"
+                        >
+                            Log Out
+                        </DropdownLink>
+                    </Popover>
                 </div>
             </nav>
 
@@ -151,58 +195,6 @@ export default {
                             class="bi bi-caret-right-square-fill text-2xl cursor-pointer"
                             @click="() => (menuOpen = !menuOpen)"
                         ></i>
-                    </div>
-                    <div class="profile h-full flex items-center me-4 gap-3">
-                        <!-- Drop Down -->
-                        <Dropdown align="right" width="48">
-                            <template #trigger>
-                                <div
-                                    class="flex items-center cursor-pointer gap-2 p-2"
-                                >
-                                    <div class="avatar online">
-                                        <div class="w-10 h-10 rounded-full">
-                                            <img
-                                                :src="
-                                                    $page.props.auth.user
-                                                        .profile_image ||
-                                                    'https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp'
-                                                "
-                                            />
-                                        </div>
-                                    </div>
-                                    <div class="flex items-center">
-                                        <div class="text-sm">
-                                            {{ $page.props.auth.user.name }}
-                                        </div>
-                                        <svg
-                                            class="ms-2 -me-0.5 h-4 w-4"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            viewBox="0 0 20 20"
-                                            fill="currentColor"
-                                        >
-                                            <path
-                                                fill-rule="evenodd"
-                                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                                clip-rule="evenodd"
-                                            />
-                                        </svg>
-                                    </div>
-                                </div>
-                            </template>
-
-                            <template #content>
-                                <DropdownLink :href="route('profile.edit')">
-                                    Profile
-                                </DropdownLink>
-                                <DropdownLink
-                                    :href="route('logout')"
-                                    method="post"
-                                    as="button"
-                                >
-                                    Log Out
-                                </DropdownLink>
-                            </template>
-                        </Dropdown>
                     </div>
                 </div>
             </header>
