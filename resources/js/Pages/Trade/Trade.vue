@@ -252,22 +252,28 @@ export default {
             this.openModal("SellerCheckout");
         },
         handleSuccessPayment(data) {
-            if (data.error) {
-                if (data.errors) {
-                    this.openNotification(data.errors, "error");
+            try {
+                if (data.error) {
+                    if (data.errors) {
+                        this.openNotification(data.errors, "error");
+                    } else {
+                        this.openNotification(data.message, "error");
+                    }
                 } else {
-                    this.openNotification(data.message, "error");
+                    this.openNotification(data.message, "success");
+                    const index =
+                        this.transactionStore.transactions?.data?.findIndex(
+                            (transaction) =>
+                                transaction.id === data.data.transaction.id
+                        );
+                    if (index !== -1) {
+                        this.transactionStore.transactions.data[index] =
+                            data.data.transaction;
+                    }
+                    this.closeModal();
                 }
-            } else {
-                this.openNotification(data.message, "success");
-                const index = this.transactionStore.transactions.data.findIndex(
-                    (transaction) => transaction.id === data.data.transaction.id
-                );
-                if (index !== -1) {
-                    this.transactionStore.transactions.data[index] =
-                        data.data.transaction;
-                }
-                this.closeModal();
+            } catch (error) {
+                console.log(error);
             }
         },
         openNotification(message, status) {

@@ -257,7 +257,7 @@ export default {
                 let data = response.data;
                 if (!data.error) {
                     this.openNotification(data.message, "success");
-                    this.$emit("successPayment", data.data);
+                    this.$emit("successPayment", data);
                     this.closeModal();
                 } else {
                     this.openNotification(data.message, "error");
