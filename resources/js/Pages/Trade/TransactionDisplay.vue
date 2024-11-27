@@ -281,10 +281,6 @@ export default {
                 ((transaction_type == "Incoming" && isB2B == true) ||
                     (transaction_type == "Outgoing" && isB2B == false)) &&
                 transaction_status == "pending";
-            let canPay =
-                transaction_type == "Incoming" &&
-                isB2B == true &&
-                transaction_status == "approved";
             let canRecordPayment =
                 transaction_type == "Outgoing" &&
                 transaction_status == "approved";
@@ -300,9 +296,6 @@ export default {
             }
             if (canApprove) {
                 defaultActionItems.push(approve);
-            }
-            if (canPay) {
-                defaultActionItems.push(pay);
             }
             if (canRecordPayment) {
                 defaultActionItems.push(record_payment);

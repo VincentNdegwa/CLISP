@@ -166,7 +166,8 @@
                             @click="returnAll"
                             v-if="
                                 slotProps.data.transaction_type == 'Incoming' &&
-                                slotProps.data.status === 'completed'
+                                slotProps.data.status === 'completed' &&
+                                slotProps.data.type !== 'purchase'
                             "
                         />
                         <Button

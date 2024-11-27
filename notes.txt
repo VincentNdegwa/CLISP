@@ -1,5 +1,3 @@
-receiving items from a business with different currency ->fixed
-totals items in the dashboard is only counting the total itemBusiness->fixed
 in purchases while approving the item is reduced from the intiator
 adding new payments in my business
 disable cash payment inincomming transaction
@@ -11,6 +9,5 @@ in dash
 
 provide revenue by business and customer
 provide business vs customers
-in sellercheckout handle also customer ( add isb2b and payer_customer in payment table) also while checking out check if customer or business
 business logo update not working
-error after checking out
+update the agreement to support multi-currency
