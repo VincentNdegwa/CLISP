@@ -152,10 +152,17 @@ export default {
                             </div>
                         </div>
                         <div
-                            class="flex text-ellipsis items-center h-full w-full"
+                            class="flex flex-col text-ellipsis ms-2 h-10 w-full"
                         >
-                            <div class="text-md">
+                            <div
+                                class="text-md h-6 w-36 truncate text-ellipsis whitespace-nowrap"
+                            >
                                 {{ $page.props.auth.user.name }}
+                            </div>
+                            <div
+                                class="text-sm text-slate-500 h-6 w-36 truncate text-ellipsis whitespace-nowrap"
+                            >
+                                {{ $page.props.auth.user.email }}
                             </div>
                         </div>
                     </div>
