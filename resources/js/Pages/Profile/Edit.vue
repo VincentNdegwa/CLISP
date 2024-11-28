@@ -28,16 +28,12 @@ const goBack = () => {
                 Profile
             </h2>
         </template>
-        <div
+        <i
             @click="goBack"
-            class="bg-slate-800 w-fit text-white p-2 flex items-center rounded-md gap-2 hover:bg-slate-600"
-        >
-            <i
-                class="pi pi-arrow-left p-3 text-white rounded-full shadow-lg cursor-pointer"
-            ></i>
-            Back
-        </div>
-        <div class="py-12">
+            class="pi pi-arrow-left p-3 bg-slate-800 text-white rounded-full shadow-lg cursor-pointer hover:bg-slate-600"
+        ></i>
+
+        <div class="pb-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
                 <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
                     <UpdateProfileInformationForm
