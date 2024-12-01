@@ -1,4 +1,3 @@
-in purchases while approving the item is reduced from the intiator
 adding new payments in my business
 send email receipt after the payment has been completed
 provide the edit business functionality
