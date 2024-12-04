@@ -11,7 +11,8 @@ class PaymentMethod extends Model
         'business_id',
         'name',
         'default',
-        'icon'
+        'icon',
+        'category'
     ];
     //
     protected $hidden = [

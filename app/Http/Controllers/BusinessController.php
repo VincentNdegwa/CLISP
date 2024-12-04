@@ -178,7 +178,7 @@ class BusinessController extends Controller
                 ->with([
 
                     'business' => function ($query) use ($validate) {
-                        $query->with(['businessType', 'industry', 'payment_account']);
+                        $query->with(['businessType', 'industry']);
                     },
                 ])->first();
             return response()->json([

@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('business_id')->nullable()->constrained('business', 'business_id')->onDelete('set null');
             $table->string('name');
             $table->enum("default", ['false', 'true'])->default('false');
+            $table->enum('category', ['Simple', 'Information-Required'])->default('Simple');
             $table->string('icon')->default('pi pi-wallet');
             $table->timestamps();
         });
