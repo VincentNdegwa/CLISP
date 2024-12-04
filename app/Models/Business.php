@@ -58,8 +58,4 @@ class Business extends Model
     {
         return $this->hasMany(ItemBusiness::class, 'business_id');
     }
-    public function payment_account()
-    {
-        return $this->hasMany(PaymentAccount::class, 'business_id');
-    }
 }

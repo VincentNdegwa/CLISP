@@ -11,14 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('payment_information', function (Blueprint $table) {
+        Schema::create('payment_methods', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('business_id');
-            $table->string('payment_type');
-            $table->json('payment_details')->nullable();
+            $table->foreignId('business_id')->nullable()->constrained('business', 'business_id')->onDelete('set null');
+            $table->string('name');
+            $table->enum("default", ['false', 'true'])->default('false');
+            $table->string('icon')->default('pi pi-wallet');
             $table->timestamps();
-
-            $table->foreign('business_id')->references('business_id')->on('business')->onDelete('cascade');
         });
     }
 
@@ -27,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('payment_information');
+        Schema::dropIfExists('payment_methods');
     }
 };

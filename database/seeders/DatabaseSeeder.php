@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             BusinessTypeSeeder::class,
             IndustrySeeder::class,
+            PaymentMethodsSeeder::class
         ]);
     }
 }
