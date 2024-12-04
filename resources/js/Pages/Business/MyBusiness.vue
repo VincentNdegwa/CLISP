@@ -264,11 +264,11 @@ export default {
                     </div>
                     <div v-else>
                         <p class="text-gray-600 text-lg">
-                            No payment accounts found.
+                            No payment information found.
                         </p>
-                        <p class="text-red-600 font-bold text-xl mt-2">
-                            Please add a payment method to receive payouts from
-                            customers.
+                        <p class="text-red-600 font-bold text-md mt-2">
+                            Please add payment information that will be
+                            displayed in the invoice and agreement
                         </p>
                     </div>
                 </div>
