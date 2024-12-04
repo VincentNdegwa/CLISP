@@ -6,13 +6,17 @@
             <!-- Payment Type -->
             <div>
                 <InputLabel for="paymentType" value="Payment Type" />
-                <TextInput
+
+                <Select
                     v-model="form.payment_type"
-                    id="paymentType"
-                    type="text"
-                    placeholder="Enter payment type"
+                    :options="paymentMethods"
+                    optionLabel="name"
+                    placeholder="Select Payment Method"
+                    class="w-full md:w-56"
                     required
+                    :invalid="errors.payment_type"
                 />
+
                 <InputError :message="errors.payment_type" />
             </div>
 
@@ -78,14 +82,22 @@ import TextInput from "@/Components/TextInput.vue";
 import InputError from "@/Components/InputError.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import Button from "primevue/button";
+import Select from "primevue/select";
 
 export default {
+    props: {
+        paymentMethods: {
+            type: Array,
+            required: true,
+        },
+    },
     components: {
         InputLabel,
         TextInput,
         InputError,
         PrimaryButton,
         Button,
+        Select,
     },
     setup() {
         const form = useForm({

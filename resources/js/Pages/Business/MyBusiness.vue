@@ -9,6 +9,8 @@ import { Head, usePage } from "@inertiajs/vue3";
 import Avatar from "primevue/avatar";
 import Badge from "primevue/badge";
 import PaymentInformationForm from "./PaymentInformationForm.vue";
+import { usePaymentMethods } from "@/Store/PaymentMethods";
+import { onMounted, ref } from "vue";
 
 export default {
     components: {
@@ -24,6 +26,11 @@ export default {
     setup() {
         const { props } = usePage();
         const myBusiness = useMyBusiness();
+        const paymentMethodsStore = usePaymentMethods();
+
+        const queries = ref({
+            category: "Information-Required",
+        });
 
         myBusiness.fetchMyBusiness({
             userId: props.auth.user.id,
@@ -36,10 +43,14 @@ export default {
                 businessId: useUserStore().business,
             });
         };
+        onMounted(async () => {
+            await paymentMethodsStore.fetchPaymentMethods(queries.value);
+        });
 
         return {
             myBusiness,
             fetchUpdatedBusiness,
+            paymentMethodsStore,
         };
     },
     methods: {
@@ -92,6 +103,7 @@ export default {
         <PaymentInformationForm
             v-if="modal.component == 'Add Payments'"
             @close="closeModal"
+            :paymentMethods="paymentMethodsStore.methods"
         />
     </Modal>
     <AuthenticatedLayout>
