@@ -8,6 +8,7 @@ import { useUserStore } from "@/Store/UserStore";
 import { Head, usePage } from "@inertiajs/vue3";
 import Avatar from "primevue/avatar";
 import Badge from "primevue/badge";
+import PaymentInformationForm from "./PaymentInformationForm.vue";
 
 export default {
     components: {
@@ -18,6 +19,7 @@ export default {
         Head,
         Modal,
         NewBusiness,
+        PaymentInformationForm,
     },
     setup() {
         const { props } = usePage();
@@ -55,10 +57,15 @@ export default {
                 this.fetchUpdatedBusiness();
             }
         },
+        openModal(component) {
+            console.log(component);
+
+            this.modal.open = true;
+            this.modal.component = component;
+        },
         openEditBusiness() {
             this.currentBusiness = this.myBusiness?.business?.business;
-            this.modal.open = true;
-            this.modal.component = "EditBusiness";
+            this.openModal("EditBusiness");
         },
     },
     data() {
@@ -75,11 +82,16 @@ export default {
 
 <template>
     <Head title="Business Information" />
-    <Modal :show="modal.open">
+    <Modal :show="modal.open" @close="closeModal">
         <NewBusiness
+            v-if="modal.component == 'EditBusiness'"
             @close="closeModal"
             :edit="true"
             :editData="currentBusiness"
+        />
+        <PaymentInformationForm
+            v-if="modal.component == 'Add Payments'"
+            @close="closeModal"
         />
     </Modal>
     <AuthenticatedLayout>
@@ -245,7 +257,9 @@ export default {
                         <h2 class="text-xl font-semibold text-gray-800">
                             Payment Information
                         </h2>
-                        <PrimaryButton> Add Payments </PrimaryButton>
+                        <PrimaryButton @click="openModal('Add Payments')">
+                            Add Payments
+                        </PrimaryButton>
                     </div>
                     <div
                         v-if="

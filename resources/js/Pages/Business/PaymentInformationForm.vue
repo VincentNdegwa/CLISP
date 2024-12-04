@@ -1,0 +1,124 @@
+<template>
+    <div class="max-w-3xl mx-auto p-6 bg-white shadow-md rounded-lg">
+        <h3 class="text-2xl font-semibold mb-6">Payment Information</h3>
+
+        <form @submit.prevent="submitForm" class="space-y-6">
+            <!-- Payment Type -->
+            <div>
+                <InputLabel for="paymentType" value="Payment Type" />
+                <TextInput
+                    v-model="form.payment_type"
+                    id="paymentType"
+                    type="text"
+                    placeholder="Enter payment type"
+                    required
+                />
+                <InputError :message="errors.payment_type" />
+            </div>
+
+            <!-- Custom Fields -->
+            <div>
+                <h4 class="text-lg font-medium mb-4">Custom Fields</h4>
+                <div
+                    v-for="(field, index) in form.payment_details"
+                    :key="index"
+                    class="space-y-4 flex"
+                >
+                    <div class="flex items-center space-x-4 mt-2">
+                        <TextInput
+                            v-model="field.name"
+                            type="text"
+                            placeholder="Field Name"
+                            required
+                        />
+                        <TextInput
+                            v-model="field.value"
+                            type="text"
+                            placeholder="Field Value"
+                            required
+                        />
+                        <Button
+                            v-if="index != 0"
+                            icon="pi pi-times"
+                            class="p-button-danger p-button-text"
+                            @click="removeField(index)"
+                            aria-label="Remove Field"
+                        />
+                    </div>
+                </div>
+                <PrimaryButton class="mt-3" @click="addField"
+                    >+ Add Field</PrimaryButton
+                >
+            </div>
+
+            <div class="flex gap-1 md:flex-row flex-col">
+                <PrimaryButton
+                    class="w-full justify-center flex-1"
+                    type="submit"
+                    >Submit</PrimaryButton
+                >
+                <PrimaryButton
+                    class="bg-rose-600 hover:bg-rose-500 text-white flex-1"
+                    :class="{ 'opacity-25': form.processing }"
+                    :disabled="form.processing"
+                    @click="$emit('close')"
+                    type="button"
+                >
+                    Cancel
+                </PrimaryButton>
+            </div>
+        </form>
+    </div>
+</template>
+
+<script>
+import { useForm } from "@inertiajs/vue3";
+import InputLabel from "@/Components/InputLabel.vue";
+import TextInput from "@/Components/TextInput.vue";
+import InputError from "@/Components/InputError.vue";
+import PrimaryButton from "@/Components/PrimaryButton.vue";
+import Button from "primevue/button";
+
+export default {
+    components: {
+        InputLabel,
+        TextInput,
+        InputError,
+        PrimaryButton,
+        Button,
+    },
+    setup() {
+        const form = useForm({
+            payment_type: "",
+            payment_details: [],
+        });
+
+        const addField = () => {
+            form.payment_details.push({ name: "", value: "" });
+        };
+
+        const removeField = (index) => {
+            form.payment_details.splice(index, 1);
+        };
+
+        const submitForm = async () => {
+            try {
+                await form.post("/api/payment-information");
+                alert("Payment information saved successfully!");
+            } catch (error) {
+                console.error("Error saving payment information:", error);
+            }
+        };
+
+        return {
+            form,
+            addField,
+            removeField,
+            submitForm,
+            errors: form.errors,
+        };
+    },
+};
+</script>
+
+<style scoped></style>
