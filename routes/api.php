@@ -21,6 +21,7 @@ Route::prefix('business')->group(function () {
     Route::post('/update', [BusinessController::class, 'Update'])->name('business.update');
     Route::post('/delete', [BusinessController::class, 'Delete'])->name('business.delete');
     Route::get('/details', [BusinessController::class, 'getDetails'])->name('business.details');
+    Route::get("/{business_id}/payment-methods", [BusinessController::class, 'getPaymentMethods']);
 });
 
 Route::prefix('dashboard/{business_id}')->group(function () {

@@ -62,18 +62,18 @@
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             <div
                 v-for="method in paymentMethods"
-                :key="method.displayName"
+                :key="method.id"
                 class="card cursor-pointer bg-white ring-2 flex flex-col p-2 h-32 items-center justify-center rounded-lg"
                 :class="{
-                    'ring-rose-500': selectedMethod === method.displayName,
-                    'ring-slate-200': selectedMethod !== method.displayName,
+                    'ring-rose-500': selectedMethod === method.name,
+                    'ring-slate-200': selectedMethod !== method.name,
                 }"
-                @click="selectMethod(method.displayName)"
+                @click="selectMethod(method.name)"
             >
                 <div
                     :class="{
-                        'bg-rose-500': selectedMethod === method.displayName,
-                        'bg-slate-200': selectedMethod !== method.displayName,
+                        'bg-rose-500': selectedMethod === method.name,
+                        'bg-slate-200': selectedMethod !== method.name,
                     }"
                     class="rounded-full h-5 w-5 grid place-items-center self-end mb-1"
                 >
@@ -82,7 +82,7 @@
                 <div class="text-center text-slate-900">
                     <i :class="method.icon" class="text-2xl"></i>
                     <div class="mt-2 font-semibold">
-                        {{ method.displayName }}
+                        {{ method.name }}
                     </div>
                 </div>
             </div>
@@ -165,33 +165,16 @@ export default {
             type: Object,
             required: true,
         },
+        paymentMethods: {
+            type: Array,
+            required: true,
+        },
     },
     components: {
         InputNumber,
     },
     data() {
         return {
-            paymentMethods: [
-                { name: "cash", displayName: "Cash", icon: "pi pi-wallet" },
-                { name: "bank", displayName: "Bank", icon: "pi pi-building" },
-                {
-                    name: "paybill",
-                    displayName: "Paybill",
-                    icon: "pi pi-credit-card",
-                },
-                {
-                    name: "till",
-                    displayName: "Till Number",
-                    icon: "pi pi-wallet",
-                },
-                { name: "coupon", displayName: "Coupon", icon: "pi pi-ticket" },
-                { name: "paypal", displayName: "PayPal", icon: "pi pi-paypal" },
-                {
-                    name: "credit_card",
-                    displayName: "Credit Card",
-                    icon: "pi pi-credit-card",
-                },
-            ],
             selectedMethod: null,
             amountPaid: "",
             errorMessage: "",

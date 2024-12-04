@@ -12,7 +12,11 @@ class PaymentInformation extends Model
         'payment_type',
         'payment_details'
     ];
-    protected $casts = [
-        'payment_details' => 'array',
-    ];
+
+    protected function casts(): array
+    {
+        return [
+            'payment_details' => 'array',
+        ];
+    }
 }

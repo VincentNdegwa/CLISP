@@ -134,6 +134,7 @@ import NoRecords from "@/Components/NoRecords.vue";
 import { useUserStore } from "@/Store/UserStore";
 import { currencyConvertor } from "@/Store/CurrencyConvertStore";
 
+
 export default {
     emits: ["startUpdate", "startDelete", "payTransaction"],
     components: {

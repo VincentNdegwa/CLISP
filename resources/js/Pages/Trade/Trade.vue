@@ -20,6 +20,7 @@ import PaymentProcess from "../Payment/PaymentProcess.vue";
 import PayPalComponent from "../Payment/PayPalComponent.vue";
 import { data } from "autoprefixer";
 import SellerCheckout from "../Payment/SellerCheckout.vue";
+import { usePaymentMethods } from "@/Store/PaymentMethods";
 
 export default {
     props: {
@@ -65,11 +66,13 @@ export default {
             search: "",
             status: null,
         });
+        const paymentMethodsStore = usePaymentMethods();
 
-        onMounted(() => {
+        onMounted(async () => {
             myBusinessStore.fetchActiveConnection();
             customerStore.fetchBusinessCustomers();
             resourceStore.fetchResources();
+            await paymentMethodsStore.fetchPaymentMethods();
         });
 
         const toggleDropdown = () => {
@@ -129,6 +132,7 @@ export default {
             deleteTransaction,
             changeRowCount,
             payTransaction,
+            paymentMethodsStore,
         };
     },
     data() {
@@ -359,6 +363,7 @@ export default {
             @close="closeModal"
             @successPayment="handleSuccessPayment"
             :transactionData="selectedTransaction"
+            :paymentMethods="paymentMethodsStore.methods"
         />
     </Modal>
     <AuthenticatedLayout>

@@ -14,6 +14,8 @@ import PayPalComponent from "../Payment/PayPalComponent.vue";
 import Modal from "@/Components/Modal.vue";
 import PaymentProcess from "../Payment/PaymentProcess.vue";
 import SellerCheckout from "../Payment/SellerCheckout.vue";
+import { onMounted } from "vue";
+import { usePaymentMethods } from "@/Store/PaymentMethods";
 
 export default {
     components: {
@@ -94,10 +96,13 @@ export default {
     },
     setup(props) {
         const transactionStore = useTransactionStore();
+        const paymentMethodsStore = usePaymentMethods();
 
-        onMounted: {
+        onMounted(async () => {
+            await paymentMethodsStore.fetchPaymentMethods();
             transactionStore.getSingleTransaction(props.transactionId);
-        }
+        });
+
         const statusClass = () => {
             switch (transactionStore.singleTransaction.status) {
                 case "pending":
@@ -144,6 +149,7 @@ export default {
             acceptAndPayTransaction,
             payTransaction,
             closeTransaction,
+            paymentMethodsStore,
         };
     },
     computed: {
@@ -427,6 +433,7 @@ export default {
             @close="closeModal"
             @successPayment="handleSuccessPayment"
             :transactionData="transactionStore.singleTransaction"
+            :paymentMethods="paymentMethodsStore.methods"
         />
     </Modal>
     <ConfirmationModal

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Business;
 use App\Models\BusinessUser;
+use App\Models\PaymentMethod;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -213,5 +214,14 @@ class BusinessController extends Controller
             'businesses' => $businesses,
             'business_count' => count($businesses),
         ]);
+    }
+
+    public function getPaymentMethods(Request $request, $business_id)
+    {
+        $methods  =  PaymentMethod::where(function ($query) use ($business_id) {
+            $query->where("business_id", $business_id)->orWhere("default", 'true');
+        })->get();
+
+        return response()->json($methods);
     }
 }

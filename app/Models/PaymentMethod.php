@@ -14,4 +14,8 @@ class PaymentMethod extends Model
         'icon'
     ];
     //
+    protected $hidden = [
+        'created_at',
+        'updated_at',
+    ];
 }
