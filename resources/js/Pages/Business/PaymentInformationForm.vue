@@ -102,7 +102,7 @@ export default {
         Button,
         Select,
     },
-    setup() {
+    setup(props, { emit }) {
         const form = useForm({
             payment_type: "",
             payment_details: [],
@@ -117,17 +117,9 @@ export default {
         };
 
         const submitForm = async () => {
-            try {
-                const response = await axios.post(
-                    `/api/business/${
-                        useUserStore().business
-                    }/payment-information`,
-                    form
-                );
-                console.log(response);
-            } catch (error) {
-                console.error("Error saving payment information:", error);
-            }
+            form.processing = true;
+            emit("updateOrCreate", form);
+            emit("close");
         };
 
         return {

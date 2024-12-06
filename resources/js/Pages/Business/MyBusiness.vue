@@ -43,14 +43,20 @@ export default {
                 businessId: useUserStore().business,
             });
         };
+
+        const createOrUpdate = async (params) => {
+            await paymentMethodsStore.createOrUpdatePaymentInformation(params);
+        };
         onMounted(async () => {
             await paymentMethodsStore.fetchPaymentMethods(queries.value);
+            await paymentMethodsStore.fetchPaymentInformations();
         });
 
         return {
             myBusiness,
             fetchUpdatedBusiness,
             paymentMethodsStore,
+            createOrUpdate,
         };
     },
     methods: {
@@ -69,8 +75,6 @@ export default {
             }
         },
         openModal(component) {
-            console.log(component);
-
             this.modal.open = true;
             this.modal.component = component;
         },
@@ -103,6 +107,7 @@ export default {
         <PaymentInformationForm
             v-if="modal.component == 'Add Payments'"
             @close="closeModal"
+            @updateOrCreate="createOrUpdate"
             :paymentMethods="paymentMethodsStore.methods"
         />
     </Modal>
@@ -275,19 +280,35 @@ export default {
                     </div>
                     <div
                         v-if="
-                            myBusiness?.business?.business?.payment_account
-                                ?.length > 0
+                            paymentMethodsStore?.paymentInformations?.length > 0
                         "
-                        class="flex gap-2"
+                        class="flex flex-wrap gap-4"
                     >
                         <div
-                            v-for="(item, index) in myBusiness?.business
-                                ?.business?.payment_account"
+                            v-for="(
+                                item, index
+                            ) in paymentMethodsStore.paymentInformations"
                             :key="index"
+                            class="border p-4 rounded-md shadow-md bg-white"
                         >
-                            <!-- Payment account details will go here -->
+                            <h3 class="font-bold text-lg">
+                                {{ item.payment_type }}
+                            </h3>
+
+                            <ul class="mt-2">
+                                <li
+                                    v-for="(
+                                        detail, detailIndex
+                                    ) in item.payment_details"
+                                    :key="detailIndex"
+                                >
+                                    <strong>{{ detail.name }}:</strong>
+                                    {{ detail.value }}
+                                </li>
+                            </ul>
                         </div>
                     </div>
+
                     <div v-else>
                         <p class="text-gray-600 text-lg">
                             No payment information found.

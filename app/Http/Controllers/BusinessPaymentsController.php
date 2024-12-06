@@ -34,7 +34,7 @@ class BusinessPaymentsController extends Controller
     }
     public function createOrUpdatePaymentInformation($business_id, Request $request)
     {
-        $method = PaymentInformation::firstOrNew(['business_id' => $business_id]);
+        $method = PaymentInformation::firstOrNew(['business_id' => $business_id, 'payment_type' => $request->input('payment_type')]);
 
         $data = $request->all();
         if (isset($data['payment_details']) && is_array($data['payment_details'])) {
@@ -45,7 +45,11 @@ class BusinessPaymentsController extends Controller
         $method->refresh();
         $method->payment_details = json_decode($method->payment_details);
 
-        return response()->json($method);
+        return response()->json([
+            'error' => false,
+            'message' => 'Payment information saved successfully.',
+            'data' => $method
+        ]);
     }
 
     public function getPaymentInformation($business_id)
