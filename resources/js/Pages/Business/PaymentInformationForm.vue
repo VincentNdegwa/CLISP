@@ -55,7 +55,6 @@
                             required
                         />
                         <Button
-                            v-if="index != 0"
                             icon="pi pi-times"
                             class="p-button-danger p-button-text"
                             @click="removeField(index)"
@@ -120,12 +119,7 @@ export default {
     setup(props, { emit }) {
         const form = useForm({
             payment_type: "",
-            payment_details: [
-                {
-                    name: "",
-                    value: "",
-                },
-            ],
+            payment_details: [],
         });
 
         const addField = () => {
@@ -152,7 +146,8 @@ export default {
                 }/search-payment-information`,
                 payload
             );
-            form.payment_details = response.data.payment_details;
+            const data = response.data.payment_details || [];
+            form.payment_details.push(...data);
             form.processing = false;
         };
 

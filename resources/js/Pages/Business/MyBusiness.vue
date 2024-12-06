@@ -47,6 +47,17 @@ export default {
         const createOrUpdate = async (params) => {
             await paymentMethodsStore.createOrUpdatePaymentInformation(params);
         };
+
+        const setDefault = async (paymentMethod) => {
+            try {
+                paymentMethodsStore.paymentInformations.forEach((item) => {
+                    item.default =
+                        item.id === paymentMethod.id ? "true" : "false";
+                });
+            } catch (error) {
+                console.error("Failed to set default payment method:", error);
+            }
+        };
         onMounted(async () => {
             await paymentMethodsStore.fetchPaymentMethods(queries.value);
             await paymentMethodsStore.fetchPaymentInformations();
@@ -57,6 +68,7 @@ export default {
             fetchUpdatedBusiness,
             paymentMethodsStore,
             createOrUpdate,
+            setDefault,
         };
     },
     methods: {
@@ -291,9 +303,18 @@ export default {
                             :key="index"
                             class="border p-4 rounded-md shadow-md bg-white"
                         >
-                            <h3 class="font-bold text-lg">
-                                {{ item.payment_type }}
-                            </h3>
+                            <div class="flex justify-between items-center">
+                                <h3 class="font-bold text-lg">
+                                    {{ item.payment_type }}
+                                </h3>
+                                <!-- Highlight Default Payment -->
+                                <span
+                                    v-if="item.default === 'true'"
+                                    class="text-white bg-green-500 px-2 py-1 rounded-md text-sm"
+                                >
+                                    Default
+                                </span>
+                            </div>
 
                             <ul class="mt-2">
                                 <li
@@ -306,6 +327,16 @@ export default {
                                     {{ detail.value }}
                                 </li>
                             </ul>
+
+                            <!-- Display "Set Default" Button -->
+                            <div v-if="item.default !== 'true'" class="mt-4">
+                                <PrimaryButton
+                                    @click="setDefault(item)"
+                                    class="text-sm"
+                                >
+                                    Set Default
+                                </PrimaryButton>
+                            </div>
                         </div>
                     </div>
 

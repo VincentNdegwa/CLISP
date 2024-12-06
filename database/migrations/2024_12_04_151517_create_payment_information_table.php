@@ -16,6 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('business_id');
             $table->string('payment_type');
             $table->json('payment_details')->nullable();
+            $table->enum('default', ['false', 'true'])->default('false');
             $table->timestamps();
 
             $table->foreign('business_id')->references('business_id')->on('business')->onDelete('cascade');
