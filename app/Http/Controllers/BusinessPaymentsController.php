@@ -63,4 +63,13 @@ class BusinessPaymentsController extends Controller
         }
         return response()->json($method);
     }
+
+    public function fetchSinglePaymentInformation($business_id, Request $request)
+    {
+        $payment = PaymentInformation::where('business_id', $business_id)->where('payment_type', $request->input('payment_type'))->first();
+        if ($payment) {
+            $payment->payment_details = json_decode($payment->payment_details);
+        }
+        return response()->json($payment);
+    }
 }

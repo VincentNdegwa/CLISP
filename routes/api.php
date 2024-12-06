@@ -26,6 +26,7 @@ Route::prefix('business')->group(function () {
     Route::get("/{business_id}/payment-methods", [BusinessPaymentsController::class, 'getPaymentMethods']);
     Route::post("/{Business_id}/payment-information", [BusinessPaymentsController::class, "createOrUpdatePaymentInformation"]);
     Route::get("/{Business_id}/payment-information", [BusinessPaymentsController::class, "getPaymentInformation"]);
+    Route::post("/{Business_id}/search-payment-information", [BusinessPaymentsController::class, "fetchSinglePaymentInformation"]);
 });
 
 Route::prefix('dashboard/{business_id}')->group(function () {

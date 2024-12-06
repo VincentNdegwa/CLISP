@@ -5,7 +5,11 @@
         <form @submit.prevent="submitForm" class="space-y-6">
             <!-- Payment Type -->
             <div>
-                <InputLabel for="paymentType" value="Payment Type" />
+                <InputLabel
+                    for="paymentType"
+                    value="Payment Type"
+                    required="true"
+                />
 
                 <Select
                     v-model="form.payment_type"
@@ -16,9 +20,17 @@
                     class="w-full md:w-56"
                     required
                     :invalid="errors.payment_type"
+                    @update:modelValue="fetchPaymentInformation"
                 />
 
                 <InputError :message="errors.payment_type" />
+            </div>
+
+            <div
+                v-if="form.processing"
+                class="w-full flex justify-center items-center"
+            >
+                <LoadingIcon />
             </div>
 
             <!-- Custom Fields -->
@@ -60,6 +72,7 @@
                 <PrimaryButton
                     class="w-full justify-center flex-1"
                     type="submit"
+                    :disabled="form.processing"
                     >Submit</PrimaryButton
                 >
                 <PrimaryButton
@@ -86,6 +99,7 @@ import Button from "primevue/button";
 import Select from "primevue/select";
 import { useUserStore } from "@/Store/UserStore";
 import axios from "axios";
+import LoadingIcon from "@/Components/LoadingIcon.vue";
 
 export default {
     props: {
@@ -101,11 +115,17 @@ export default {
         PrimaryButton,
         Button,
         Select,
+        LoadingIcon,
     },
     setup(props, { emit }) {
         const form = useForm({
             payment_type: "",
-            payment_details: [],
+            payment_details: [
+                {
+                    name: "",
+                    value: "",
+                },
+            ],
         });
 
         const addField = () => {
@@ -117,9 +137,23 @@ export default {
         };
 
         const submitForm = async () => {
-            form.processing = true;
             emit("updateOrCreate", form);
             emit("close");
+        };
+
+        const fetchPaymentInformation = async (params) => {
+            const payload = {
+                payment_type: params,
+            };
+            form.processing = true;
+            const response = await axios.post(
+                `/api/business/${
+                    useUserStore().business
+                }/search-payment-information`,
+                payload
+            );
+            form.payment_details = response.data.payment_details;
+            form.processing = false;
         };
 
         return {
@@ -128,6 +162,7 @@ export default {
             removeField,
             submitForm,
             errors: form.errors,
+            fetchPaymentInformation,
         };
     },
 };
