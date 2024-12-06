@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\BusinessConnectionController;
 use App\Http\Controllers\BusinessController;
+use App\Http\Controllers\BusinessPaymentsController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FileSystemController;
@@ -21,7 +22,7 @@ Route::prefix('business')->group(function () {
     Route::post('/update', [BusinessController::class, 'Update'])->name('business.update');
     Route::post('/delete', [BusinessController::class, 'Delete'])->name('business.delete');
     Route::get('/details', [BusinessController::class, 'getDetails'])->name('business.details');
-    Route::get("/{business_id}/payment-methods", [BusinessController::class, 'getPaymentMethods']);
+    Route::get("/{business_id}/payment-methods", [BusinessPaymentsController::class, 'getPaymentMethods']);
 });
 
 Route::prefix('dashboard/{business_id}')->group(function () {
