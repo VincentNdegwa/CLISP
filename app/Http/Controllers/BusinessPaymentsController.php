@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\PaymentInformation;
 use App\Models\PaymentMethod;
 use Illuminate\Http\Request;
 
@@ -30,5 +31,32 @@ class BusinessPaymentsController extends Controller
         $methods = $methods->get();
 
         return response()->json($methods);
+    }
+    public function createOrUpdatePaymentInformation($business_id, Request $request)
+    {
+        $method = PaymentInformation::firstOrNew(['business_id' => $business_id]);
+
+        $data = $request->all();
+        if (isset($data['payment_details']) && is_array($data['payment_details'])) {
+            $data['payment_details'] = json_encode($data['payment_details']);
+        }
+        $method->fill($data);
+        $method->save();
+        $method->refresh();
+        $method->payment_details = json_decode($method->payment_details);
+
+        return response()->json($method);
+    }
+
+    public function getPaymentInformation($business_id)
+    {
+        $method = PaymentInformation::where('business_id', $business_id)->get();
+        if ($method) {
+            $method->map(function ($payment) {
+                $payment->payment_details = json_decode($payment->payment_details);
+                return $payment;
+            });
+        }
+        return response()->json($method);
     }
 }

@@ -11,6 +11,7 @@
                     v-model="form.payment_type"
                     :options="paymentMethods"
                     optionLabel="name"
+                    optionValue="name"
                     placeholder="Select Payment Method"
                     class="w-full md:w-56"
                     required
@@ -83,6 +84,8 @@ import InputError from "@/Components/InputError.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import Button from "primevue/button";
 import Select from "primevue/select";
+import { useUserStore } from "@/Store/UserStore";
+import axios from "axios";
 
 export default {
     props: {
@@ -115,8 +118,13 @@ export default {
 
         const submitForm = async () => {
             try {
-                await form.post("/api/payment-information");
-                alert("Payment information saved successfully!");
+                const response = await axios.post(
+                    `/api/business/${
+                        useUserStore().business
+                    }/payment-information`,
+                    form
+                );
+                console.log(response);
             } catch (error) {
                 console.error("Error saving payment information:", error);
             }

@@ -13,6 +13,7 @@ use App\Http\Controllers\ResourceCategoryController;
 use App\Http\Controllers\ResourceItemController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\TransactionController;
+use App\Models\Business;
 use App\Models\BusinessConnection;
 use App\Models\ResourceItem;
 use Illuminate\Support\Facades\Route;
@@ -23,6 +24,8 @@ Route::prefix('business')->group(function () {
     Route::post('/delete', [BusinessController::class, 'Delete'])->name('business.delete');
     Route::get('/details', [BusinessController::class, 'getDetails'])->name('business.details');
     Route::get("/{business_id}/payment-methods", [BusinessPaymentsController::class, 'getPaymentMethods']);
+    Route::post("/{Business_id}/payment-information", [BusinessPaymentsController::class, "createOrUpdatePaymentInformation"]);
+    Route::get("/{Business_id}/payment-information", [BusinessPaymentsController::class, "getPaymentInformation"]);
 });
 
 Route::prefix('dashboard/{business_id}')->group(function () {
