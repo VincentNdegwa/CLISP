@@ -303,7 +303,7 @@ export default {
                                 item, index
                             ) in paymentMethodsStore?.paymentInformations"
                             :key="index"
-                            class="border p-4 rounded-md shadow-md bg-white"
+                            class="border flex-1 md:flex-none p-4 rounded-md shadow-md bg-white"
                         >
                             <div class="flex justify-between items-center">
                                 <h3 class="font-bold text-lg">

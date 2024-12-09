@@ -139,6 +139,7 @@ export default {
             const payload = {
                 payment_type: params,
             };
+            form.payment_details = [];
             form.processing = true;
             const response = await axios.post(
                 `/api/business/${

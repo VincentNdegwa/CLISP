@@ -15,6 +15,7 @@ export const usePaymentMethods = defineStore("usePaymentMethods", {
         async fetchPaymentMethods(queries) {
             try {
                 let url = null;
+                this.methods = [];
                 url = `/api/business/${
                     useUserStore().business
                 }/payment-methods`;
@@ -28,8 +29,7 @@ export const usePaymentMethods = defineStore("usePaymentMethods", {
                 }
 
                 const response = await axios.get(url);
-                this.methods = [];
-                this.methods = response.data;
+                this.methods = response.data || [];
             } catch (error) {
                 console.error(error);
             }
