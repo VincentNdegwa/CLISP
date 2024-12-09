@@ -28,6 +28,7 @@ export const usePaymentMethods = defineStore("usePaymentMethods", {
                 }
 
                 const response = await axios.get(url);
+                this.methods = [];
                 this.methods = response.data;
             } catch (error) {
                 console.error(error);

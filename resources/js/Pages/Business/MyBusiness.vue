@@ -10,7 +10,7 @@ import Avatar from "primevue/avatar";
 import Badge from "primevue/badge";
 import PaymentInformationForm from "./PaymentInformationForm.vue";
 import { usePaymentMethods } from "@/Store/PaymentMethods";
-import { onMounted, ref, watch } from "vue";
+import { onMounted, ref } from "vue";
 
 export default {
     components: {
@@ -27,7 +27,10 @@ export default {
         const { props } = usePage();
         const myBusiness = useMyBusiness();
         const paymentMethodsStore = usePaymentMethods();
-        const paymentInformations = [];
+        const notification = ref({
+            status: "",
+            message: "",
+        });
 
         const queries = ref({
             category: "Information-Required",
@@ -59,12 +62,6 @@ export default {
         onMounted(async () => {
             await paymentMethodsStore.fetchPaymentMethods(queries.value);
             await paymentMethodsStore.fetchPaymentInformations();
-        });
-
-        watch(() => {
-            paymentMethodsStore = (newValue) => {
-                paymentInformations = newValue.paymentInformations;
-            };
         });
 
         return {
@@ -113,6 +110,7 @@ export default {
 
 <template>
     <Head title="Business Information" />
+
     <Modal :show="modal.open" @close="closeModal">
         <NewBusiness
             v-if="modal.component == 'EditBusiness'"
@@ -303,7 +301,7 @@ export default {
                         <div
                             v-for="(
                                 item, index
-                            ) in paymentMethodsStore.paymentInformations"
+                            ) in paymentMethodsStore?.paymentInformations"
                             :key="index"
                             class="border p-4 rounded-md shadow-md bg-white"
                         >
@@ -313,7 +311,10 @@ export default {
                                 </h3>
                                 <!-- Highlight Default Payment -->
                                 <span
-                                    v-if="item.default === 'true'"
+                                    v-if="
+                                        item.default === 'true' ||
+                                        item.default === true
+                                    "
                                     class="text-white bg-green-500 px-2 py-1 rounded-md text-sm"
                                 >
                                     Default
@@ -333,7 +334,13 @@ export default {
                             </ul>
 
                             <!-- Display "Set Default" Button -->
-                            <div v-if="item.default !== 'true'" class="mt-4">
+                            <div
+                                v-if="
+                                    item.default == false ||
+                                    item.default == 'false'
+                                "
+                                class="mt-4"
+                            >
                                 <PrimaryButton
                                     @click="setDefault(item)"
                                     class="text-sm"
