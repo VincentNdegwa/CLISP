@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Mail\RequestApprovalMail;
 use App\Models\ExchangeRate;
 use App\Models\ItemBusiness;
+use App\Models\PaymentInformation;
 use App\Models\ResourceItem;
 use App\Models\Transaction;
 use App\Models\TransactionDetail;
@@ -589,10 +590,17 @@ class TransactionController extends Controller
     public function printPreviewReceipt($transactionId, $business_id)
     {
         $transaction = $this->retrieveTransaction($transactionId, false, $business_id);
+        $payment = PaymentInformation::where('business_id', $business_id)
+            ->where('default', 'true')
+            ->first();
+        if (!$payment) {
+            $payment = PaymentInformation::where('business_id', $business_id)->first();
+        }
         if (!$transaction) {
             return redirect()->route('not-found');
         }
-        $pdf = Pdf::loadView('receipt', compact('transaction'));
-        return view('receipt', compact('transaction'));
+        $payment->payment_details = json_decode($payment->payment_details);
+        $pdf = Pdf::loadView('receipt', compact('transaction', 'payment'));
+        return view('receipt', compact('transaction', 'payment'));
     }
 }

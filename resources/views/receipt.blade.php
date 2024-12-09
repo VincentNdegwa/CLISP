@@ -241,6 +241,22 @@
             @endif
         </div>
 
+        <!-- Payment Details -->
+        <div class="">
+
+            <h3>Payment Information</h3>
+            <p>{{ $payment['payment_type'] }}</p>
+            @if (isset($payment['payment_details']) && is_array($payment['payment_details']))
+                <ul style="list-style: none; padding: 0;">
+                    @foreach ($payment['payment_details'] as $detail)
+                        <li>
+                            <strong>{{ $detail['name'] }}:</strong> {{ $detail['value'] }}
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+        </div>
+
         <!-- Footer -->
         <div class="footer">
             <p>Thank you for doing business with us!</p>
