@@ -72,4 +72,19 @@ class BusinessPaymentsController extends Controller
         }
         return response()->json($payment);
     }
+    public function setDefault($business_id, $payment_id)
+    {
+        PaymentInformation::where('business_id', $business_id)->update(['default' => 'false']);
+        PaymentInformation::where('business_id', $business_id)->where('id', $payment_id)->update(['default' => 'true']);
+        return response()->json(['error' => false, 'message' => 'Payment method set as default successfully.', 'data' => $this->fetchPayment($business_id, $payment_id)]);
+    }
+
+    private function fetchPayment($business_id, $payment_id)
+    {
+        $payment = PaymentInformation::where('business_id', $business_id)->where('id', $payment_id)->first();
+        if ($payment) {
+            $payment->payment_details = json_decode($payment->payment_details);
+        }
+        return $payment;
+    }
 }

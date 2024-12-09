@@ -73,5 +73,30 @@ export const usePaymentMethods = defineStore("usePaymentMethods", {
                 console.error(error);
             }
         },
+
+        async setDefault(payment_id) {
+            try {
+                const response = await axios.post(
+                    `/api/business/${
+                        useUserStore().business
+                    }/payment-information/default/${payment_id}`
+                );
+                this.notification.message = response.data.message;
+                this.notification.error = response.data.error;
+                if (!response.data.error) {
+                    let payment = response.data.data;
+                    this.paymentInformations = this.paymentInformations.map(
+                        (info) => {
+                            if (info.id === payment.id) {
+                                return { ...info, default: true };
+                            }
+                            return { ...info, default: false };
+                        }
+                    );
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        },
     },
 });

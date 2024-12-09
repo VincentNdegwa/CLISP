@@ -10,7 +10,7 @@ import Avatar from "primevue/avatar";
 import Badge from "primevue/badge";
 import PaymentInformationForm from "./PaymentInformationForm.vue";
 import { usePaymentMethods } from "@/Store/PaymentMethods";
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 
 export default {
     components: {
@@ -27,6 +27,7 @@ export default {
         const { props } = usePage();
         const myBusiness = useMyBusiness();
         const paymentMethodsStore = usePaymentMethods();
+        const paymentInformations = [];
 
         const queries = ref({
             category: "Information-Required",
@@ -50,10 +51,7 @@ export default {
 
         const setDefault = async (paymentMethod) => {
             try {
-                paymentMethodsStore.paymentInformations.forEach((item) => {
-                    item.default =
-                        item.id === paymentMethod.id ? "true" : "false";
-                });
+                await paymentMethodsStore.setDefault(paymentMethod.id);
             } catch (error) {
                 console.error("Failed to set default payment method:", error);
             }
@@ -61,6 +59,12 @@ export default {
         onMounted(async () => {
             await paymentMethodsStore.fetchPaymentMethods(queries.value);
             await paymentMethodsStore.fetchPaymentInformations();
+        });
+
+        watch(() => {
+            paymentMethodsStore = (newValue) => {
+                paymentInformations = newValue.paymentInformations;
+            };
         });
 
         return {

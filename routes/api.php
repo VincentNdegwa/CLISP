@@ -24,9 +24,10 @@ Route::prefix('business')->group(function () {
     Route::post('/delete', [BusinessController::class, 'Delete'])->name('business.delete');
     Route::get('/details', [BusinessController::class, 'getDetails'])->name('business.details');
     Route::get("/{business_id}/payment-methods", [BusinessPaymentsController::class, 'getPaymentMethods']);
-    Route::post("/{Business_id}/payment-information", [BusinessPaymentsController::class, "createOrUpdatePaymentInformation"]);
-    Route::get("/{Business_id}/payment-information", [BusinessPaymentsController::class, "getPaymentInformation"]);
-    Route::post("/{Business_id}/search-payment-information", [BusinessPaymentsController::class, "fetchSinglePaymentInformation"]);
+    Route::post("/{business_id}/payment-information", [BusinessPaymentsController::class, "createOrUpdatePaymentInformation"]);
+    Route::get("/{business_id}/payment-information", [BusinessPaymentsController::class, "getPaymentInformation"]);
+    Route::post("/{business_id}/search-payment-information", [BusinessPaymentsController::class, "fetchSinglePaymentInformation"]);
+    Route::post("/{business_id}/payment-information/default/{payment_id}", [BusinessPaymentsController::class, "setDefault"]);
 });
 
 Route::prefix('dashboard/{business_id}')->group(function () {
