@@ -38,6 +38,13 @@ export default {
         const queries = ref({
             category: "Information-Required",
         });
+        const checkStoreNotifications = () => {
+            notification.value.status = paymentMethodsStore?.notification.error
+                ? "error"
+                : "success";
+            notification.value.message =
+                paymentMethodsStore?.notification.message;
+        };
 
         myBusiness.fetchMyBusiness({
             userId: props.auth.user.id,
@@ -53,11 +60,13 @@ export default {
 
         const createOrUpdate = async (params) => {
             await paymentMethodsStore.createOrUpdatePaymentInformation(params);
+            checkStoreNotifications();
         };
 
         const setDefault = async (paymentMethod) => {
             try {
                 await paymentMethodsStore.setDefault(paymentMethod.id);
+                checkStoreNotifications();
             } catch (error) {
                 console.error("Failed to set default payment method:", error);
             }
@@ -71,7 +80,6 @@ export default {
             notification.value.open = true;
             notification.value.status = params.status;
             notification.value.message = params.message;
-           
         };
 
         return {
