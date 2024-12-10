@@ -30,6 +30,7 @@ export default {
         const myBusiness = useMyBusiness();
         const paymentMethodsStore = usePaymentMethods();
         const notification = ref({
+            open: false,
             status: "",
             message: "",
         });
@@ -66,12 +67,21 @@ export default {
             await paymentMethodsStore.fetchPaymentInformations();
         });
 
+        const openNotification = (params) => {
+            notification.value.open = true;
+            notification.value.status = params.status;
+            notification.value.message = params.message;
+           
+        };
+
         return {
             myBusiness,
             fetchUpdatedBusiness,
             paymentMethodsStore,
             createOrUpdate,
             setDefault,
+            notification,
+            openNotification,
         };
     },
     methods: {
@@ -106,9 +116,6 @@ export default {
         closeConfirmation() {
             this.confirmation.isOpen = false;
         },
-        funcTest() {
-            console.log("function working...");
-        },
     },
     data() {
         return {
@@ -122,6 +129,7 @@ export default {
                 message: "",
                 method: null,
             },
+
             currentBusiness: this.myBusiness.business.business,
         };
     },
@@ -130,6 +138,11 @@ export default {
 
 <template>
     <Head title="Business Information" />
+    <AlertNotification
+        :open="notification.open"
+        :message="notification.message"
+        :status="notification.status"
+    />
     <ConfirmationModal
         :isOpen="confirmation.isOpen"
         :title="confirmation.title"
@@ -143,6 +156,7 @@ export default {
             @close="closeModal"
             :edit="true"
             :editData="currentBusiness"
+            @notificationUpdate="openNotification"
         />
         <PaymentInformationForm
             v-if="modal.component == 'Add Payments'"

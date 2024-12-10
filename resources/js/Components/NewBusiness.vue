@@ -11,7 +11,7 @@ import Select from "primevue/select";
 import currencyCodes from "@/currency";
 
 export default {
-    emits: ["close"],
+    emits: ["close", "notificationUpdate"],
     props: ["user", "edit", "editData"],
     data() {
         const today = new Date();
@@ -91,12 +91,14 @@ export default {
                         this.notification.open = true;
                         this.notification.message = "Failed to upload logo";
                         this.notification.status = "error";
+                        this.$emit("notificationUpdate", this.notification);
                     } else {
                         this.form.logo = response.data.path;
                         this.notification.open = true;
                         this.notification.message =
                             "Logo uploaded successfully";
                         this.notification.status = "success";
+                        this.$emit("notificationUpdate", this.notification);
                     }
                     console.log(response);
                 })
@@ -105,6 +107,8 @@ export default {
                     this.notification.open = true;
                     this.notification.message = "Failed to upload logo";
                     this.notification.status = "error";
+                    this.$emit("notificationUpdate", this.notification);
+
                     return false;
                 });
         },
@@ -140,6 +144,8 @@ export default {
                         this.notification.open = true;
                         this.notification.message = res.data.message;
                         this.notification.status = "success";
+                        this.$emit("notificationUpdate", this.notification);
+
                         if (!this.edit) {
                             window.location.reload();
                         }
@@ -151,6 +157,7 @@ export default {
                         this.notification.open = true;
                         this.notification.message = res.data.message;
                         this.notification.status = "error";
+                        this.$emit("notificationUpdate", this.notification);
                     }
                 })
                 .catch((errorMessages) => {
@@ -158,6 +165,7 @@ export default {
                     this.notification.open = true;
                     this.notification.message = errorMessages.message;
                     this.notification.status = "error";
+                    this.$emit("notificationUpdate", this.notification);
                 });
         },
     },
@@ -165,11 +173,6 @@ export default {
 </script>
 
 <template>
-    <AlertNotification
-        :open="notification.open"
-        :message="notification.message"
-        :status="notification.status"
-    />
     <div
         class="w-full max-w-5xl mx-auto p-5 bg-white shadow-md rounded-md text-slate-950"
     >
