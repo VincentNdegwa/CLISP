@@ -34,23 +34,48 @@ class BusinessPaymentsController extends Controller
     }
     public function createOrUpdatePaymentInformation($business_id, Request $request)
     {
-        $method = PaymentInformation::firstOrNew(['business_id' => $business_id, 'payment_type' => $request->input('payment_type')]);
-
         $data = $request->all();
-        if (isset($data['payment_details']) && is_array($data['payment_details'])) {
-            $data['payment_details'] = json_encode($data['payment_details']);
-        }
-        $method->fill($data);
-        $method->save();
-        $method->refresh();
-        $method->payment_details = json_decode($method->payment_details);
 
-        return response()->json([
-            'error' => false,
-            'message' => 'Payment information saved successfully.',
-            'data' => $method
-        ]);
+        if (isset($data['payment_details']) && is_array($data['payment_details']) && !empty($data['payment_details'])) {
+            $data['payment_details'] = json_encode($data['payment_details']);
+            $method = PaymentInformation::firstOrNew([
+                'business_id' => $business_id,
+                'payment_type' => $request->input('payment_type'),
+            ]);
+
+            $method->fill($data);
+            $method->save();
+
+            if (!PaymentInformation::where('business_id', $business_id)->where('default', 'true')->exists()) {
+                $method->update(['default' => 'true']);
+            }
+
+            $method->refresh();
+            $method->payment_details = json_decode($method->payment_details);
+
+            return response()->json([
+                'error' => false,
+                'message' => 'Payment information saved successfully.',
+                'data' => $method,
+            ]);
+        } else {
+            $method = PaymentInformation::where([
+                'business_id' => $business_id,
+                'payment_type' => $request->input('payment_type'),
+            ])->first();
+
+            $returnData = $method;
+            $method->delete();
+            $returnData->payment_details = [];
+
+            return response()->json([
+                'error' => false,
+                'message' => 'Payment information deleted successfully.',
+                'data' => $returnData
+            ]);
+        }
     }
+
 
     public function getPaymentInformation($business_id)
     {

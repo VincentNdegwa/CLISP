@@ -11,6 +11,7 @@ import Badge from "primevue/badge";
 import PaymentInformationForm from "./PaymentInformationForm.vue";
 import { usePaymentMethods } from "@/Store/PaymentMethods";
 import { onMounted, ref } from "vue";
+import ConfirmationModal from "@/Components/ConfirmationModal.vue";
 
 export default {
     components: {
@@ -22,6 +23,7 @@ export default {
         Modal,
         NewBusiness,
         PaymentInformationForm,
+        ConfirmationModal,
     },
     setup() {
         const { props } = usePage();
@@ -95,12 +97,30 @@ export default {
             this.currentBusiness = this.myBusiness?.business?.business;
             this.openModal("EditBusiness");
         },
+        openConfirmation(title, message, callback) {
+            this.confirmation.isOpen = true;
+            this.confirmation.title = title;
+            this.confirmation.message = message;
+            this.confirmation.method = callback;
+        },
+        closeConfirmation() {
+            this.confirmation.isOpen = false;
+        },
+        funcTest() {
+            console.log("function working...");
+        },
     },
     data() {
         return {
             modal: {
                 open: false,
                 component: "",
+            },
+            confirmation: {
+                isOpen: false,
+                title: "",
+                message: "",
+                method: null,
             },
             currentBusiness: this.myBusiness.business.business,
         };
@@ -110,7 +130,13 @@ export default {
 
 <template>
     <Head title="Business Information" />
-
+    <ConfirmationModal
+        :isOpen="confirmation.isOpen"
+        :title="confirmation.title"
+        :message="confirmation.message"
+        @confirm="confirmation.method"
+        @close="closeConfirmation"
+    />
     <Modal :show="modal.open" @close="closeModal">
         <NewBusiness
             v-if="modal.component == 'EditBusiness'"
@@ -342,7 +368,15 @@ export default {
                                 class="mt-4"
                             >
                                 <PrimaryButton
-                                    @click="setDefault(item)"
+                                    @click="
+                                        openConfirmation(
+                                            'Set Payment Default',
+                                            `Are you sure you want to set payment ${item.payment_type} as default`,
+                                            () => {
+                                                setDefault(item);
+                                            }
+                                        )
+                                    "
                                     class="text-sm"
                                 >
                                     Set Default

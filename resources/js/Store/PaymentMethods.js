@@ -43,6 +43,7 @@ export const usePaymentMethods = defineStore("usePaymentMethods", {
                     }/payment-information`
                 );
                 this.paymentInformations = response.data;
+                this.checkIfEmptyDetails();
             } catch (error) {
                 console.error(error);
             }
@@ -68,6 +69,8 @@ export const usePaymentMethods = defineStore("usePaymentMethods", {
                 } else {
                     this.paymentInformations.push(response.data.data);
                 }
+                this.checkIfEmptyDetails();
+
                 this.notification.message = response.data.message;
                 this.notification.error = response.data.error;
             } catch (error) {
@@ -98,6 +101,12 @@ export const usePaymentMethods = defineStore("usePaymentMethods", {
             } catch (error) {
                 console.error(error);
             }
+        },
+
+        async checkIfEmptyDetails() {
+            this.paymentInformations = this.paymentInformations.filter(
+                (payment) => payment.payment_details?.length > 0
+            );
         },
     },
 });

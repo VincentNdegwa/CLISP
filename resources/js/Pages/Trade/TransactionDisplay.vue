@@ -134,7 +134,6 @@ import NoRecords from "@/Components/NoRecords.vue";
 import { useUserStore } from "@/Store/UserStore";
 import { currencyConvertor } from "@/Store/CurrencyConvertStore";
 
-
 export default {
     emits: ["startUpdate", "startDelete", "payTransaction"],
     components: {
@@ -289,7 +288,9 @@ export default {
                 (transaction_type == "Incoming" ||
                     transaction_type == "Outgoing") &&
                 transaction_status == "approved";
-            let canViewInvoice = true;
+            let canViewInvoice = ["approved", "paid", "completed"].includes(
+                transaction_status
+            );
 
             let canDelete = transaction_status == "canceled";
             if (canEdit) {
