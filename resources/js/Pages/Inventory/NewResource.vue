@@ -1,11 +1,22 @@
 <script>
 import InputLabel from "@/Components/InputLabel.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
+import { useResourceCategoryStore } from "@/Store/ResourceCategory";
 import axios from "axios";
+import { onMounted } from "vue";
 import { VDateInput } from "vuetify/labs/VDateInput";
 
 export default {
-    props: ["category", "dataEdit", "newResource", "loading"],
+    props: ["dataEdit", "newResource", "loading"],
+
+    setup() {
+        const category = useResourceCategoryStore();
+
+        onMounted(() => {
+            category.fetchResourceCategory();
+        });
+        return { category };
+    },
 
     data() {
         const formData = new FormData();

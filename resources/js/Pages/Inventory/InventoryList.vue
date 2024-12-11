@@ -6,7 +6,7 @@ import NewCategory from "./NewCategory.vue";
 import { useResourceCategoryStore } from "@/Store/ResourceCategory";
 import { useResourceStore } from "@/Store/Resource";
 import TableSkeleton from "@/Components/TableSkeleton.vue";
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 import ConfirmationModal from "@/Components/ConfirmationModal.vue";
 import NoRecords from "@/Components/NoRecords.vue";
 import TableDisplay from "@/Layouts/TableDisplay.vue";
@@ -24,7 +24,6 @@ export default {
             modal.value.component = "";
         };
         const category = useResourceCategoryStore();
-        category.fetchResourceCategory();
 
         const resources = useResourceStore();
         resources.fetchResources();

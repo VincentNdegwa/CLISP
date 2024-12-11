@@ -24,9 +24,10 @@ export const useResourceCategoryStore = defineStore("resource_category", {
             this.loading = true;
             this.error = null;
             try {
-                const response = await axios.get(
-                    `/api/category/${businessId}/list?rows=${params.rows}&page=${params.page}`
-                );
+                const url = params
+                    ? `/api/category/${businessId}/list?rows=${params.rows}&page=${params.page}`
+                    : `/api/category/${businessId}/list`;
+                const response = await axios.get(url);
 
                 if (response.data.error) {
                     this.error = response.data.message;

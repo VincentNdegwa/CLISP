@@ -50,16 +50,6 @@ class ResourceCategoryController extends Controller
     public function read(Request $request, $business_id)
     {
         try {
-            $rows = (int)$request->query('rows', 20);
-            $page = (int)$request->query('page', 1);
-
-            if ($rows <= 0 || $page <= 0) {
-                return response()->json([
-                    'error' => true,
-                    'message' => 'Invalid pagination parameters.'
-                ], 400);
-            }
-
             $business = Business::where('business_id', $business_id)->first();
 
             if (!$business) {
@@ -68,9 +58,27 @@ class ResourceCategoryController extends Controller
                     'message' => 'Business not found.'
                 ]);
             }
+            $items = [
+                "data" => []
+            ];
 
-            $items = ResourceCategory::where('business_id', $business_id)
-                ->paginate($rows, ['*'], 'page', $page);
+            if ($request->query("rows") && $request->query('page')) {
+                $rows = (int)$request->query('rows', 20);
+                $page = (int)$request->query('page', 1);
+
+                if ($rows <= 0 || $page <= 0) {
+                    return response()->json([
+                        'error' => true,
+                        'message' => 'Invalid pagination parameters.'
+                    ], 400);
+                }
+
+                $items = ResourceCategory::where('business_id', $business_id)
+                    ->paginate($rows, ['*'], 'page', $page);
+            } else {
+                $resources = ResourceCategory::where('business_id', $business_id)->get();
+                $items['data'] = $resources;
+            }
 
             return response()->json([
                 'error' => false,
