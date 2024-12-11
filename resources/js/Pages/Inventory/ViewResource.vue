@@ -21,7 +21,6 @@ export default {
 
         // Fetch single item data when component is mounted
         onMounted(() => {
-            console.log("Fetching resource for itemId:", props.itemId);
             resourceStore.getSingleResource(props.itemId);
         });
 
@@ -127,7 +126,7 @@ export default {
                     <PrimaryButton> View All </PrimaryButton>
                 </div>
                 <div class="overflow-x-auto mt-4 h-fit">
-                    <DataTable :value="singleItem.transaction_items_history">
+                    <DataTable :value="singleItem.transactionItemsHistory">
                         <Column field="transaction_time" header="Date" />
                         <Column field="quantity" header="Quantity" />
                         <Column
@@ -152,7 +151,6 @@ export default {
                                 ></i>
                             </template>
                         </Column>
-                        
                     </DataTable>
                 </div>
             </div>

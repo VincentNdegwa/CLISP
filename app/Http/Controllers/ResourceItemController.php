@@ -207,10 +207,14 @@ class ResourceItemController extends Controller
                         $query->with('category');
                     },
                     'business',
-                    'transactionItemsHistory'
                 ])
                 ->where('item_id', $itemId)
                 ->first();
+            $transactionItemHistory = TransactionItemHistory::where('item_business_id', $businessItem->id)
+                ->limit(5)
+                ->get();
+            $businessItem->transactionItemsHistory = $transactionItemHistory;
+
             return response()->json([
                 'error' => false,
                 'message' => "",
