@@ -5,6 +5,11 @@
         class="min-h-[75vh]"
         responsiveLayout="scroll"
     >
+        <Column field="request_type" header="Trend">
+            <template #body="slotProps">
+                <i :class="getTrend(slotProps.data.request_type)"></i>
+            </template>
+        </Column>
         <Column field="business_name" header="Business">
             <template #body="slotProps">
                 <span>{{ getBusinessName(slotProps.data) }}</span>
@@ -67,32 +72,6 @@
                         :popup="true"
                     />
                 </div>
-
-                <!-- <div class="flex justify-between">
-                    <button
-                        v-if="slotProps.data.connection_status === 'pending'"
-                        @click="
-                            handleRequestChange(slotProps.data, 'pendingAction')
-                        "
-                        class="bg-green-600 text-white px-4 py-2 rounded mr-2"
-                    >
-                        {{ pendingActionText }}
-                    </button>
-                    <button
-                        v-else-if="
-                            slotProps.data.connection_status === 'approved'
-                        "
-                        @click="
-                            handleRequestChange(
-                                slotProps.data,
-                                'approvedAction'
-                            )
-                        "
-                        class="bg-yellow-500 text-white px-4 py-2 rounded"
-                    >
-                        {{ approvedActionText }}
-                    </button>
-                </div> -->
             </template>
         </Column>
     </DataTable>
@@ -110,7 +89,7 @@ import Menu from "primevue/menu";
 export default {
     props: {
         requests: Object,
-        requestType: String,
+        request_type: String,
         pendingActionText: String,
         approvedActionText: String,
         pendingAction: Function,
@@ -127,17 +106,17 @@ export default {
 
     methods: {
         getBusinessName(request) {
-            return this.requestType === "sent"
+            return this.request_type === "sent"
                 ? request.business_receiver.business_name
                 : request.business_requester.business_name;
         },
         getReceiverEmail(request) {
-            return this.requestType === "sent"
+            return this.request_type === "sent"
                 ? request.business_receiver.email
                 : request.business_requester.email;
         },
         getReceiverPhone(request) {
-            return this.requestType === "sent"
+            return this.request_type === "sent"
                 ? request.business_receiver.phone_number
                 : request.business_requester.phone_number;
         },
@@ -167,14 +146,14 @@ export default {
 
             let canCancel = {
                 label: "Cancel Request",
-                icon: "pi pi-arrow-up-right",
+                icon: "pi pi-times",
                 command: () => {
                     this.handleRequestChange(data, "pendingAction");
                 },
             };
             let canTerminate = {
                 label: "Terminate Connection",
-                icon: "pi pi-arrow-up-right",
+                icon: "pi pi-times",
                 command: () => {
                     this.handleRequestChange(data, "approvedAction");
                 },
@@ -186,15 +165,24 @@ export default {
                 this.actionItem = [canTerminate];
             }
         },
+        getTrend(trend) {
+            if (trend == "sent") {
+                return "pi pi-arrow-up-right";
+            }
+
+            if (trend == "receive") {
+                return "pi pi-arrow-down-left";
+            }
+        },
     },
     computed: {
         emailLabel() {
-            return this.requestType === "sent"
+            return this.request_type === "sent"
                 ? "Receiver Email"
                 : "Requester Email";
         },
         phoneLabel() {
-            return this.requestType === "sent"
+            return this.request_type === "sent"
                 ? "Receiver Phone"
                 : "Requester Phone";
         },

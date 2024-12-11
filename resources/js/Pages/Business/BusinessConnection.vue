@@ -272,7 +272,7 @@ export default {
         <div class="mb-10">
             <RequestList
                 :requests="requests?.data || []"
-                requestType="sent"
+                request_type="sent"
                 pendingActionText="Cancel Request"
                 approvedActionText="Terminate Connection"
                 :pendingAction="
