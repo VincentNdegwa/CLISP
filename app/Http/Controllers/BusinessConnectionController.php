@@ -8,26 +8,35 @@ use Illuminate\Validation\ValidationException;
 
 class BusinessConnectionController extends Controller
 {
-    public function getBusinessConnection($business_id)
+    public function getBusinessConnection(Request $request, $business_id)
     {
-        // get all connections where receiving_business_id = business_id or the  requesting_business_id = business_id
-        $sent = BusinessConnection::where('requesting_business_id', $business_id)
-            ->with('businessRequester', 'businessReceiver', 'userRequester', 'userReceiver')
-            ->get();
-        $received = BusinessConnection::where('receiving_business_id', $business_id)
-            ->with('businessRequester', 'businessReceiver', 'userRequester', 'userReceiver')
-            ->get();
+        $page = $request->query('page', 1);
+        $rows = $request->query('rows', 20);
+
+        $connections = BusinessConnection::where(function ($query) use ($business_id) {
+            $query->where('requesting_business_id', $business_id)
+                ->orWhere('receiving_business_id', $business_id);
+        })
+            ->with([
+                'businessRequester:business_id,business_name,email,phone_number',
+                'businessReceiver:business_id,business_name,email,phone_number',
+                'userRequester:id,name,email',
+                'userReceiver:id,name,email'
+            ])
+            ->paginate($rows, ['*'], 'page', $page);
+
+        $connections->getCollection()->transform(function ($connection) use ($business_id) {
+            $connection->requestType = $connection->requesting_business_id == $business_id ? 'sent' : 'received';
+            return $connection;
+        });
 
         return response()->json([
             "error" => false,
-            "message" => "Connections fetched successfully",
-            "sent" => $sent,
-            "incoming" => $received,
-            "total_connections" => count($sent) + count($received),
-            "total_received" => count($received),
-            "total_sent" => count($sent),
+            "connections" => $connections,
         ]);
     }
+
+
 
     public function sendConnectionRequest(Request $request)
     {

@@ -9,6 +9,7 @@ import ConfirmationModal from "@/Components/ConfirmationModal.vue";
 import axios from "axios";
 import NoRecords from "@/Components/NoRecords.vue";
 import RequestList from "./RequestList.vue";
+import Paginator from "primevue/paginator";
 
 export default {
     components: {
@@ -20,11 +21,12 @@ export default {
         ConfirmationModal,
         NoRecords,
         RequestList,
+        Paginator,
     },
     data() {
         return {
             activeTab: "sent",
-            sentRequests: [],
+            requests: [],
             incomingRequests: [],
             modal: {
                 open: false,
@@ -61,8 +63,7 @@ export default {
                 const response = await axios.get(
                     `/api/business/connection-requests/${businessId}`
                 );
-                this.sentRequests = response.data.sent;
-                this.incomingRequests = response.data.incoming;
+                this.requests = response.data.connections;
             } catch (error) {
                 this.displayNotification("Failed to fetch requests", "error");
             } finally {
@@ -131,7 +132,7 @@ export default {
             if (!data.error) {
                 this.displayNotification(data.message, "success");
                 this.closeModal();
-                this.sentRequests.push(data.business_request);
+                this.requests.data.push(data.business_request);
             }
         },
         displayNotification(message, status) {
@@ -190,6 +191,8 @@ export default {
         toggleDropdown() {
             this.isDropdownOpen = !this.isDropdownOpen;
         },
+        onPageChange() {},
+        onRowChange() {},
     },
 };
 </script>
@@ -266,39 +269,10 @@ export default {
             </div>
         </div>
 
-        <!-- Tabs -->
-        <div class="flex border-b mb-6">
-            <button
-                @click="activeTab = 'sent'"
-                :class="[
-                    'py-2 px-4 rounded-t-lg transition-all ease-linear duration-150',
-                    activeTab === 'sent'
-                        ? 'border-b-2 border-blue-600 bg-slate-700 text-white'
-                        : '',
-                ]"
-            >
-                My Requests
-            </button>
-            <button
-                @click="activeTab = 'incoming'"
-                :class="[
-                    'py-2 px-4 rounded-t-lg transition-all ease-linear duration-150',
-                    activeTab === 'incoming'
-                        ? 'border-b-2 border-blue-600 bg-slate-700 text-white'
-                        : '',
-                ]"
-            >
-                Incoming Requests
-            </button>
-        </div>
-
         <!-- Sent Requests -->
-        <div v-if="activeTab === 'sent'" class="mb-10">
-            <h2 class="text-xl font-semibold mb-4 text-center">
-                Sent Requests
-            </h2>
+        <div class="mb-10">
             <RequestList
-                :requests="sentRequests"
+                :requests="requests?.data || []"
                 requestType="sent"
                 pendingActionText="Cancel Request"
                 approvedActionText="Terminate Connection"
@@ -309,25 +283,16 @@ export default {
                     (request) => startMakingRequestChanges(request, 'Terminate')
                 "
             />
-        </div>
-
-        <!-- Incoming Requests -->
-        <div v-if="activeTab === 'incoming'">
-            <h2 class="text-xl font-semibold mb-4 text-center">
-                Incoming Requests
-            </h2>
-            <RequestList
-                :requests="incomingRequests"
-                requestType="incoming"
-                pendingActionText="Accept"
-                approvedActionText="Terminate Connection"
-                :pendingAction="
-                    (request) => startMakingRequestChanges(request, 'Approve')
-                "
-                :approvedAction="
-                    (request) => startMakingRequestChanges(request, 'Terminate')
-                "
-            />
+            <Paginator
+                v-if="requests?.data.length > 0"
+                :totalRecords="requests?.total"
+                :rows="requests?.per_page"
+                :first="(requests?.current_page - 1) * requests?.per_page"
+                @page="onPageChange"
+                @update:rows="onRowChange"
+                :rowsPerPageOptions="[10, 20, 50]"
+            >
+            </Paginator>
         </div>
     </AuthenticatedLayout>
 </template>

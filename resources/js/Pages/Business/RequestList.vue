@@ -89,7 +89,7 @@ import DataTable from "primevue/datatable";
 
 export default {
     props: {
-        requests: Array,
+        requests: Object,
         requestType: String,
         pendingActionText: String,
         approvedActionText: String,
