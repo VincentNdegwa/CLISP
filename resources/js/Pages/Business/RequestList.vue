@@ -2,7 +2,7 @@
     <DataTable
         v-if="requests.length > 0"
         :value="requests"
-        class="min-h-[70vh]"
+        class="min-h-[75vh]"
         responsiveLayout="scroll"
     >
         <Column field="business_name" header="Business">
@@ -50,7 +50,25 @@
         </Column>
         <Column header="Actions">
             <template #body="slotProps">
-                <div class="flex justify-between">
+                <div class="card flex justify-center">
+                    <Button
+                        type="button"
+                        icon="pi pi-ellipsis-v"
+                        @click="toggle(slotProps.data, $event)"
+                        aria-haspopup="true"
+                        severity="contrast"
+                        size="small"
+                        aria-controls="overlay_menu"
+                    />
+                    <Menu
+                        ref="menu"
+                        :id="'overlay_menu_' + slotProps.data.id"
+                        :model="actionItem"
+                        :popup="true"
+                    />
+                </div>
+
+                <!-- <div class="flex justify-between">
                     <button
                         v-if="slotProps.data.connection_status === 'pending'"
                         @click="
@@ -74,7 +92,7 @@
                     >
                         {{ approvedActionText }}
                     </button>
-                </div>
+                </div> -->
             </template>
         </Column>
     </DataTable>
@@ -84,8 +102,10 @@
 <script>
 import NoRecords from "@/Components/NoRecords.vue";
 import Badge from "primevue/badge";
+import Button from "primevue/button";
 import Column from "primevue/column";
 import DataTable from "primevue/datatable";
+import Menu from "primevue/menu";
 
 export default {
     props: {
@@ -101,7 +121,10 @@ export default {
         Column,
         Badge,
         NoRecords,
+        Menu,
+        Button,
     },
+
     methods: {
         getBusinessName(request) {
             return this.requestType === "sent"
@@ -134,6 +157,35 @@ export default {
                 this.approvedAction(request);
             }
         },
+        toggle(data, event) {
+            this.selectedData = data;
+            this.watchRequests(data);
+            this.$refs.menu.toggle(event);
+        },
+        watchRequests(data) {
+            this.actionItem = [];
+
+            let canCancel = {
+                label: "Cancel Request",
+                icon: "pi pi-arrow-up-right",
+                command: () => {
+                    this.handleRequestChange(data, "pendingAction");
+                },
+            };
+            let canTerminate = {
+                label: "Terminate Connection",
+                icon: "pi pi-arrow-up-right",
+                command: () => {
+                    this.handleRequestChange(data, "approvedAction");
+                },
+            };
+            if (data.connection_status === "pending") {
+                this.actionItem = [canCancel];
+            }
+            if (data.connection_status === "approved") {
+                this.actionItem = [canTerminate];
+            }
+        },
     },
     computed: {
         emailLabel() {
@@ -146,6 +198,12 @@ export default {
                 ? "Receiver Phone"
                 : "Requester Phone";
         },
+    },
+    data() {
+        return {
+            selectedData: null,
+            actionItem: [],
+        };
     },
 };
 </script>

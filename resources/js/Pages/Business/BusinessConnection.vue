@@ -25,7 +25,6 @@ export default {
     },
     data() {
         return {
-            activeTab: "sent",
             requests: [],
             incomingRequests: [],
             modal: {
@@ -284,7 +283,7 @@ export default {
                 "
             />
             <Paginator
-                v-if="requests?.data.length > 0"
+                v-if="requests?.data?.length > 0"
                 :totalRecords="requests?.total"
                 :rows="requests?.per_page"
                 :first="(requests?.current_page - 1) * requests?.per_page"
