@@ -76,8 +76,15 @@ class ResourceCategoryController extends Controller
                 $items = ResourceCategory::where('business_id', $business_id)
                     ->paginate($rows, ['*'], 'page', $page);
             } else {
-                $resources = ResourceCategory::where('business_id', $business_id)->get();
-                $items['data'] = $resources;
+                $categories = ResourceCategory::where('business_id', $business_id)->get();
+                $resource_category = ResourceItem::where('business_id', $business_id)->with('category')
+                    ->get()
+                    ->map(function ($resource) {
+                        return $resource->category;
+                    })->filter();
+
+                $mergedCategories = $categories->merge($resource_category)->unique('id');
+                $items['data'] = $mergedCategories;
             }
 
             return response()->json([
