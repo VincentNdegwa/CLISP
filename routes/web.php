@@ -3,6 +3,7 @@
 use App\Http\Controllers\BusinessController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InventoryController;
+use App\Http\Controllers\Paddle\PaddleDisplayController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ResourceCategoryController;
 use App\Http\Controllers\SubscriptionController;
@@ -15,6 +16,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Laravel\Paddle\Http\Controllers\WebhookController;
 
 Route::get('/', function () {
 
@@ -156,9 +158,13 @@ Route::middleware(['auth', 'check.business'])->group(function () {
     Route::get('not-found', function () {
         return Inertia::render('NotFound');
     })->name('not-found');
+
+    Route::post('paddle/webhook', [WebhookController::class, 'handleWebhook']);
+
 });
 
 
+    Route::get('billing', [PaddleDisplayController::class, 'show']);
 
 
 

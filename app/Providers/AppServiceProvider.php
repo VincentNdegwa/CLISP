@@ -3,8 +3,10 @@
 namespace App\Providers;
 
 use App\Models\Business;
+use App\Models\Paddle\SubscriptionCustomer;
+use App\Models\Paddle\SubscriptionTransaction;
 use Illuminate\Support\ServiceProvider;
-use Laravel\Cashier\Cashier;
+use Laravel\Paddle\Cashier;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -21,6 +23,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Cashier::useTransactionModel(SubscriptionTransaction::class);
+        Cashier::useCustomerModel(SubscriptionCustomer::class);
     }
 }

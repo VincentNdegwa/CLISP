@@ -13,8 +13,6 @@
     @paddleJS
 </head>
 
-<body class="font-sans antialiased text-slate-950">
-    @inertia
-</body>
+<body class="font-sans antialiased text-slate-950"></body>
 
 </html>
