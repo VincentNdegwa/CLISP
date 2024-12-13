@@ -4,12 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Laravel\Paddle\Billable;
 
 
 class Business extends Model
 {
 
-    use HasFactory;
+    use HasFactory, Billable;
     protected $table = 'business';
     protected $fillable = [
         'business_name',

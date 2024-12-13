@@ -12,7 +12,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('subscriptions', function (Blueprint $table) {
+        Schema::create('custom_subscriptions', function (Blueprint $table) {
             $table->id();
             $table->enum('name', ['Basic', 'Pro', 'Premium']);
             $table->timestamp('subscription_start')->default(Carbon::now());
@@ -28,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('subscriptions');
+        Schema::dropIfExists('custom_subscriptions');
     }
 };

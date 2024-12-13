@@ -11,7 +11,7 @@ export default {
             subscription: "",
             selected_plan: false,
             paid: false,
-            business: this.business.business_id,
+            business: this.business?.business_id,
             cardName: "",
             subscription_name: "",
             subscription_amount: "",
