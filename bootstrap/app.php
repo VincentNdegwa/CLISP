@@ -27,7 +27,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'check.business' => CheckBusinessSubsription::class
         ]);
-
+        $middleware->validateCsrfTokens(except: [
+            'paddle/*',
+        ]);
         //
     })
     ->withExceptions(function (Exceptions $exceptions) {

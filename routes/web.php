@@ -13,10 +13,8 @@ use App\Models\BusinessUser;
 use App\Models\User;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-use Laravel\Paddle\Http\Controllers\WebhookController;
 
 Route::get('/', function () {
 
@@ -159,7 +157,6 @@ Route::middleware(['auth', 'check.business'])->group(function () {
         return Inertia::render('NotFound');
     })->name('not-found');
 
-    Route::post('paddle/webhook', [WebhookController::class, 'handleWebhook']);
 
 });
 

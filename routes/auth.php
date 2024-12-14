@@ -11,6 +11,8 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\SubscriptionController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Log;
+
 
 Route::middleware('guest')->group(function () {
     Route::get('register', [RegisteredUserController::class, 'create'])
@@ -38,6 +40,13 @@ Route::middleware('guest')->group(function () {
 
     Route::get('stripe-payment/success')->name('success');
     Route::get('stripe-payment/failed')->name('cancel');
+
+    // Route::post('paddle/webhook', function () {
+    //     Log::info('Webhook called:');
+    //     return response()->json([
+    //         "message" => "webhook called"
+    //     ]);
+    // });
 });
 
 Route::middleware('auth')->group(function () {
