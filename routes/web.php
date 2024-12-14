@@ -164,9 +164,8 @@ Route::middleware(['auth', 'check.business'])->group(function () {
 });
 
 
-    Route::get('billing', [PaddleDisplayController::class, 'show']);
-
-
+Route::get('billing', [PaddleDisplayController::class, 'show']);
+Route::get("checkout", [PaddleDisplayController::class, 'subscribe']);
 
 
 require __DIR__ . '/auth.php';

@@ -20,7 +20,7 @@ class CheckBusinessSubsription
     public function handle(Request $request, Closure $next): Response
     {
         $user = Auth::user();
-        $business_users = BusinessUser::where('user_id', $user->id)->with(['business', 'user'])->get();
+        $business_users = BusinessUser::where('user_id', $user->id)->with(relations: ['business', 'user'])->get();
 
         if ($business_users->isEmpty() || $business_users->contains(function ($businessUser) {
             return !$businessUser->business;
@@ -33,7 +33,6 @@ class CheckBusinessSubsription
                 "industries" => $industries,
             ]);
 
-            return Inertia::render('Auth/RegisterBusiness', []);
         }
 
         foreach ($business_users as $business_user) {
