@@ -32,11 +32,10 @@ class CheckBusinessSubsription
                 "businessTypes" => $businessTypes,
                 "industries" => $industries,
             ]);
-
         }
 
         foreach ($business_users as $business_user) {
-            if ($business_user->business && !$business_user->business->subscription_plan) {
+            if ($business_user->business && !$business_user->business->subscribed('default')) {
                 return redirect()->route('choose-plan')->with([
                     "business" => $business_user->business,
                 ]);
