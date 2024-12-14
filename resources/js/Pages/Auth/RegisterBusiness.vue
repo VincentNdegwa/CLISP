@@ -83,8 +83,6 @@ export default {
             <li class="step step-warning">Register</li>
             <li class="step step-warning">Register Business</li>
             <li class="step">Choose Plan</li>
-            <li class="step">Make Payment</li>
-            <li class="step">Complete</li>
         </ul>
         <div class="flex flex-col w-full p-2 sm:p-0 sm:w-fit mt-2">
             <div class="text-xl text-center">Register your business!</div>

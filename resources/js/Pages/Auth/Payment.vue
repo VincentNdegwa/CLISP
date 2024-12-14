@@ -34,7 +34,6 @@ export default {
             <li class="step step-warning">Register Business</li>
             <li class="step step-warning">Choose Plan</li>
             <li class="step step-warning">Make Payment</li>
-            <li class="step">Complete</li>
         </ul>
 
         <div class="w-full max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">

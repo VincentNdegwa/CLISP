@@ -1,7 +1,5 @@
 <script>
 import { Head, router, useForm } from "@inertiajs/vue3";
-import axios from "axios";
-import Payment from "./Payment.vue";
 import CompleteRegistration from "./CompleteRegistration.vue";
 import { currencyConvertor } from "@/Store/CurrencyConvertStore";
 
@@ -39,32 +37,6 @@ export default {
         };
     },
     methods: {
-        makePayment(data) {
-            this.form = { ...data };
-
-            axios
-                .post("api/subscription/make", this.form)
-                .then((res) => {
-                    console.log(res);
-
-                    if (res.data.error) {
-                        this.notification.open = true;
-                        this.notification.message = res.data.message;
-                        this.notification.status = "error";
-                    }
-                    if (!res.data.err) {
-                        this.notification.open = true;
-                        this.notification.message = "Subscription Successfull";
-                        this.notification.status = "success";
-                        this.success_subscription = true;
-                    }
-                })
-                .catch((err) => {
-                    this.notification.open = true;
-                    this.notification.message = "An error occurred!!";
-                    this.notification.status = "error";
-                });
-        },
         currency(amount) {
             const converter = currencyConvertor();
             return converter.convertOtherCurrency(amount, "USD");
@@ -79,7 +51,6 @@ export default {
     },
     components: {
         Head,
-        Payment,
         CompleteRegistration,
         SelectButton,
     },
@@ -115,8 +86,6 @@ export default {
             <li class="step step-warning">Register</li>
             <li class="step step-warning">Register Business</li>
             <li class="step step-warning">Choose Plan</li>
-            <li class="step">Make Payment</li>
-            <li class="step">Complete</li>
         </ul>
         <div class="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center">
@@ -203,18 +172,7 @@ export default {
             </div>
         </div>
     </div>
-    <Payment
-        v-else-if="
-            form.selected_plan && form.subscription && !success_subscription
-        "
-        :form="form"
-        @makePayment="makePayment"
-    />
-    <CompleteRegistration
-        v-else-if="
-            form.selected_plan && form.subscription && success_subscription
-        "
-    />
+
 </template>
 
 <style scoped>
