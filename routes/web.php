@@ -10,6 +10,7 @@ use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\TransactionController;
 use App\Models\Business;
 use App\Models\BusinessUser;
+use App\Models\SubscriptionPlan;
 use App\Models\User;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Auth;
@@ -38,10 +39,25 @@ Route::get('/register-business', function () {
 })->name('register-business');
 
 Route::get('/choose-plan', function () {
+    $subscription_plans = SubscriptionPlan::all()
+        ->groupBy('product_id')
+        ->map(function ($plans, $product_id) {
+            return $plans->map(function ($plan) {
+                $plan->features = json_decode($plan->features);
+                return $plan;
+            });
+        })
+        ->values();
+
     return Inertia::render('Auth/ChoosePlan', [
         "business" => session('business'),
+        'plans_t' => $subscription_plans,
     ]);
 })->name('choose-plan');
+Route::get("checkout/subscription/{price_id}", [PaddleDisplayController::class, 'choose']);
+
+
+
 
 Route::middleware(['auth', 'verified', 'check.business'])->group(function () {
 
@@ -156,13 +172,9 @@ Route::middleware(['auth', 'check.business'])->group(function () {
     Route::get('not-found', function () {
         return Inertia::render('NotFound');
     })->name('not-found');
-
-
 });
 
 
-Route::get('billing', [PaddleDisplayController::class, 'show']);
-Route::get("checkout", [PaddleDisplayController::class, 'subscribe']);
 
 
 require __DIR__ . '/auth.php';

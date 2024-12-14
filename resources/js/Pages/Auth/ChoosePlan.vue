@@ -3,9 +3,12 @@ import { Head, router, useForm } from "@inertiajs/vue3";
 import axios from "axios";
 import Payment from "./Payment.vue";
 import CompleteRegistration from "./CompleteRegistration.vue";
+import { currencyConvertor } from "@/Store/CurrencyConvertStore";
+
+import SelectButton from "primevue/selectbutton";
 
 export default {
-    props: ["business"],
+    props: ["business", "plans_t"],
     data() {
         const form = useForm({
             subscription: "",
@@ -65,15 +68,16 @@ export default {
                 status: "info",
                 message: "",
             },
+            billing_cycle: "monthly",
+            billing_plans: [],
+            cycles: ["monthly", "annually"],
         };
     },
     methods: {
-        selectPlan(plan) {
-            this.form.subscription = plan;
-            this.form.subscription_name = plan.name;
-            this.form.subscription_amount = plan.amount;
-            this.form.selected_plan = true;
-        },
+        // selectPlan(plan) {
+        //     router.get(`checkout/subscription/${plan.price_id}`);
+        //     // return router.visit(`checkout/subscription/${plan.price_id}`);
+        // },
         makePayment(data) {
             this.form = { ...data };
 
@@ -100,11 +104,34 @@ export default {
                     this.notification.status = "error";
                 });
         },
+        currency(amount) {
+            const converter = currencyConvertor();
+            return converter.convertOtherCurrency(amount, "USD");
+        },
+        setPlans() {
+            this.billing_plans = this.plans_t.map((plan) => {
+                return plan.find(
+                    (x_plan) => x_plan.billing_cycle == this.billing_cycle
+                );
+            });
+        },
     },
     components: {
         Head,
         Payment,
         CompleteRegistration,
+        SelectButton,
+    },
+    mounted() {
+        this.setPlans();
+    },
+    watch: {
+        billing_cycle: {
+            deep: true,
+            handler() {
+                this.setPlans();
+            },
+        },
     },
 };
 </script>
@@ -138,35 +165,56 @@ export default {
                 </p>
             </div>
 
+            <div class="w-full justify-self-end">
+                <SelectButton
+                    v-model="billing_cycle"
+                    :options="cycles"
+                    :optionLabel="
+                        (option) =>
+                            option.charAt(0).toUpperCase() + option.slice(1)
+                    "
+                />
+            </div>
+
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 <div
-                    v-for="plan in plans"
+                    v-for="plan in billing_plans"
                     :key="plan.name"
-                    class="card w-full mt-6 bg-white shadow-xl border border-gray-200 p-6 rounded-lg transform hover:scale-105 transition-all duration-300"
+                    class="card w-full mt-6 bg-white shadow-md border border-gray-300 p-8 rounded-lg hover:shadow-lg transition-all duration-300"
                 >
                     <div class="card-body">
+                        <!-- Plan Header -->
                         <div class="flex items-center justify-between">
-                            <h2 class="text-2xl font-extrabold text-gray-900">
-                                {{ plan.name }}
+                            <h2 class="text-xl font-semibold text-gray-800">
+                                {{ plan.name }} Plan
                             </h2>
                             <div
                                 v-if="plan.isPopular"
-                                class="bg-rose-500 text-white text-sm px-3 py-1 rounded-full"
+                                class="bg-red-500 text-white text-xs px-3 py-1 rounded-full uppercase tracking-wider"
                             >
                                 Popular
                             </div>
                         </div>
-                        <p class="text-3xl font-bold mt-4 text-gray-900">
-                            {{ plan.price }}
-                        </p>
-                        <ul class="mt-6 space-y-3 text-gray-600">
+
+                        <!-- Price Section -->
+                        <div class="mt-4 text-center">
+                            <p class="text-4xl font-extrabold text-gray-900">
+                                {{ currency(plan.price) }}
+                            </p>
+                            <span class="text-sm text-gray-500">
+                                / {{ plan.billing_cycle }}
+                            </span>
+                        </div>
+
+                        <!-- Features List -->
+                        <ul class="mt-6 space-y-4 text-gray-700">
                             <li
                                 v-for="feature in plan.features"
                                 :key="feature"
-                                class="flex items-center"
+                                class="flex items-start"
                             >
                                 <svg
-                                    class="w-5 h-5 text-rose-500 mr-2"
+                                    class="w-5 h-5 text-red-500 mr-3"
                                     fill="currentColor"
                                     viewBox="0 0 20 20"
                                 >
@@ -176,16 +224,18 @@ export default {
                                         clip-rule="evenodd"
                                     />
                                 </svg>
-                                {{ feature }}
+                                <span>{{ feature }}</span>
                             </li>
                         </ul>
-                        <div class="card-actions justify-center mt-8">
-                            <button
-                                class="btn btn-primary w-full bg-rose-500 hover:bg-rose-600 text-white"
-                                @click="selectPlan(plan)"
+
+                        <!-- Select Button -->
+                        <div class="card-actions mt-8">
+                            <a
+                                :href="`checkout/subscription/${plan.price_id}`"
+                                class="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-3 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-1"
                             >
                                 Select {{ plan.name }}
-                            </button>
+                            </a>
                         </div>
                     </div>
                 </div>

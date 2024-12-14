@@ -18,7 +18,6 @@
     <h1>Checkout</h1>
     <p>Click below to proceed with your subscription.</p>
 
-    <!-- Render Paddle Checkout Button -->
     <x-paddle-button :checkout="$checkout" class="px-8 py-4">
         Subscribe Now
     </x-paddle-button>
