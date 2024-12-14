@@ -10,12 +10,9 @@ use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\SubscriptionController;
-use App\Models\Business;
-use App\Models\BusinessUser;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\View;
+use App\Http\Controllers\Paddle\PaddleDisplayController;
+
 
 Route::middleware('guest')->group(function () {
     Route::get('register', [RegisteredUserController::class, 'create'])
@@ -43,13 +40,6 @@ Route::middleware('guest')->group(function () {
 
     Route::get('stripe-payment/success')->name('success');
     Route::get('stripe-payment/failed')->name('cancel');
-
-    // Route::post('paddle/webhook', function () {
-    //     Log::info('Webhook called:');
-    //     return response()->json([
-    //         "message" => "webhook called"
-    //     ]);
-    // });
 });
 
 Route::middleware('auth')->group(function () {
@@ -74,4 +64,6 @@ Route::middleware('auth')->group(function () {
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
 
+    Route::get("checkout/subscription/{price_id}", [PaddleDisplayController::class, 'choose']);
+    Route::get("checkout", [PaddleDisplayController::class, 'subscribe'])->name('checkout');
 });

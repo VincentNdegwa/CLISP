@@ -3,7 +3,6 @@
 use App\Http\Controllers\BusinessController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InventoryController;
-use App\Http\Controllers\Paddle\PaddleDisplayController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ResourceCategoryController;
 use App\Http\Controllers\SubscriptionController;
@@ -54,7 +53,7 @@ Route::get('/choose-plan', function () {
         'plans_t' => $subscription_plans,
     ]);
 })->name('choose-plan');
-Route::get("checkout/subscription/{price_id}", [PaddleDisplayController::class, 'choose']);
+
 
 
 

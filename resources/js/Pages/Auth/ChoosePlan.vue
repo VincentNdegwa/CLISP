@@ -25,41 +25,6 @@ export default {
         });
 
         return {
-            plans: [
-                {
-                    name: "Basic",
-                    price: "$10/month",
-                    amount: "10",
-                    features: [
-                        "10 projects",
-                        "24/7 Support",
-                        "Basic Analytics",
-                    ],
-                    isPopular: false,
-                },
-                {
-                    name: "Pro", // Added the missing name for this plan
-                    price: "$30/month",
-                    amount: "30",
-                    features: [
-                        "50 projects",
-                        "24/7 Support",
-                        "Advanced Analytics",
-                    ],
-                    isPopular: true,
-                },
-                {
-                    name: "Premium",
-                    price: "$50/month",
-                    amount: "50",
-                    features: [
-                        "Unlimited projects",
-                        "Priority Support",
-                        "Premium Analytics",
-                    ],
-                    isPopular: false,
-                },
-            ],
             form,
             form,
             success_subscription: false,
@@ -74,10 +39,6 @@ export default {
         };
     },
     methods: {
-        // selectPlan(plan) {
-        //     router.get(`checkout/subscription/${plan.price_id}`);
-        //     // return router.visit(`checkout/subscription/${plan.price_id}`);
-        // },
         makePayment(data) {
             this.form = { ...data };
 
