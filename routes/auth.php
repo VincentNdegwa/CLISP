@@ -63,7 +63,4 @@ Route::middleware('auth')->group(function () {
 
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
-
-    Route::get("checkout/subscription/{price_id}", [PaddleDisplayController::class, 'choose']);
-    Route::get("checkout", [PaddleDisplayController::class, 'subscribe'])->name('checkout');
 });
