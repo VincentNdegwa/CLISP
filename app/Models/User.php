@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -11,11 +10,6 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'name',
         'email',
@@ -23,21 +17,11 @@ class User extends Authenticatable
         'profile_image',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
@@ -46,14 +30,40 @@ class User extends Authenticatable
         ];
     }
 
-
-    // public function business()
-    // {
-    //     return $this->belongsTo(Business::class, 'busines_id');
-    // }
-
     public function business_user()
     {
         return $this->hasMany(BusinessUser::class, "user_id");
+    }
+
+    public function businesses()
+    {
+        $businessUser = $this->with('business_user.business')->where('id', $this->id)->first();
+        if (!$businessUser || !$businessUser->business_user) {
+            return collect();
+        }
+        return $businessUser->business_user->map(function ($x) {
+            return $x->business ?? null;
+        })->filter();
+    }
+
+    public function unSubscribedBusinesses()
+    {
+        $unsubscribed = [];
+        $businesses = $this->businesses();
+        if ($businesses->isEmpty()) {
+            return $unsubscribed;
+        }
+        foreach ($businesses as $business) {
+            if ($business && !$business->subscribed('default')) {
+                $unsubscribed[] = $business;
+            }
+        }
+        return $unsubscribed;
+    }
+
+    public function unSubscribedBusiness()
+    {
+        $unsubscribedBusinesses = $this->unSubscribedBusinesses();
+        return $unsubscribedBusinesses[0] ?? null;
     }
 }

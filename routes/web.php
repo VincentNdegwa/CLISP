@@ -33,9 +33,6 @@ Route::get('/', function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
 
-    // if (!Auth::check()) {
-    //     return redirect()->route('login');
-    // }
 
     Route::get('/register-business', function () {
         return Inertia::render('Auth/RegisterBusiness', [
@@ -46,6 +43,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('register-business');
 
     Route::get('/choose-plan', function () {
+        $id = Auth::id();
+        $business = User::find($id)->unSubscribedBusiness();
         $subscription_plans = SubscriptionPlan::all()
             ->groupBy('product_id')
             ->map(function ($plans, $product_id) {
@@ -55,7 +54,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 });
             })
             ->values();
-        $business = session('business');
 
 
         return Inertia::render('Auth/ChoosePlan', [

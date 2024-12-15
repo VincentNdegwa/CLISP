@@ -48,7 +48,7 @@ export default {
             });
         },
         getUrl(plan) {
-            return `checkout/subscription/${this.business}/${plan.price_id}`;
+            return `checkout/subscription/${this.business?.business_id}/${plan.price_id}`;
         },
     },
     components: {
