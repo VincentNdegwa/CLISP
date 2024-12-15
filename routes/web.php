@@ -31,27 +31,11 @@ Route::get('/', function () {
     ]);
 });
 
+Route::middleware(['auth', 'verified'])->group(function () {
 
-
-
-
-
-Route::middleware(['auth', 'verified', 'check.business'])->group(function () {
-
-
-
-    Route::get('/dashboard', function () {
-        $user = Auth::user();
-        $business_users = BusinessUser::where('user_id', $user->id)->with(['business', 'user'])->get();
-
-        return Inertia::render('Dashboard/Main', [
-            "business_id" => $business_users->first()->business->business_id ?? null
-        ]);
-    })->name('dashboard');
-
-    Route::prefix('/dash')->group(function () {
-        Route::post('/details', [DashboardController::class, 'create'])->name("dashboard.details");
-    });
+    // if (!Auth::check()) {
+    //     return redirect()->route('login');
+    // }
 
     Route::get('/register-business', function () {
         return Inertia::render('Auth/RegisterBusiness', [
@@ -77,6 +61,30 @@ Route::middleware(['auth', 'verified', 'check.business'])->group(function () {
             'plans_t' => $subscription_plans,
         ]);
     })->name('choose-plan');
+
+    Route::get("checkout/subscription/{price_id}", [PaddleDisplayController::class, 'choose']);
+    Route::get("subscription/activated", [PaddleDisplayController::class, 'activated'])->name('subscription.activated');
+    Route::get("subscription/cancelled", [PaddleDisplayController::class, 'cancelled'])->name('subscription.cancelled');
+    Route::get("subscription/check/{business_id}", [PaddleDisplayController::class, 'checkSubscription'])->name('subscription.check');
+});
+
+
+
+
+Route::middleware(['auth', 'verified', 'check.business'])->group(function () {
+
+    Route::get('/dashboard', function () {
+        $user = Auth::user();
+        $business_users = BusinessUser::where('user_id', $user->id)->with(['business', 'user'])->get();
+
+        return Inertia::render('Dashboard/Main', [
+            "business_id" => $business_users->first()->business->business_id ?? null
+        ]);
+    })->name('dashboard');
+
+    Route::prefix('/dash')->group(function () {
+        Route::post('/details', [DashboardController::class, 'create'])->name("dashboard.details");
+    });
 });
 
 
@@ -174,9 +182,6 @@ Route::middleware(['auth', 'check.business'])->group(function () {
     Route::get('not-found', function () {
         return Inertia::render('NotFound');
     })->name('not-found');
-
-    Route::get("checkout/subscription/{price_id}", [PaddleDisplayController::class, 'choose']);
-    Route::get("checkout", [PaddleDisplayController::class, 'subscribe'])->name('checkout');
 });
 
 

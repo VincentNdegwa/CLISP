@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Paddle;
 use App\Http\Controllers\Controller;
 use App\Models\Business;
 use App\Models\BusinessUser;
+use App\Models\SubscriptionPlan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -18,28 +19,50 @@ class PaddleDisplayController extends Controller
         return view('Paddle/billing');
     }
 
-    public function subscribe()
+    public function activated(Request $request)
     {
+        return view('paddle.subscription-activated');
+    }
 
-        $price_id = Session::get('price_id');
-        $user = Auth::user();
-        $business_users = BusinessUser::where('user_id', $user->id)->with(['business', 'user'])->first();
 
-        $business = Business::where('business_id', $business_users->business->business_id)->first();
-        $checkout = $business->subscribe(
-            $priceId = $price_id,
-            $type = 'default'
-        )->returnTo(route('dashboard'));
-
-        return view('Paddle.checkout', ['checkout' => $checkout]);
+    public function cancelled(Request $request)
+    {
+        return view('paddle.subscription-cancelled');
     }
 
 
     public function choose($price_id, Request $request)
     {
-        Log::info("Redirecting to checkout with price_id: " . $price_id);
+        $user = Auth::user();
+        $business_users = BusinessUser::where('user_id', $user->id)->with(['business', 'user'])->first();
+
+        $business = Business::where('business_id', $business_users->business->business_id)->first();
+
+        $subscription_plan = SubscriptionPlan::where('price_id', $price_id)->first();
+        // if ($business && $business->subscribed('default')) {
+
+        //     return view('Paddle.checkout', ['payment_status' => "subscribed", 'business' => $business, 'subscription' => $subscription_plan, 'checkout' => null,]);
+        // }
+        if ($subscription_plan) {
+            $checkout = $business->subscribe(
+                $priceId = $price_id,
+                $type = 'default'
+            )->returnTo(route('subscription.check', ['business_id' => $business->business_id]));
 
 
-        return Redirect::to('/checkout')->with(['price_id' => $price_id]);
+            return view('Paddle.checkout', ['checkout' => $checkout, 'business' => $business, 'subscription' => $subscription_plan, 'payment_status' => null]);
+        } else {
+            return redirect(route('dashboard'));
+        }
+    }
+
+    public function checkSubscription($business_id)
+    {
+        $business = Business::where('business_id', $business_id)->first();
+        if ($business && $business->subscribed('default')) {
+            return redirect(route('dashboard'));
+        } else {
+            return redirect(route(name: 'login'));
+        }
     }
 }

@@ -7,6 +7,8 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FileSystemController;
 use App\Http\Controllers\LogisticController;
+use App\Http\Controllers\Paddle\CustomWebhookController;
+use App\Http\Controllers\Paddle\PaddleDisplayController;
 use App\Http\Controllers\PaymentsController;
 use App\Http\Controllers\PayPalController;
 use App\Http\Controllers\ResourceCategoryController;
@@ -28,6 +30,7 @@ Route::prefix('business')->group(function () {
     Route::get("/{business_id}/payment-information", [BusinessPaymentsController::class, "getPaymentInformation"]);
     Route::post("/{business_id}/search-payment-information", [BusinessPaymentsController::class, "fetchSinglePaymentInformation"]);
     Route::post("/{business_id}/payment-information/default/{payment_id}", [BusinessPaymentsController::class, "setDefault"]);
+    Route::get("/{business_id}/check-subscription", [PaddleDisplayController::class, 'checkSubscription']);
 });
 
 Route::prefix('dashboard/{business_id}')->group(function () {
@@ -49,6 +52,8 @@ Route::prefix("item/{business_id}")->group(function () {
 });
 Route::delete("item/delete/{id}", [ResourceItemController::class, 'delete']);
 Route::delete("category/delete/{id}", [ResourceCategoryController::class, 'delete']);
+
+Route::get('custom-webhook', [CustomWebhookController::class, '__invoke']);
 
 Route::prefix("category/{business_id}")->group(function () {
     Route::post("/create", [ResourceCategoryController::class, "create"]);

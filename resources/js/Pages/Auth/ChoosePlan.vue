@@ -162,7 +162,7 @@ export default {
                         <div class="card-actions mt-8">
                             <a
                                 :href="`checkout/subscription/${plan.price_id}`"
-                                class="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-3 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-1"
+                                class="w-full grid place-items-center bg-red-600 hover:bg-red-700 text-white font-medium py-3 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-1"
                             >
                                 Select {{ plan.name }}
                             </a>
@@ -172,7 +172,6 @@ export default {
             </div>
         </div>
     </div>
-
 </template>
 
 <style scoped>
