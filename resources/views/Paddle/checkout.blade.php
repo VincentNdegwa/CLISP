@@ -24,36 +24,41 @@
                 </div>
 
                 <!-- Business Details -->
-                <div class="bg-gray-50 p-4 rounded-md border border-gray-200 mb-6">
-                    <h2 class="text-lg font-medium text-gray-700">Business Details</h2>
-                    <p class="text-sm text-gray-600 mt-2">
-                        <span class="font-semibold">Name:</span> {{ $business->business_name }}
-                    </p>
-                    <p class="text-sm text-gray-600 mt-1">
-                        <span class="font-semibold">Email:</span> {{ $business->email }}
-                    </p>
-                    <p class="text-sm text-gray-600 mt-1">
-                        <span class="font-semibold">Location:</span> {{ $business->location }}
-                    </p>
-                </div>
+                @if (isset($business))
+                    <div class="bg-gray-50 p-4 rounded-md border border-gray-200 mb-6">
+                        <h2 class="text-lg font-medium text-gray-700">Business Details</h2>
+                        <p class="text-sm text-gray-600 mt-2">
+                            <span class="font-semibold">Name:</span> {{ $business->business_name }}
+                        </p>
+                        <p class="text-sm text-gray-600 mt-1">
+                            <span class="font-semibold">Email:</span> {{ $business->email }}
+                        </p>
+                        <p class="text-sm text-gray-600 mt-1">
+                            <span class="font-semibold">Location:</span> {{ $business->location }}
+                        </p>
+                    </div>
+                @endif
 
                 <!-- Plan Details -->
-                <div class="bg-gray-50 p-4 rounded-md border border-gray-200 mb-6">
-                    <h2 class="text-lg font-medium text-gray-700">
-                        {{ $subscription->name }} Plan
-                    </h2>
-                    <p class="text-gray-500 text-sm mt-1">
-                        {{ $subscription->description }}
-                    </p>
-                    <div class="flex justify-between items-center mt-4">
-                        <span class="text-gray-800 text-lg font-semibold">
-                            {{ $subscription->currency }} {{ number_format($subscription->price, 2) }}
-                        </span>
-                        <span class="text-sm text-gray-500">
-                            Billed {{ $subscription->billing_cycle }}
-                        </span>
+                @if (isset($subscription))
+                    <div class="bg-gray-50 p-4 rounded-md border border-gray-200 mb-6">
+                        <h2 class="text-lg font-medium text-gray-700">
+                            {{ $subscription->name }} Plan
+                        </h2>
+                        <p class="text-gray-500 text-sm mt-1">
+                            {{ $subscription->description }}
+                        </p>
+                        <div class="flex justify-between items-center mt-4">
+                            <span class="text-gray-800 text-lg font-semibold">
+                                {{ $subscription->currency }} {{ number_format($subscription->price, 2) }}
+                            </span>
+                            <span class="text-sm text-gray-500">
+                                Billed {{ $subscription->billing_cycle }}
+                            </span>
+                        </div>
                     </div>
-                </div>
+                @endif
+
 
                 <!-- Action Button -->
                 @if ($checkout != null)

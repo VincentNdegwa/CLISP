@@ -63,8 +63,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('choose-plan');
 
     Route::get("checkout/subscription/{price_id}", [PaddleDisplayController::class, 'choose']);
-    Route::get("subscription/activated", [PaddleDisplayController::class, 'activated'])->name('subscription.activated');
-    Route::get("subscription/cancelled", [PaddleDisplayController::class, 'cancelled'])->name('subscription.cancelled');
     Route::get("subscription/check/{business_id}", [PaddleDisplayController::class, 'checkSubscription'])->name('subscription.check');
 });
 
