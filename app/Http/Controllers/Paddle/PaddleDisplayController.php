@@ -31,18 +31,23 @@ class PaddleDisplayController extends Controller
     }
 
 
-    public function choose($price_id, Request $request)
+    public function choose($business_id, $price_id, Request $request)
     {
         $user = Auth::user();
-        $business_users = BusinessUser::where('user_id', $user->id)->with(['business', 'user'])->first();
 
-        $business = Business::where('business_id', $business_users->business->business_id)->first();
+        $userExistInBusiness = BusinessUser::where('business_id', $business_id)->where('user_id', $user->id)->exists();
+
+        if (!$userExistInBusiness) {
+            return redirect(route('dashboard'));
+        }
+
+        $business = Business::where('business_id', $business_id)->first();
 
         $subscription_plan = SubscriptionPlan::where('price_id', $price_id)->first();
-        // if ($business && $business->subscribed('default')) {
+        if ($business && $business->subscribed('default')) {
 
-        //     return view('Paddle.checkout', ['payment_status' => "subscribed", 'business' => $business, 'subscription' => $subscription_plan, 'checkout' => null,]);
-        // }
+            return view('Paddle.checkout', ['payment_status' => "subscribed", 'business' => $business, 'subscription' => $subscription_plan, 'checkout' => null,]);
+        }
         if ($subscription_plan) {
             $checkout = $business->subscribe(
                 $priceId = $price_id,

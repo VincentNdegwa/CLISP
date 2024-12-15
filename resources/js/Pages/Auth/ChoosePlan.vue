@@ -12,7 +12,7 @@ export default {
             subscription: "",
             selected_plan: false,
             paid: false,
-            business: this.business?.business_id,
+            business_id: this.business?.business_id,
             cardName: "",
             subscription_name: "",
             subscription_amount: "",
@@ -23,7 +23,6 @@ export default {
         });
 
         return {
-            form,
             form,
             success_subscription: false,
             notification: {
@@ -47,6 +46,9 @@ export default {
                     (x_plan) => x_plan.billing_cycle == this.billing_cycle
                 );
             });
+        },
+        getUrl(plan) {
+            return `checkout/subscription/${this.business}/${plan.price_id}`;
         },
     },
     components: {
@@ -161,7 +163,7 @@ export default {
                         <!-- Select Button -->
                         <div class="card-actions mt-8">
                             <a
-                                :href="`checkout/subscription/${plan.price_id}`"
+                                :href="getUrl(plan)"
                                 class="w-full grid place-items-center bg-red-600 hover:bg-red-700 text-white font-medium py-3 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-1"
                             >
                                 Select {{ plan.name }}

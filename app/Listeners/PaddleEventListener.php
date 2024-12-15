@@ -24,6 +24,7 @@ class PaddleEventListener
     {
         $eventType = $event->payload['event_type'];
         Log::info("Listened the paddle event " . $eventType);
+        Log::info('Payload:', ['payload' => json_encode($event->payload)]);
 
         if ($eventType === 'subscription.activated') {
             redirect(route(('subscription.activated')));

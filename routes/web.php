@@ -55,14 +55,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 });
             })
             ->values();
+        $business = session('business');
+
 
         return Inertia::render('Auth/ChoosePlan', [
-            "business" => session('business'),
+            "business" => $business,
             'plans_t' => $subscription_plans,
         ]);
     })->name('choose-plan');
 
-    Route::get("checkout/subscription/{price_id}", [PaddleDisplayController::class, 'choose']);
+    Route::get("checkout/subscription/{business_id}/{price_id}", [PaddleDisplayController::class, 'choose']);
     Route::get("subscription/check/{business_id}", [PaddleDisplayController::class, 'checkSubscription'])->name('subscription.check');
 });
 

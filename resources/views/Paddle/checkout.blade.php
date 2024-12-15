@@ -85,18 +85,20 @@
                 </div>
 
                 <!-- Business Details -->
-                <div class="bg-gray-50 p-4 rounded-md border border-gray-200 mb-6">
-                    <h2 class="text-lg font-medium text-gray-700">Business Details</h2>
-                    <p class="text-sm text-gray-600 mt-2">
-                        <span class="font-semibold">Name:</span> {{ $business->business_name }}
-                    </p>
-                    <p class="text-sm text-gray-600 mt-1">
-                        <span class="font-semibold">Email:</span> {{ $business->email }}
-                    </p>
-                    <p class="text-sm text-gray-600 mt-1">
-                        <span class="font-semibold">Location:</span> {{ $business->location }}
-                    </p>
-                </div>
+                @if (isset($business))
+                    <div class="bg-gray-50 p-4 rounded-md border border-gray-200 mb-6">
+                        <h2 class="text-lg font-medium text-gray-700">Business Details</h2>
+                        <p class="text-sm text-gray-600 mt-2">
+                            <span class="font-semibold">Name:</span> {{ $business->business_name }}
+                        </p>
+                        <p class="text-sm text-gray-600 mt-1">
+                            <span class="font-semibold">Email:</span> {{ $business->email }}
+                        </p>
+                        <p class="text-sm text-gray-600 mt-1">
+                            <span class="font-semibold">Location:</span> {{ $business->location }}
+                        </p>
+                    </div>
+                @endif
 
                 <!-- Action Button -->
                 <a href="{{ route('dashboard') }}"
