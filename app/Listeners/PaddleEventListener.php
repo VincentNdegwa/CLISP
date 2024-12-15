@@ -23,15 +23,6 @@ class PaddleEventListener
     public function handle(WebhookReceived $event): void
     {
         $eventType = $event->payload['event_type'];
-        Log::info("Listened the paddle event " . $eventType);
-        Log::info('Payload:', ['payload' => json_encode($event->payload)]);
-
-        if ($eventType === 'subscription.activated') {
-            redirect(route(('subscription.activated')));
-        }
-
-        if ($eventType === 'subscription.cancelled') {
-            redirect(route(('subscription.cancelled')));
-        }
+        Log::info('Payload:', context: ['payload' => json_encode($event->payload)]);
     }
 }

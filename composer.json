@@ -7,6 +7,7 @@
     "require": {
         "php": "^8.2",
         "barryvdh/laravel-dompdf": "^3.0",
+        "filament/filament": "^3.2",
         "inertiajs/inertia-laravel": "^1.0",
         "laravel/breeze": "^2.1",
         "laravel/cashier-paddle": "^2.5",
@@ -14,6 +15,7 @@
         "laravel/pulse": "^1.2",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.9",
+        "livewire/livewire": "^3.5",
         "paypal/paypal-server-sdk": "0.5.1",
         "stripe/stripe-php": "^16.1",
         "tightenco/ziggy": "^2.0"
@@ -41,7 +43,8 @@
     "scripts": {
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
-            "@php artisan package:discover --ansi"
+            "@php artisan package:discover --ansi",
+            "@php artisan filament:upgrade"
         ],
         "post-update-cmd": [
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
