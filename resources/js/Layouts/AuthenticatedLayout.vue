@@ -134,6 +134,7 @@ export default {
                     class="nav-bar-holder flex flex-col h-[86vh] no-scrollbar overflow-y-scroll hide-overflow"
                 >
                     <SideNavigations />
+
                 </div>
 
                 <div class="profile h-13 flex items-center p-2 gap-3 relative">

@@ -111,6 +111,15 @@ export default {
                     subItems: null,
                 },
             ],
+            downSideNav: [
+                {
+                    name: "Settings",
+                    route: "settings.view",
+                    open: localStorage.getItem("Settings") === "true",
+                    icon: "pi pi-cog",
+                    subItems: null,
+                },
+            ],
         };
     },
     mounted() {
@@ -228,66 +237,97 @@ export default {
 </script>
 
 <template>
-    <div>
-        <div
-            v-for="(item, index) in navItems"
-            :key="index"
-            :class="[
-                'w-full h-fit p-3 mt-1 cursor-pointer transition-none ease-linear duration-1000',
-                item.open ? 'bg-gray-100' : '',
-            ]"
-        >
-            <div class="h-full w-full flex flex-col items-start">
-                <div
-                    v-if="item.subItems"
-                    :class="['flex justify-between w-full p-0']"
-                    @click="toggleMainNav(item)"
-                >
-                    <div class="text-sm flex flex-row gap-2">
-                        <i :class="item.icon"></i>
-                        <div>{{ item.name }}</div>
-                    </div>
-                    <div>
-                        <i class="bi bi-chevron-down" v-if="item.open"></i>
-                        <i class="bi bi-chevron-compact-right" v-else></i>
-                    </div>
-                </div>
-                <div
-                    v-else
-                    :class="[' w-full p-0']"
-                    @click="toggleMainNav(item)"
-                >
-                    <Link :href="route(item.route)" :key="index" class="p-0">
+    <div class="flex flex-col justify-between w-full h-full">
+        <div>
+            <div
+                v-for="(item, index) in navItems"
+                :key="index"
+                :class="[
+                    'w-full h-fit p-3 mt-1 cursor-pointer transition-none ease-linear duration-1000',
+                    item.open ? 'bg-gray-100' : '',
+                ]"
+            >
+                <div class="h-full w-full flex flex-col items-start">
+                    <div
+                        v-if="item.subItems"
+                        :class="['flex justify-between w-full p-0']"
+                        @click="toggleMainNav(item)"
+                    >
                         <div class="text-sm flex flex-row gap-2">
                             <i :class="item.icon"></i>
                             <div>{{ item.name }}</div>
                         </div>
+                        <div>
+                            <i class="bi bi-chevron-down" v-if="item.open"></i>
+                            <i class="bi bi-chevron-compact-right" v-else></i>
+                        </div>
+                    </div>
+                    <div
+                        v-else
+                        :class="[' w-full p-0']"
+                        @click="toggleMainNav(item)"
+                    >
+                        <Link
+                            :href="route(item.route)"
+                            :key="index"
+                            class="p-0"
+                        >
+                            <div class="text-sm flex flex-row gap-2">
+                                <i :class="item.icon"></i>
+                                <div>{{ item.name }}</div>
+                            </div>
+                        </Link>
+                    </div>
+                </div>
+
+                <div
+                    v-if="item.subItems && item.open"
+                    class="w-full flex flex-col gap-1 items-center"
+                >
+                    <Link
+                        v-for="(subItem, subIndex) in item.subItems"
+                        :href="route(subItem.route)"
+                        :key="subIndex"
+                        :class="[
+                            'w-full h-fit pl-6 p-2 cursor-pointer',
+                            isActiveSubNav(subItem)
+                                ? 'bg-rose-50 text-rose-500'
+                                : '',
+                        ]"
+                    >
+                        <div class="p-0 h-full w-full">
+                            <div class="text-sm flex flex-row gap-2">
+                                <i :class="subItem.icon"></i>
+                                <div>{{ subItem.name }}</div>
+                            </div>
+                        </div>
                     </Link>
                 </div>
             </div>
-
+        </div>
+        <div class="flex flex-col">
             <div
-                v-if="item.subItems && item.open"
-                class="w-full flex flex-col gap-1 items-center"
+                v-for="(item, index) in downSideNav"
+                :key="index"
+                :class="[
+                    'w-full h-fit p-3 mt-1 cursor-pointer transition-none ease-linear duration-1000',
+                    item.open ? 'bg-gray-100' : '',
+                ]"
             >
-                <Link
-                    v-for="(subItem, subIndex) in item.subItems"
-                    :href="route(subItem.route)"
-                    :key="subIndex"
-                    :class="[
-                        'w-full h-fit pl-6 p-2 cursor-pointer',
-                        isActiveSubNav(subItem)
-                            ? 'bg-rose-50 text-rose-500'
-                            : '',
-                    ]"
-                >
-                    <div class="p-0 h-full w-full">
-                        <div class="text-sm flex flex-row gap-2">
-                            <i :class="subItem.icon"></i>
-                            <div>{{ subItem.name }}</div>
-                        </div>
+                <div class="h-full w-full flex flex-col items-start">
+                    <div :class="[' w-full p-0']" @click="toggleMainNav(item)">
+                        <Link
+                            :href="route(item.route)"
+                            :key="index"
+                            class="p-0"
+                        >
+                            <div class="text-sm flex flex-row gap-2">
+                                <i :class="item.icon"></i>
+                                <div>{{ item.name }}</div>
+                            </div>
+                        </Link>
                     </div>
-                </Link>
+                </div>
             </div>
         </div>
     </div>

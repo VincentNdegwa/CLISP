@@ -171,10 +171,13 @@ Route::middleware(['auth', 'check.business'])->group(function () {
         })->name('shipments');
     });
 
-    Route::get('not-found', function () {
-        return Inertia::render('NotFound');
-    })->name('not-found');
+    Route::get('settings', function () {
+        return Inertia::render('Settings/Settings');
+    })->name('settings.view');
 });
+Route::get('not-found', function () {
+    return Inertia::render('NotFound');
+})->name('not-found');
 
 
 
