@@ -534,7 +534,7 @@ class TransactionController extends Controller
         }
 
 
-        $imagePath = public_path('images/default-business-logo.png');
+        $imagePath = public_path('/images/default-business-logo.png');
 
         $imageData = base64_encode(file_get_contents($imagePath));
 

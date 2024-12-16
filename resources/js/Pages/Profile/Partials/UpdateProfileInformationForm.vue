@@ -24,7 +24,7 @@ const form = useForm({
     profile_image: user.profile_image,
 });
 
-const imagePreview = ref(user.profile_image || "images/default-profile.png");
+const imagePreview = ref(user.profile_image || "/images/default-profile.png");
 const imageFile = ref(null);
 
 const uploadImage = async () => {

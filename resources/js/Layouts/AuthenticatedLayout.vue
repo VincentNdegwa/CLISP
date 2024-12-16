@@ -103,12 +103,12 @@ export default {
                     <div
                         class="relative w-full max-w-xs bg-white text-slate-950"
                     >
-                        <div class="card flex justify-center w-full">
+                        <div class="card flex justify-center w-90 ">
                             <Select
                                 v-model="default_business"
                                 :options="businesses"
                                 optionValue="business"
-                                class="w-full md:w-56 bg-gray-100"
+                                class="w-[95%] place-self-center"
                             >
                                 <!-- Custom value display -->
                                 <template #value="slotProps">
@@ -119,10 +119,10 @@ export default {
                                         <img
                                             :src="
                                                 slotProps.value.logo ||
-                                                'images/default-business-logo.png'
+                                                '/images/default-business-logo.png'
                                             "
                                             alt="Business Logo"
-                                            class="w-6 h-6 rounded-sm mr-2"
+                                            class="w-6 h-6 rounded-sm mr-1"
                                         />
                                         <div class="flex flex-col">
                                             <span
@@ -159,7 +159,7 @@ export default {
                                             :src="
                                                 slotProps.option.business
                                                     .logo ||
-                                                'images/default-business-logo.png'
+                                                '/images/default-business-logo.png'
                                             "
                                             alt="Business Logo"
                                             class="w-8 h-8 rounded-sm mr-3"
@@ -233,7 +233,7 @@ export default {
                                 <img
                                     :src="
                                         $page.props.auth.user.profile_image ||
-                                        'images/default-profile.png'
+                                        '/images/default-profile.png'
                                     "
                                 />
                             </div>
