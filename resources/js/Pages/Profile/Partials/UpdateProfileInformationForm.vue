@@ -138,8 +138,10 @@ const updateProfile = async () => {
 
             <!-- Email Verification -->
             <div v-if="mustVerifyEmail && user.email_verified_at === null">
-                <p class="text-sm mt-2 text-gray-800">
-                    Your email address is unverified.
+                <p class="text-sm mt-2 text-gray-800 flex gap-2 flex-wrap">
+                    <div class="text-rose-600" >
+                        Your email address is unverified.
+                    </div>
                     <Link
                         :href="route('verification.send')"
                         method="post"
