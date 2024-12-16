@@ -4,7 +4,9 @@ import DropdownLink from "@/Components/DropdownLink.vue";
 import Modal from "@/Components/Modal.vue";
 import NewBusiness from "@/Components/NewBusiness.vue";
 import SideNavigations from "@/Components/SideNavigations.vue";
+import Button from "primevue/button";
 import Popover from "primevue/popover";
+import Select from "primevue/select";
 
 export default {
     data() {
@@ -23,6 +25,8 @@ export default {
         Modal,
         NewBusiness,
         Popover,
+        Select,
+        Button,
     },
 
     mounted() {
@@ -72,6 +76,14 @@ export default {
             this.$refs.op.toggle(event);
         },
     },
+    computed: {
+        businesses() {
+            return this.$page.props.user_businesses.business_user;
+        },
+        isAdminOrOwner() {
+            return true;
+        },
+    },
 };
 </script>
 
@@ -87,57 +99,131 @@ export default {
                     !menuOpen ? '-translate-x-[230px]' : 'translate-x-0',
                 ]"
             >
-                <div class="flex flex-row items-center gap-5 h-[6vh]">
+                <div class="flex flex-row items-center gap-5 h-[10vh]">
                     <div
                         class="relative w-full max-w-xs bg-white text-slate-950"
                     >
-                        <div class="dropdown w-full p-0">
-                            <div
-                                tabindex="0"
-                                role="button"
-                                class="btn w-2/3 ms-1 bg-gray-100 text-slate-950 hover:bg-gray-200"
+                        <div class="card flex justify-center w-full">
+                            <Select
+                                v-model="default_business"
+                                :options="businesses"
+                                optionValue="business"
+                                class="w-full md:w-56 bg-gray-100"
                             >
-                                {{ default_business?.business_name }}
-                            </div>
-                            <ul
-                                tabindex="0"
-                                class="dropdown-content menu bg-gray-100 z-[1] w-52 p-2 shadow"
-                            >
-                                <li
-                                    v-for="(item, index) in $page.props
-                                        .user_businesses.business_user"
-                                    :key="index"
-                                    :value="item.business.business_id"
-                                    @click="() => changeBusiness(item.business)"
-                                >
-                                    <a> {{ item.business.business_name }} </a>
-                                </li>
-                                <li
-                                    v-if="
-                                        $page.props.role.role === 'Owner' ||
-                                        $page.props.role.role === 'Admin'
-                                    "
-                                    @click="createNewBusiness"
-                                    class="mt-2"
-                                >
-                                    <a>
-                                        <i class="bi bi-plus-circle"></i> Add
-                                        Business</a
+                                <!-- Custom value display -->
+                                <template #value="slotProps">
+                                    <div
+                                        v-if="slotProps.value"
+                                        class="flex items-center relative"
                                     >
-                                </li>
-                            </ul>
+                                        <img
+                                            :src="
+                                                slotProps.value.logo ||
+                                                'images/default-business-logo.png'
+                                            "
+                                            alt="Business Logo"
+                                            class="w-6 h-6 rounded-sm mr-2"
+                                        />
+                                        <div class="flex flex-col">
+                                            <span
+                                                class="font-medium text-ellipsis whitespace-nowrap w-[140px] overflow-hidden"
+                                            >
+                                                {{
+                                                    slotProps.value
+                                                        .business_name
+                                                }}
+                                            </span>
+                                            <span
+                                                class="text-sm text-ellipsis whitespace-nowrap w-[140px] overflow-hidden text-slate-950"
+                                            >
+                                                {{ slotProps.value.email }}
+                                            </span>
+                                        </div>
+                                        <div>icon</div>
+                                    </div>
+                                </template>
+
+                                <template #dropdownicon>
+                                    <i class="pi pi-code rotate-90" />
+                                </template>
+
+                                <!-- Custom dropdown options -->
+                                <template #option="slotProps">
+                                    <div
+                                        class="flex items-center w-full h-full hover:bg-gray-100 cursor-pointer relative"
+                                        @click="
+                                            changeBusiness(slotProps.option)
+                                        "
+                                    >
+                                        <img
+                                            :src="
+                                                slotProps.option.business
+                                                    .logo ||
+                                                'images/default-business-logo.png'
+                                            "
+                                            alt="Business Logo"
+                                            class="w-8 h-8 rounded-sm mr-3"
+                                        />
+                                        <div class="flex flex-col">
+                                            <span
+                                                class="font-medium text-ellipsis whitespace-nowrap w-[200px] overflow-hidden"
+                                            >
+                                                {{
+                                                    slotProps.option.business
+                                                        .business_name
+                                                }}
+                                            </span>
+                                            <span
+                                                class="text-sm text-gray-500 text-ellipsis whitespace-nowrap w-[200px] overflow-hidden"
+                                            >
+                                                {{
+                                                    slotProps.option.business
+                                                        .email
+                                                }}
+                                            </span>
+                                        </div>
+                                        <div
+                                            v-if="
+                                                slotProps.option.business
+                                                    .business_id ==
+                                                default_business.business_id
+                                            "
+                                            class="grid h-4 w-4 place-items-center place-self-start rounded-full bg-slate-800"
+                                        >
+                                            <div
+                                                class="bg-white h-2 w-2 rounded-full"
+                                            ></div>
+                                        </div>
+                                    </div>
+                                </template>
+
+                                <!-- Custom footer for adding a new business -->
+                                <template #footer>
+                                    <div class="p-3" v-if="isAdminOrOwner">
+                                        <Button
+                                            label="Add New Business"
+                                            fluid
+                                            text
+                                            size="small"
+                                            icon="pi pi-plus"
+                                            @click="createNewBusiness"
+                                        />
+                                    </div>
+                                </template>
+                            </Select>
                         </div>
                     </div>
                 </div>
 
                 <div
-                    class="nav-bar-holder flex flex-col h-[86vh] no-scrollbar overflow-y-scroll hide-overflow"
+                    class="nav-bar-holder flex flex-col h-[80vh] no-scrollbar overflow-y-scroll hide-overflow"
                 >
                     <SideNavigations />
-
                 </div>
 
-                <div class="profile h-13 flex items-center p-2 gap-3 relative">
+                <div
+                    class="profile h-16 flex items-center px-2 py-1 gap-3 relative"
+                >
                     <div
                         class="flex items-center ring-1 ring-slate-200 rounded-md h-full w-full cursor-pointer gap-2 p-2"
                         @click="toggle"
@@ -227,3 +313,5 @@ export default {
         </div>
     </div>
 </template>
+
+<style></style>
