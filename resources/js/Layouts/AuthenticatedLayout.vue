@@ -103,7 +103,7 @@ export default {
                     <div
                         class="relative w-full max-w-xs bg-white text-slate-950"
                     >
-                        <div class="card flex justify-center w-90 ">
+                        <div class="card flex justify-center w-90">
                             <Select
                                 v-model="default_business"
                                 :options="businesses"
@@ -139,7 +139,6 @@ export default {
                                                 {{ slotProps.value.email }}
                                             </span>
                                         </div>
-                                        <div>icon</div>
                                     </div>
                                 </template>
 
@@ -204,6 +203,7 @@ export default {
                                             label="Add New Business"
                                             fluid
                                             text
+                                            severity="contrast"
                                             size="small"
                                             icon="pi pi-plus"
                                             @click="createNewBusiness"

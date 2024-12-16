@@ -17,7 +17,6 @@ import Aura from "@primevue/themes/aura";
 import { definePreset } from "@primevue/themes";
 
 import "primeicons/primeicons.css";
-import AuraTheme from "./Themes/AuraTheme";
 import ToastService from "primevue/toastservice";
 
 const appName = import.meta.env.VITE_APP_NAME || "Laravel";
@@ -28,7 +27,21 @@ const vuetify = createVuetify({
     directives,
 });
 const MyPreset = definePreset(Aura, {
-    AuraTheme,
+    semantic: {
+        primary: {
+            50: "{slate.50}",
+            100: "{slate.100}",
+            200: "{slate.200}",
+            300: "{slate.300}",
+            400: "{slate.400}",
+            500: "{slate.500}",
+            600: "{slate.600}",
+            700: "{slate.700}",
+            800: "{slate.800}",
+            900: "{slate.900}",
+            950: "{slate.950}",
+        },
+    },
 });
 
 createInertiaApp({

@@ -116,7 +116,7 @@ export default {
                     name: "Settings",
                     route: "settings.view",
                     open: localStorage.getItem("Settings") === "true",
-                    icon: "pi pi-cog",
+                    icon: "bi bi-gear",
                     subItems: null,
                 },
             ],
@@ -253,7 +253,7 @@ export default {
                         :class="['flex justify-between w-full p-0']"
                         @click="toggleMainNav(item)"
                     >
-                        <div class="text-sm flex flex-row gap-2">
+                        <div class="text-sm flex flex-row gap-4">
                             <i :class="item.icon"></i>
                             <div>{{ item.name }}</div>
                         </div>
@@ -272,7 +272,7 @@ export default {
                             :key="index"
                             class="p-0"
                         >
-                            <div class="text-sm flex flex-row gap-2">
+                            <div class="text-sm flex flex-row gap-4">
                                 <i :class="item.icon"></i>
                                 <div>{{ item.name }}</div>
                             </div>
@@ -296,7 +296,7 @@ export default {
                         ]"
                     >
                         <div class="p-0 h-full w-full">
-                            <div class="text-sm flex flex-row gap-2">
+                            <div class="text-sm flex flex-row gap-4">
                                 <i :class="subItem.icon"></i>
                                 <div>{{ subItem.name }}</div>
                             </div>
@@ -321,7 +321,7 @@ export default {
                             :key="index"
                             class="p-0"
                         >
-                            <div class="text-sm flex flex-row gap-2">
+                            <div class="text-sm flex flex-row gap-4">
                                 <i :class="item.icon"></i>
                                 <div>{{ item.name }}</div>
                             </div>
