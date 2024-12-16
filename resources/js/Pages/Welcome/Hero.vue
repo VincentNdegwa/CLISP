@@ -48,7 +48,7 @@ export default {
 <template>
     <section class="relative h-dvh w-100vh">
         <img
-            src="images/warehouse 1.jpg"
+            src="images/quality.jpg"
             class="absolute top-0 left-0 w-full h-full z-0 object-fill opacity-30"
             alt="Warehouse"
         />

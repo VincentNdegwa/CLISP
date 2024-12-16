@@ -4,25 +4,37 @@ namespace App\Http\Controllers;
 
 use App\Models\Business;
 use App\Models\BusinessUser;
-use App\Models\PaymentMethod;
-use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
-use Stripe\Account;
+use Inertia\Inertia;
+
 
 
 class BusinessController extends Controller
 {
+
+
+    public function openRegister()
+    {
+        $user = Auth::user();
+        $businessTypes = DB::table('business_types')->get(['id', 'name']);
+        $industries = DB::table('industries')->get(['id', 'name']);
+
+        return Inertia::render('Auth/RegisterBusiness', [
+            "user" => $user,
+            "businessTypes" => $businessTypes,
+            "industries" => $industries,
+        ]);
+    }
+
     /**
      * Create a new business entry.
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\JsonResponse
      */
-
-
 
     public function create(Request $request)
     {
@@ -215,6 +227,4 @@ class BusinessController extends Controller
             'business_count' => count($businesses),
         ]);
     }
-
-    
 }

@@ -16,7 +16,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->decimal('price', 10, 2);
             $table->string('currency', 3)->default('USD');
-            $table->enum('billing_cycle', ['monthly', 'annually']);
+            $table->enum('billing_cycle', ['monthly', 'annually', 'daily']);
             $table->json('features')->nullable();
             $table->timestamps();
 

@@ -28,8 +28,8 @@ class AppServiceProvider extends ServiceProvider
         Cashier::useTransactionModel(SubscriptionTransaction::class);
         Cashier::useCustomerModel(SubscriptionCustomer::class);
 
-        // if (App::environment('production')) {
-        //     URL::forceScheme('https');
-        // }
+        if (App::environment('production')) {
+            URL::forceScheme('https');
+        }
     }
 }

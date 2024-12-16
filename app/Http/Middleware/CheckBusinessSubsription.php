@@ -8,6 +8,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -22,10 +23,15 @@ class CheckBusinessSubsription
     {
         $id = Auth::id();
         $user = User::find($id);
-        $business = $user->unSubscribedBusiness();
-        if (isset($business)) {
+        $business = $user->businesses();
+        if ($business->count() < 1) {
+            return redirect()->route('register-business');
+        }
+        $unsubscribedBusiness = $user->unSubscribedBusiness();
+        Log::info('Unsubscribed ' . $unsubscribedBusiness);
+        if (isset($unsubscribedBusiness)) {
             return redirect()->route('choose-plan')->with([
-                "business" => $business,
+                "business" => $unsubscribedBusiness,
             ]);
         }
         return $next($request);

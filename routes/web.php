@@ -34,13 +34,7 @@ Route::get('/', function () {
 Route::middleware(['auth', 'verified'])->group(function () {
 
 
-    Route::get('/register-business', function () {
-        return Inertia::render('Auth/RegisterBusiness', [
-            "user" => session('user'),
-            "businessTypes" => session('businessTypes'),
-            "industries" => session('industries'),
-        ]);
-    })->name('register-business');
+    Route::get('/register-business', [BusinessController::class, 'openRegister'])->name('register-business');
 
     Route::get('/choose-plan', function () {
         $id = Auth::id();
