@@ -4,6 +4,7 @@ import DropdownLink from "@/Components/DropdownLink.vue";
 import Modal from "@/Components/Modal.vue";
 import NewBusiness from "@/Components/NewBusiness.vue";
 import SideNavigations from "@/Components/SideNavigations.vue";
+import { useLoadImageStore } from "@/Store/loadImageStore";
 import Button from "primevue/button";
 import Popover from "primevue/popover";
 import Select from "primevue/select";
@@ -27,6 +28,10 @@ export default {
         Popover,
         Select,
         Button,
+    },
+    setup() {
+        const loadImageStore = useLoadImageStore();
+        return { loadImageStore };
     },
 
     mounted() {
@@ -232,8 +237,10 @@ export default {
                             <div class="w-10 h-10 rounded-full">
                                 <img
                                     :src="
-                                        $page.props.auth.user.profile_image ||
-                                        '/images/default-profile.png'
+                                        loadImageStore.getImage(
+                                            $page.props.auth.user.profile_image,
+                                            '/images/default-profile.png'
+                                        )
                                     "
                                 />
                             </div>

@@ -53,7 +53,7 @@ class BusinessUserRelationManager extends RelationManager
             ->columns([
                 Tables\Columns\TextColumn::make('user.name')->label('User Name'),
                 Tables\Columns\TextColumn::make('user.email')->label('User Email'),
-                Tables\Columns\TextColumn::make('user.profile_image')->label('User Profile Image'),
+                Tables\Columns\ImageColumn::make('user.profile_image')->label('User Profile Image'),
                 Tables\Columns\TextColumn::make('role')->label('Role'),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()

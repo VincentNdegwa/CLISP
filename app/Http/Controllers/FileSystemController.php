@@ -22,13 +22,12 @@ class FileSystemController extends Controller
                 $folder = $request->input('folder');
 
                 $path = Storage::disk('public')->putFile($folder, $file);
-                $publicUrl = Storage::url($path);
 
 
                 return response()->json([
                     'error' => false,
                     'message' => 'File uploaded successfully.',
-                    'path' => $publicUrl
+                    'path' => $path
                 ]);
             } else {
                 return response()->json([
