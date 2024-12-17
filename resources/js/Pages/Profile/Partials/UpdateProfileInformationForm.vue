@@ -6,7 +6,7 @@ import PrimaryButton from "@/Components/PrimaryButton.vue";
 import TextInput from "@/Components/TextInput.vue";
 import { Link, useForm, usePage } from "@inertiajs/vue3";
 import axios from "axios";
-import { useLoadImageStore } from "@/Store/loadImageStore";
+import  getImageUrl  from "@/Utils/loadImageUtils";
 
 defineProps({
     mustVerifyEmail: {
@@ -25,7 +25,7 @@ const form = useForm({
     profile_image: user.profile_image,
 });
 
-const imagePreview = useLoadImageStore().getImage(user.profile_image,"/images/default-profile.png");
+const imagePreview = getImageUrl(user.profile_image,"/images/default-profile.png");
 const imageFile = ref(null);
 
 const uploadImage = async () => {

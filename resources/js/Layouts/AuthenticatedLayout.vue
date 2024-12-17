@@ -4,7 +4,7 @@ import DropdownLink from "@/Components/DropdownLink.vue";
 import Modal from "@/Components/Modal.vue";
 import NewBusiness from "@/Components/NewBusiness.vue";
 import SideNavigations from "@/Components/SideNavigations.vue";
-import { useLoadImageStore } from "@/Store/loadImageStore";
+import getImageUrl from "@/Utils/loadImageUtils.js";
 import Button from "primevue/button";
 import Popover from "primevue/popover";
 import Select from "primevue/select";
@@ -28,10 +28,6 @@ export default {
         Popover,
         Select,
         Button,
-    },
-    setup() {
-        const loadImageStore = useLoadImageStore();
-        return { loadImageStore };
     },
 
     mounted() {
@@ -57,12 +53,12 @@ export default {
                 window.localStorage.getItem("default_business")
             );
             if (def_business) {
+                window.localStorage.setItem(
+                    "default_business",
+                    JSON.stringify(data)
+                );
+                this.default_business = data;
                 if (def_business.business_id != data.business_id) {
-                    window.localStorage.setItem(
-                        "default_business",
-                        JSON.stringify(data)
-                    );
-                    this.default_business = data;
                     this.fetchBusinessData();
                 }
             }
@@ -80,10 +76,13 @@ export default {
         toggle(event) {
             this.$refs.op.toggle(event);
         },
+        getImageUrl,
     },
     computed: {
         businesses() {
-            return this.$page.props.user_businesses.business_user;
+            return this.$page.props.user_businesses.business_user.map(
+                (x) => x.business
+            );
         },
         isAdminOrOwner() {
             return true;
@@ -112,7 +111,6 @@ export default {
                             <Select
                                 v-model="default_business"
                                 :options="businesses"
-                                optionValue="business"
                                 class="w-[95%] place-self-center"
                             >
                                 <!-- Custom value display -->
@@ -123,8 +121,10 @@ export default {
                                     >
                                         <img
                                             :src="
-                                                slotProps.value.logo ||
-                                                '/images/default-business-logo.png'
+                                                getImageUrl(
+                                                    slotProps.value.logo,
+                                                    '/images/default-business-logo.png'
+                                                )
                                             "
                                             alt="Business Logo"
                                             class="w-6 h-6 rounded-sm mr-1"
@@ -161,9 +161,11 @@ export default {
                                     >
                                         <img
                                             :src="
-                                                slotProps.option.business
-                                                    .logo ||
-                                                '/images/default-business-logo.png'
+                                                getImageUrl(
+                                                    slotProps.option
+                                                        .logo,
+                                                    '/images/default-business-logo.png'
+                                                )
                                             "
                                             alt="Business Logo"
                                             class="w-8 h-8 rounded-sm mr-3"
@@ -173,7 +175,7 @@ export default {
                                                 class="font-medium text-ellipsis whitespace-nowrap w-[200px] overflow-hidden"
                                             >
                                                 {{
-                                                    slotProps.option.business
+                                                    slotProps.option
                                                         .business_name
                                                 }}
                                             </span>
@@ -181,14 +183,14 @@ export default {
                                                 class="text-sm text-gray-500 text-ellipsis whitespace-nowrap w-[200px] overflow-hidden"
                                             >
                                                 {{
-                                                    slotProps.option.business
+                                                    slotProps.option
                                                         .email
                                                 }}
                                             </span>
                                         </div>
                                         <div
                                             v-if="
-                                                slotProps.option.business
+                                                slotProps.option
                                                     .business_id ==
                                                 default_business.business_id
                                             "
@@ -237,7 +239,7 @@ export default {
                             <div class="w-10 h-10 rounded-full">
                                 <img
                                     :src="
-                                        loadImageStore.getImage(
+                                        getImageUrl(
                                             $page.props.auth.user.profile_image,
                                             '/images/default-profile.png'
                                         )
