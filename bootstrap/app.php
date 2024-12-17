@@ -30,6 +30,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             'paddle/*',
         ]);
+        $middleware->trustProxies(at: '*');
         //
     })
     ->withExceptions(function (Exceptions $exceptions) {
