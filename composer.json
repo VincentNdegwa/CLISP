@@ -8,6 +8,7 @@
         "php": "^8.2",
         "barryvdh/laravel-dompdf": "^3.0",
         "filament/filament": "^3.2",
+        "flowframe/laravel-trend": "^0.3.0",
         "inertiajs/inertia-laravel": "^1.0",
         "laravel/breeze": "^2.1",
         "laravel/cashier-paddle": "^2.5",
