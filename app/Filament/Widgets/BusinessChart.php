@@ -10,6 +10,12 @@ use Flowframe\Trend\TrendValue;
 class BusinessChart extends ChartWidget
 {
     protected static ?string $heading = 'Businesses';
+    protected static ?int $sort = 2;
+
+    // protected int | string | array $columnSpan = [
+    //     'md' => 2,
+    //     'xl' => 2,
+    // ];
 
     protected function getData(): array
     {
