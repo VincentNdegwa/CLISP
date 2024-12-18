@@ -257,55 +257,6 @@ export default {
                 </Select>
                 <InputError class="mt-2" :message="form.errors.email" />
             </div>
-            <!-- Business Type -->
-            <div>
-                <InputLabel
-                    for="business_type"
-                    value="Business Type"
-                    required="true"
-                />
-                <select
-                    id="business_type"
-                    class="mt-1 w-full p-2 border border-gray-300 rounded-md"
-                    v-model="form.business_type_id"
-                    required
-                >
-                    <option value="">Select Business Type</option>
-                    <option
-                        v-for="type in businessTypes"
-                        :key="type.id"
-                        :value="type.id"
-                    >
-                        {{ type.name }}
-                    </option>
-                </select>
-                <InputError
-                    class="mt-2"
-                    :message="form.errors.business_type_id"
-                />
-            </div>
-
-            <!-- Industry -->
-            <div>
-                <InputLabel for="industry" value="Industry" required="true" />
-                <select
-                    id="industry"
-                    class="mt-1 w-full p-2 border border-gray-300 rounded-md"
-                    v-model="form.industry_id"
-                    required
-                >
-                    <option value="">Select Industry</option>
-                    <option
-                        v-for="industry in industries"
-                        :key="industry.id"
-                        :value="industry.id"
-                    >
-                        {{ industry.name }}
-                    </option>
-                </select>
-                <InputError class="mt-2" :message="form.errors.industry_id" />
-            </div>
-
             <!-- Location -->
             <div>
                 <InputLabel for="location" value="Location" required="true" />
@@ -337,6 +288,48 @@ export default {
                 />
                 <InputError class="mt-2" :message="form.errors.phone_number" />
             </div>
+            <!-- Business Type -->
+            <div>
+                <InputLabel for="business_type" value="Business Type" />
+                <select
+                    id="business_type"
+                    class="mt-1 w-full p-2 border border-gray-300 rounded-md"
+                    v-model="form.business_type_id"
+                >
+                    <option value="">Select Business Type</option>
+                    <option
+                        v-for="type in businessTypes"
+                        :key="type.id"
+                        :value="type.id"
+                    >
+                        {{ type.name }}
+                    </option>
+                </select>
+                <InputError
+                    class="mt-2"
+                    :message="form.errors.business_type_id"
+                />
+            </div>
+
+            <!-- Industry -->
+            <div>
+                <InputLabel for="industry" value="Industry" />
+                <select
+                    id="industry"
+                    class="mt-1 w-full p-2 border border-gray-300 rounded-md"
+                    v-model="form.industry_id"
+                >
+                    <option value="">Select Industry</option>
+                    <option
+                        v-for="industry in industries"
+                        :key="industry.id"
+                        :value="industry.id"
+                    >
+                        {{ industry.name }}
+                    </option>
+                </select>
+                <InputError class="mt-2" :message="form.errors.industry_id" />
+            </div>
 
             <!-- Website -->
             <div>
@@ -356,14 +349,12 @@ export default {
                 <InputLabel
                     for="registration_number"
                     value="Registration Number"
-                    required="true"
                 />
                 <TextInput
                     id="registration_number"
                     type="text"
                     class="mt-1 w-full"
                     v-model="form.registration_number"
-                    required
                     autocomplete="registration_number"
                 />
                 <InputError
