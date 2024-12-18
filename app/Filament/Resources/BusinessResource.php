@@ -8,11 +8,13 @@ use App\Filament\Resources\BusinessResource\RelationManagers\BusinessUserRelatio
 use App\Models\Business;
 use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -43,7 +45,8 @@ class BusinessResource extends Resource
 
                 TextInput::make('location')->maxLength(100)->required(),
                 TextInput::make('website')->maxLength(100),
-                TextInput::make('logo')->maxLength(100),
+                FileUpload::make('logo'),
+                TextInput::make('registration_number')->maxLength(100),
                 Select::make('business_type_id')
                     ->options(DB::table('business_types')
                         ->pluck('name', 'id')->toArray())
@@ -61,6 +64,7 @@ class BusinessResource extends Resource
         return $table
             ->columns(components: [
                 TextColumn::make('business_name')->searchable(),
+                ImageColumn::make('logo')->size(40)->circular(),
                 TextColumn::make('location')->searchable(),
                 TextColumn::make('currency_code')->searchable(),
                 TextColumn::make('phone_number')->searchable(),
