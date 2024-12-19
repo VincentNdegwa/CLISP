@@ -54,6 +54,8 @@ class BusinessSubscriptionController extends Controller
         $cleanedBusiness = [
             'business_id' => $business->business_id,
             'business_name' => $business->business_name,
+            'last_payment' => $business->subscription('default')->lastPayment(),
+            'next_payment' => $business->subscription('default')->nextPayment(),
             'subscriptions' => $subscriptions,
         ];
 
