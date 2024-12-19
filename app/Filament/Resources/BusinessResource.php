@@ -70,11 +70,7 @@ class BusinessResource extends Resource
                 TextColumn::make('phone_number')->searchable(),
                 TextColumn::make('email')->searchable(),
                 TextColumn::make('registration_number')->searchable(),
-                TextColumn::make('businessType.name'),
-                TextColumn::make('industry.name'),
-                TextColumn::make('status'),
-                TextColumn::make('date_registered'),
-                TextColumn::make('website'),
+
             ])
             ->filters([
                 SelectFilter::make('business_type_id')

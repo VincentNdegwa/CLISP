@@ -1,12 +1,13 @@
 <?php
 
 use App\Http\Controllers\BusinessController;
+use App\Http\Controllers\BusinessSubscriptionController;
+use App\Http\Controllers\BusinessSubsriptionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\Paddle\PaddleDisplayController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ResourceCategoryController;
-use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\TransactionController;
 use App\Models\Business;
 use App\Models\BusinessUser;
@@ -29,6 +30,17 @@ Route::get('/', function () {
         'laravelVersion' => Application::VERSION,
         'phpVersion' => PHP_VERSION,
     ]);
+});
+
+Route::get('/subs/{business_id}', function ($business_id) {
+    $business = Business::with('subscriptions.transactions')->find($business_id);
+    // $business->subscriptions = $business->subscriptions->map(function ($subscription) {
+    //     $subscription->items = $subscription->items->map(function ($item) {
+    //         $item->plan = SubscriptionPlan::where('price_id', $item->price_id)->first();
+    //         return $item;
+    //     });
+    // });
+    return response()->json($business);
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -55,6 +67,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
             'plans_t' => $subscription_plans,
         ]);
     })->name('choose-plan');
+
+    Route::get('/billing', [BusinessSubscriptionController::class, 'index'])->name('billing.view');
 
     Route::get("checkout/subscription/{business_id}/{price_id}", [PaddleDisplayController::class, 'choose']);
     Route::get("subscription/check/{business_id}", [PaddleDisplayController::class, 'checkSubscription'])->name('subscription.check');

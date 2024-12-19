@@ -119,6 +119,13 @@ export default {
                     icon: "bi bi-gear",
                     subItems: null,
                 },
+                {
+                    name: "Billing",
+                    route: "billing.view",
+                    open: localStorage.getItem("Billing") === "true",
+                    icon: "bi bi-receipt",
+                    subItems: null,
+                },
             ],
         };
     },
