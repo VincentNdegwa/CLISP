@@ -3,6 +3,7 @@
 use App\Http\Controllers\BusinessConnectionController;
 use App\Http\Controllers\BusinessController;
 use App\Http\Controllers\BusinessPaymentsController;
+use App\Http\Controllers\BusinessSubscriptionController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FileSystemController;
@@ -97,6 +98,11 @@ Route::prefix('transactions/{business_id}')->group(function () {
     Route::post('/logistics/receive-items', [LogisticController::class, 'receiveItems']);
     Route::post('/logistics/return-items', [LogisticController::class, 'returnItems']);
     Route::post('/logistics/reject-items', [LogisticController::class, 'rejectItems']);
+});
+
+
+Route::prefix('{business_id}/billing')->group(function () {
+    Route::get('/', [BusinessSubscriptionController::class, 'getBilling']);
 });
 
 
