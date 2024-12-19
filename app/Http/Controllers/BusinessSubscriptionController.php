@@ -62,12 +62,32 @@ class BusinessSubscriptionController extends Controller
         return response()->json($cleanedBusiness);
     }
 
-    public function getBillingTransactions($business_id)
+    public function getBillingTransactions(Request $request, $business_id)
     {
+        $rows = $request->input('rows', 20);
+        $page = $request->input('page', 1);
+
         $transactions = SubscriptionTransaction::where('billable_type', 'App\Models\Business')
             ->where('billable_id', $business_id)
-            ->paginate(20);
+            ->paginate($rows, ['*'], 'page', $page);
 
-        return response()->json($transactions);
+        $formattedTransactions = [
+            'current_page' => $transactions->currentPage(),
+            'data' => $transactions->getCollection()->transform(function ($transaction) {
+                return [
+                    'id' => $transaction->id,
+                    'invoice_number' => $transaction->invoice_number,
+                    'status' => $transaction->status,
+                    'total' => $transaction->total(),
+                    'tax' => $transaction->tax(),
+                    'currency' => $transaction->currency,
+                    'billed_at' => $transaction->billed_at,
+                ];
+            }),
+            'total' => $transactions->total(),
+            'per_page' => $transactions->perPage(),
+        ];
+
+        return response()->json($formattedTransactions);
     }
 }
