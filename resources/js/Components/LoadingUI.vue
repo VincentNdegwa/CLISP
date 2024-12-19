@@ -1,5 +1,5 @@
 <template>
-    <div class="card flex justify-center">
+    <div class="card flex w-full h-full place-items-center">
         <ProgressSpinner />
     </div>
 </template>

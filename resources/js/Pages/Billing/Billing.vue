@@ -1,14 +1,16 @@
 <template>
     <Head title="Billing" />
     <AuthenticatedLayout>
-        <div class="flex flex-col w-full p-5 space-y-6">
-            <!-- Loader -->
-            <div v-if="loading" class="flex justify-center items-center">
-                <div class="loader"></div>
-            </div>
-
+        <!-- Loader -->
+        <div
+            v-if="loading || !store.subscription?.business_id"
+            class="flex justify-center items-center"
+        >
+            <LoadingUI />
+        </div>
+        <div v-else class="flex flex-col w-full p-5 space-y-6">
             <!-- Subscription Section -->
-            <div v-else class="border-2 rounded-lg shadow p-6">
+            <div class="border-2 rounded-lg shadow p-6">
                 <div class="flex justify-between items-center">
                     <div class="flex items-center space-x-4">
                         <div class="text-slate-900 text-2xl font-bold">
@@ -84,7 +86,7 @@
             </div>
 
             <!-- Transactions Section -->
-            <div v-else class="border-2 rounded-lg shadow p-6 flex-1">
+            <div class="border-2 rounded-lg shadow p-6 flex-1">
                 <h2 class="text-slate-900 text-xl font-bold mb-4">
                     Transaction History
                 </h2>
@@ -131,6 +133,7 @@ import { Head } from "@inertiajs/vue3";
 import { onMounted } from "vue";
 import Column from "primevue/column";
 import DataTable from "primevue/datatable";
+import LoadingUI from "@/Components/LoadingUI.vue";
 
 export default {
     components: {
@@ -139,16 +142,20 @@ export default {
         PrimaryButton,
         DataTable,
         Column,
+        LoadingUI,
     },
     setup() {
         const store = useBusinessSubscriptionStore();
+        let loading = store.loading;
 
         onMounted(() => {
+            loading = true;
             store.getBilling();
         });
 
         return {
             store,
+            loading,
         };
     },
     methods: {
@@ -158,11 +165,7 @@ export default {
             return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
         },
     },
-    data() {
-        return {
-            loading: this.store.loading,
-        };
-    },
+    data() {},
 };
 </script>
 
