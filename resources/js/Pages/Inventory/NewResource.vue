@@ -121,14 +121,6 @@ export default {
 
 <template>
     <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-6">
-        <h2 class="text-2xl font-semibold mb-6">
-            {{
-                newResource != "false"
-                    ? "New Inventory Item"
-                    : "Update Inventory Item"
-            }}
-        </h2>
-
         <form @submit.prevent="submitForm" class="space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Item Name -->

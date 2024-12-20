@@ -16,6 +16,7 @@ import Button from "primevue/button";
 import Menu from "primevue/menu";
 import Paginator from "primevue/paginator";
 import { currencyConvertor } from "@/Store/CurrencyConvertStore";
+import Drawer from "primevue/drawer";
 
 export default {
     setup() {
@@ -37,9 +38,14 @@ export default {
             open: false,
             component: "",
         });
+
+        const drawer = ref({
+            open: false,
+            component: "",
+        });
         const openResorceForm = (component) => {
-            modal.value.open = true;
-            modal.value.component = component;
+            drawer.value.open = true;
+            drawer.value.component = component;
         };
         const openNewCategoryForm = () => {
             modal.value.open = true;
@@ -64,6 +70,7 @@ export default {
             resources,
             addResource,
             modal,
+            drawer,
             openResorceForm,
             openNewCategoryForm,
             closeModal,
@@ -218,6 +225,7 @@ export default {
         Button,
         Menu,
         Paginator,
+        Drawer,
     },
 };
 </script>
@@ -458,6 +466,37 @@ export default {
             @newCategory="newCategory"
         />
     </Modal>
+
+    <Drawer
+        v-model:visible="drawer.open"
+        :header="
+            drawer.component == 'NewResource'
+                ? 'Add New Resource'
+                : 'Update Resource'
+        "
+        position="right"
+        class="!w-full md:!w-[60rem]"
+    >
+        <NewResource
+            v-if="drawer.component === 'NewResource'"
+            @close="closeModal"
+            :category="category"
+            @addResource="addResource"
+            :loading="resources.loading"
+            newResource="true"
+            dataEdit="null"
+        />
+        <NewResource
+            v-if="drawer.component === 'UpdateResource'"
+            @close="closeModal"
+            :category="category"
+            @addResource="addResource"
+            :dataEdit="edit_form"
+            newResource="false"
+            @updateResource="updateResource"
+            :loading="resources.loading"
+        />
+    </Drawer>
 </template>
 
 <style scoped></style>
