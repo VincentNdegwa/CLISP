@@ -243,10 +243,10 @@
 
         <!-- Payment Details -->
         @if (in_array($transaction['status'], ['approved', 'paid']))
-            <div class="">
-                <h3>Payment Information</h3>
-                <p>{{ $payment['payment_type'] }}</p>
-                @if (isset($payment['payment_details']) && is_array($payment['payment_details']))
+            @if (isset($payment['payment_details']) && is_array($payment['payment_details']))
+                <div class="">
+                    <h3>Payment Information</h3>
+                    <p>{{ $payment['payment_type'] }}</p>
                     <ul style="list-style: none; padding: 0;">
                         @foreach ($payment['payment_details'] as $detail)
                             <li>
@@ -254,8 +254,8 @@
                             </li>
                         @endforeach
                     </ul>
-                @endif
-            </div>
+                </div>
+            @endif
 
         @endif
 

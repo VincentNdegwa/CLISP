@@ -122,7 +122,7 @@ class ResourceItemController extends Controller
             ->with([
                 'category',
                 'itemsBusiness' => function ($query) use ($business_id) {
-                    $query->where('business_id', $business_id)->select('item_id', 'quantity');
+                    $query->where('business_id', $business_id)->select();
                 }
             ])
             ->paginate($rows, ['*'], 'page', $page);
@@ -131,6 +131,7 @@ class ResourceItemController extends Controller
         $newData->getCollection()->transform(function ($item) {
             if (isset($item->itemsBusiness[0])) {
                 $item->quantity = $item->itemsBusiness[0]->quantity;
+                $item->details = $item->itemsBusiness[0];
             } else {
                 $item->quantity = 0;
             }
@@ -151,7 +152,7 @@ class ResourceItemController extends Controller
             $validated = $request->validate([
                 'id' => 'required|exists:resource_item,id',
                 "item_name" => 'required|string|max:255',
-                "category_id" => 'required|exists:resource_category,id',
+                "category_id" => 'nullable|exists:resource_category,id',
                 "unit" => 'required|string|max:50',
                 "price" => 'required|numeric|min:0',
                 "details" => 'required|array',

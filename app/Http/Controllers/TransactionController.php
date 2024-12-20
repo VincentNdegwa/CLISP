@@ -599,7 +599,9 @@ class TransactionController extends Controller
         if (!$transaction) {
             return redirect()->route('not-found');
         }
-        $payment->payment_details = json_decode($payment->payment_details);
+        if (isset($payment)) {
+            $payment->payment_details = json_decode($payment->payment_details);
+        }
         $pdf = Pdf::loadView('receipt', compact('transaction', 'payment'));
         return view('receipt', compact('transaction', 'payment'));
     }
