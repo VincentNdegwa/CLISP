@@ -28,6 +28,13 @@ export default {
                 quantity: "",
                 unit: "",
                 price: "",
+                details: {
+                    purchase_price: "",
+                    lease_price: "",
+                    borrow_fee: "",
+                    tax_rate: "",
+                    tax_type: "Exclusive",
+                },
                 item_image: null,
                 date: null,
             },
@@ -93,7 +100,13 @@ export default {
                         quantity: "",
                         unit: "",
                         price: "",
-                        date_added: new Date(),
+                        details: {
+                            purchase_price: "", // New field
+                            lease_price: "", // New field
+                            borrow_fee: "", // New field
+                            tax_rate: "", // New field
+                            tax_type: "Exclusive", // New field
+                        },
                         item_image: null,
                         date: null,
                     };
@@ -111,13 +124,18 @@ export default {
             quantity: "",
             unit: "",
             price: "",
+            details: {
+                purchase_price: "", // New field
+                lease_price: "", // New field
+                borrow_fee: "", // New field
+                tax_rate: "", // New field
+                tax_type: "Exclusive", // New field
+            },
             item_image: null,
         };
     },
 };
 </script>
-
-<style scoped></style>
 
 <template>
     <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-6">
@@ -193,6 +211,72 @@ export default {
                         required
                     />
                 </div>
+
+                <!-- Purchase Price -->
+                <div>
+                    <InputLabel value="Purchase Price" />
+                    <input
+                        v-model="form.details.purchase_price"
+                        type="number"
+                        id="purchase_price"
+                        class="input input-bordered w-full bg-white ring-1 ring-slate-300"
+                        min="0"
+                        step="0.01"
+                    />
+                </div>
+
+                <!-- Lease Price -->
+                <div>
+                    <InputLabel value="Lease Price" />
+                    <input
+                        v-model="form.details.lease_price"
+                        type="number"
+                        id="lease_price"
+                        class="input input-bordered w-full bg-white ring-1 ring-slate-300"
+                        min="0"
+                        step="0.01"
+                    />
+                </div>
+
+                <!-- Borrow Fee -->
+                <div>
+                    <InputLabel value="Borrow Fee" />
+                    <input
+                        v-model="form.details.borrow_fee"
+                        type="number"
+                        id="borrow_fee"
+                        class="input input-bordered w-full bg-white ring-1 ring-slate-300"
+                        min="0"
+                        step="0.01"
+                    />
+                </div>
+
+                <!-- Tax Rate -->
+                <div>
+                    <InputLabel value="Tax Rate (%)" />
+                    <input
+                        v-model="form.details.tax_rate"
+                        type="number"
+                        id="tax_rate"
+                        class="input input-bordered w-full bg-white ring-1 ring-slate-300"
+                        min="0"
+                        max="100"
+                        step="0.01"
+                    />
+                </div>
+
+                <!-- Tax Type -->
+                <div>
+                    <InputLabel value="Tax Type" />
+                    <select
+                        v-model="form.details.tax_type"
+                        id="tax_type"
+                        class="select select-bordered w-full bg-white ring-1 ring-slate-300"
+                    >
+                        <option value="Inclusive">Inclusive</option>
+                        <option value="Exclusive">Exclusive</option>
+                    </select>
+                </div>
             </div>
 
             <!-- Description -->
@@ -225,14 +309,6 @@ export default {
                     :disabled="loading"
                 >
                     {{ newResource != "false" ? "Save Item" : "Update Item" }}
-                </PrimaryButton>
-                <PrimaryButton
-                    type="button"
-                    @click="$emit('close')"
-                    :disabled="loading"
-                    class="btn bg-rose-600 hover:bg-rose-500 text-white flex-1"
-                >
-                    Cancel
                 </PrimaryButton>
             </div>
         </form>

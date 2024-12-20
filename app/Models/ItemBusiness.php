@@ -12,7 +12,12 @@ class ItemBusiness extends Model
         'item_id',
         'business_id',
         'source',
-        'quantity'
+        'quantity',
+        'purchase_price',
+        'lease_price',
+        'borrow_fee',
+        'tax_type',
+        'tax_rate',
 
     ];
     protected $table = 'item_business';
