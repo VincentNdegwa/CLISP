@@ -24,6 +24,10 @@ export default {
             modal.value.open = false;
             modal.value.component = "";
         };
+        const closeDrawer = () => {
+            drawer.value.open = false;
+            drawer.value.component = "";
+        };
         const category = useResourceCategoryStore();
 
         const resources = useResourceStore();
@@ -31,7 +35,9 @@ export default {
 
         const addResource = async (item) => {
             await resources.addResource(item);
-            closeModal();
+            if (!resources.error) {
+                closeDrawer();
+            }
         };
 
         const modal = ref({
@@ -58,7 +64,9 @@ export default {
 
         const updateResource = async (resource) => {
             await resources.updateResource(resource);
-            closeModal();
+            if (!resources.error) {
+                closeDrawer();
+            }
         };
 
         const deleteResource = async (id) => {

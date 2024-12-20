@@ -22,9 +22,15 @@ class ResourceItemController extends Controller
                 "quantity" => 'required|min:0|numeric',
                 "unit" => 'required|string|max:50',
                 "price" => 'required|numeric|min:0',
-                "date_added" => 'required',
-                "unit" => 'string'
+                "date_added" => 'nullable|date',
+                "details" => 'required|array',
+                "details.purchase_price" => 'nullable|numeric|min:0',
+                "details.lease_price" => 'nullable|numeric|min:0',
+                "details.borrow_fee" => 'nullable|numeric|min:0',
+                "details.tax_rate" => 'nullable|numeric|min:0|max:100',
+                "details.tax_type" => 'nullable|in:Inclusive,Exclusive'
             ]);
+
 
             $data = $request->all();
             $business = Business::where('business_id', $business_id)->first();
@@ -44,6 +50,12 @@ class ResourceItemController extends Controller
                 'item_id' => $resourceItem->id,
                 'source' => 'Owned',
                 'quantity' => $request->input('quantity'),
+                "details" => 'required|array',
+                'purchase_price' => $request->input('details.purchase_price'),
+                'lease_price' => $request->input('details.lease_price'),
+                'borrow_fee' => $request->input('details.borrow_fee'),
+                'tax_rate' => $request->input('details.tax_rate'),
+                'tax_type' => $request->input('details.tax_type'),
             ]);
 
             TransactionItemHistory::create([
@@ -142,6 +154,12 @@ class ResourceItemController extends Controller
                 "category_id" => 'required|exists:resource_category,id',
                 "unit" => 'required|string|max:50',
                 "price" => 'required|numeric|min:0',
+                "details" => 'required|array',
+                "details.purchase_price" => 'nullable|numeric|min:0',
+                "details.lease_price" => 'nullable|numeric|min:0',
+                "details.borrow_fee" => 'nullable|numeric|min:0',
+                "details.tax_rate" => 'nullable|numeric|min:0|max:100',
+                "details.tax_type" => 'nullable|in:Inclusive,Exclusive'
             ]);
             $item = ResourceItem::where('id', $request->input('id'))->update([
                 'item_name' => $request->input('item_name'),

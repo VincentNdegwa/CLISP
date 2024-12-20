@@ -28,15 +28,15 @@ export default {
                 quantity: "",
                 unit: "",
                 price: "",
+                item_image: null,
+                date: null,
                 details: {
                     purchase_price: "",
                     lease_price: "",
                     borrow_fee: "",
-                    tax_rate: "",
-                    tax_type: "Exclusive",
+                    tax_rate: 0,
+                    tax_type: "",
                 },
-                item_image: null,
-                date: null,
             },
             formData,
         };
@@ -101,11 +101,11 @@ export default {
                         unit: "",
                         price: "",
                         details: {
-                            purchase_price: "", // New field
-                            lease_price: "", // New field
-                            borrow_fee: "", // New field
-                            tax_rate: "", // New field
-                            tax_type: "Exclusive", // New field
+                            purchase_price: "",
+                            lease_price: "",
+                            borrow_fee: "",
+                            tax_rate: "",
+                            tax_type: "",
                         },
                         item_image: null,
                         date: null,
@@ -125,11 +125,11 @@ export default {
             unit: "",
             price: "",
             details: {
-                purchase_price: "", // New field
-                lease_price: "", // New field
-                borrow_fee: "", // New field
-                tax_rate: "", // New field
-                tax_type: "Exclusive", // New field
+                purchase_price: "",
+                lease_price: "",
+                borrow_fee: "",
+                tax_rate: 0,
+                tax_type: "",
             },
             item_image: null,
         };
@@ -151,25 +151,6 @@ export default {
                         class="input input-bordered w-full bg-white ring-1 ring-slate-300"
                         required
                     />
-                </div>
-
-                <!-- Category -->
-                <div>
-                    <InputLabel value="Category" />
-                    <select
-                        v-model="form.category_id"
-                        id="category"
-                        class="select select-bordered w-full bg-white ring-1 ring-slate-300"
-                    >
-                        <option disabled value="">Select Category</option>
-                        <option
-                            v-for="(item, index) in category.items.data"
-                            :key="index"
-                            :value="item.id"
-                        >
-                            {{ item.name }}
-                        </option>
-                    </select>
                 </div>
 
                 <!-- Quantity -->
@@ -212,6 +193,54 @@ export default {
                     />
                 </div>
 
+                <!-- Tax Rate -->
+                <div>
+                    <InputLabel value="Tax Rate (%)" :required="true" />
+                    <input
+                        v-model="form.details.tax_rate"
+                        type="number"
+                        id="tax_rate"
+                        class="input input-bordered w-full bg-white ring-1 ring-slate-300"
+                        min="0"
+                        max="100"
+                        step="0.01"
+                        required
+                    />
+                </div>
+
+                <!-- Tax Type -->
+                <div>
+                    <InputLabel value="Tax Type" :required="true" />
+                    <select
+                        v-model="form.details.tax_type"
+                        id="tax_type"
+                        class="select select-bordered w-full bg-white ring-1 ring-slate-300"
+                        required
+                    >
+                        <option value="Inclusive">Inclusive</option>
+                        <option value="Exclusive">Exclusive</option>
+                    </select>
+                </div>
+
+                <!-- Category -->
+                <div>
+                    <InputLabel value="Category" />
+                    <select
+                        v-model="form.category_id"
+                        id="category"
+                        class="select select-bordered w-full bg-white ring-1 ring-slate-300"
+                    >
+                        <option disabled value="">Select Category</option>
+                        <option
+                            v-for="(item, index) in category.items.data"
+                            :key="index"
+                            :value="item.id"
+                        >
+                            {{ item.name }}
+                        </option>
+                    </select>
+                </div>
+
                 <!-- Purchase Price -->
                 <div>
                     <InputLabel value="Purchase Price" />
@@ -249,33 +278,6 @@ export default {
                         min="0"
                         step="0.01"
                     />
-                </div>
-
-                <!-- Tax Rate -->
-                <div>
-                    <InputLabel value="Tax Rate (%)" />
-                    <input
-                        v-model="form.details.tax_rate"
-                        type="number"
-                        id="tax_rate"
-                        class="input input-bordered w-full bg-white ring-1 ring-slate-300"
-                        min="0"
-                        max="100"
-                        step="0.01"
-                    />
-                </div>
-
-                <!-- Tax Type -->
-                <div>
-                    <InputLabel value="Tax Type" />
-                    <select
-                        v-model="form.details.tax_type"
-                        id="tax_type"
-                        class="select select-bordered w-full bg-white ring-1 ring-slate-300"
-                    >
-                        <option value="Inclusive">Inclusive</option>
-                        <option value="Exclusive">Exclusive</option>
-                    </select>
                 </div>
             </div>
 
