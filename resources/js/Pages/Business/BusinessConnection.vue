@@ -10,6 +10,7 @@ import axios from "axios";
 import NoRecords from "@/Components/NoRecords.vue";
 import RequestList from "./RequestList.vue";
 import Paginator from "primevue/paginator";
+import LoadingUI from "@/Components/LoadingUI.vue";
 
 export default {
     components: {
@@ -22,6 +23,7 @@ export default {
         NoRecords,
         RequestList,
         Paginator,
+        LoadingUI,
     },
     data() {
         return {
@@ -71,13 +73,19 @@ export default {
         },
         async makeRequestChange(url, request, additionalData = {}) {
             try {
+                this.loading = true;
                 const response = await axios.post(url, {
                     request_id: request.id,
                     ...additionalData,
                 });
 
                 if (!response.data.error) {
-                    request.connection_status = response.data.newStatus;
+                    this.requests.data= this.requests.data.map((req)=> {
+                        if(req.id === request.id){
+                            return {...req, connection_status: response.data.connection_status };
+                        }
+                        return req;
+                    })
                     this.displayNotification(response.data.message, "success");
                 } else {
                     this.displayNotification(response.data.message, "error");
@@ -87,6 +95,8 @@ export default {
                     "An error occurred, please try again later",
                     "error"
                 );
+            } finally {
+                this.loading = false;
             }
         },
         acceptRequest(request) {
@@ -140,8 +150,6 @@ export default {
             this.notification.open = true;
         },
         startMakingRequestChanges(request, method) {
-            console.log(method);
-
             this.selectedRequest = request;
 
             switch (method) {
@@ -218,80 +226,95 @@ export default {
         :status="notification.status"
     />
     <AuthenticatedLayout>
-        <div class="flex items-center justify-between">
-            <h1 class="text-2xl font-bold mb-6">Business Connections</h1>
-            <div class="flex items-center">
-                <div class="dropdown">
-                    <div
-                        tabindex="0"
-                        role="button"
-                        class="btn m-1 bg-slate-900 text-white"
-                        @click="toggleDropdown"
-                    >
-                        Filters <i class="bi bi-funnel"></i>
-                    </div>
-                    <ul
-                        tabindex="0"
-                        v-if="isDropdownOpen"
-                        class="dropdown-content flex flex-col gap-2 bg-white text-slate-900 rounded-box z-[1] w-52 p-2 shadow"
-                    >
-                        <li>
-                            <div class="flex flex-col gap-1">
-                                <div class="inline-block">Filter By Status</div>
-                                <select
-                                    class="select select-bordered bg-white text-slate-950 ring-1 ring-slate-800"
-                                >
-                                    <option
-                                        value="Filter By Status"
-                                        selected
-                                        disabled
-                                    >
-                                        Filter By Status
-                                    </option>
-                                </select>
-                            </div>
-                        </li>
-                        <li
-                            class="mt-3 p-2 bg-slate-900 text-white rounded-md text-center hover:bg-slate-800 transition-all ease-linear duration-700"
+        <LoadingUI v-if="loading" customClass="h-[90vh]" />
+        <div v-else>
+            <div class="flex items-center justify-between">
+                <h1 class="text-2xl font-bold mb-6">Business Connections</h1>
+                <div class="flex items-center">
+                    <div class="dropdown">
+                        <div
+                            tabindex="0"
+                            role="button"
+                            class="btn m-1 bg-slate-900 text-white"
+                            @click="toggleDropdown"
                         >
-                            <button @click="clearFilters">
-                                Clear Filters <i class="bi bi-trash"></i>
-                            </button>
-                        </li>
-                    </ul>
+                            Filters <i class="bi bi-funnel"></i>
+                        </div>
+                        <ul
+                            tabindex="0"
+                            v-if="isDropdownOpen"
+                            class="dropdown-content flex flex-col gap-2 bg-white text-slate-900 rounded-box z-[1] w-52 p-2 shadow"
+                        >
+                            <li>
+                                <div class="flex flex-col gap-1">
+                                    <div class="inline-block">
+                                        Filter By Status
+                                    </div>
+                                    <select
+                                        class="select select-bordered bg-white text-slate-950 ring-1 ring-slate-800"
+                                    >
+                                        <option
+                                            value="Filter By Status"
+                                            selected
+                                            disabled
+                                        >
+                                            Filter By Status
+                                        </option>
+                                    </select>
+                                </div>
+                            </li>
+                            <li
+                                class="mt-3 p-2 bg-slate-900 text-white rounded-md text-center hover:bg-slate-800 transition-all ease-linear duration-700"
+                            >
+                                <button @click="clearFilters">
+                                    Clear Filters <i class="bi bi-trash"></i>
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                    <PrimaryButton
+                        @click="() => openModal('ConnectionRequestForm')"
+                    >
+                        Make Request
+                    </PrimaryButton>
                 </div>
-                <PrimaryButton
-                    @click="() => openModal('ConnectionRequestForm')"
-                >
-                    Make Request
-                </PrimaryButton>
             </div>
-        </div>
 
-        <!-- Sent Requests -->
-        <div class="mb-10">
-            <RequestList
-                :requests="requests?.data || []"
-                request_type="sent"
-                pendingActionText="Cancel Request"
-                approvedActionText="Terminate Connection"
-                :pendingAction="
-                    (request) => startMakingRequestChanges(request, 'Cancel')
-                "
-                :approvedAction="
-                    (request) => startMakingRequestChanges(request, 'Terminate')
-                "
-            />
-            <Paginator
-                v-if="requests?.data?.length > 0"
-                :totalRecords="requests?.total"
-                :rows="requests?.per_page"
-                :first="(requests?.current_page - 1) * requests?.per_page"
-                @page="onPageChange"
-                @update:rows="onRowChange"
-                :rowsPerPageOptions="[10, 20, 50]"
-            >
-            </Paginator>
+            <!-- Sent Requests -->
+            <div class="mb-10">
+                <RequestList
+                    :requests="requests?.data || []"
+                    request_type="sent"
+                    pendingActionText="Cancel Request"
+                    approvedActionText="Terminate Connection"
+                    :cancelAction="
+                        (request) =>
+                            startMakingRequestChanges(request, 'Cancel')
+                    "
+                    :approveAction="
+                        (request) =>
+                            startMakingRequestChanges(request, 'Approve')
+                    "
+                    :rejectAction="
+                        (request) =>
+                            startMakingRequestChanges(request, 'Reject')
+                    "
+                    :terminateAction="
+                        (request) =>
+                            startMakingRequestChanges(request, 'Terminate')
+                    "
+                />
+                <Paginator
+                    v-if="requests?.data?.length > 0"
+                    :totalRecords="requests?.total"
+                    :rows="requests?.per_page"
+                    :first="(requests?.current_page - 1) * requests?.per_page"
+                    @page="onPageChange"
+                    @update:rows="onRowChange"
+                    :rowsPerPageOptions="[10, 20, 50]"
+                >
+                </Paginator>
+            </div>
         </div>
     </AuthenticatedLayout>
 </template>

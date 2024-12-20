@@ -88,12 +88,14 @@ import Menu from "primevue/menu";
 
 export default {
     props: {
-        requests: Object,
+        requests: Array,
         request_type: String,
         pendingActionText: String,
         approvedActionText: String,
-        pendingAction: Function,
-        approvedAction: Function,
+        cancelAction: Function,
+        approveAction: Function,
+        rejectAction: Function,
+        terminateAction: Function,
     },
     components: {
         DataTable,
@@ -130,36 +132,66 @@ export default {
             }[status];
         },
         handleRequestChange(request, action) {
-            if (action === "pendingAction") {
-                this.pendingAction(request);
-            } else if (action === "approvedAction") {
-                this.approvedAction(request);
+            if (action === "cancelAction") {
+                this.cancelAction(request);
+            } else if (action === "approveAction") {
+                this.approveAction(request);
+            } else if (action === "terminateAction") {
+                this.terminateAction(request);
+            } else if (action == "rejectAction") {
+                this.rejectAction(request);
             }
         },
         toggle(data, event) {
-            this.selectedData = data;
             this.watchRequests(data);
+            this.selectedData = data;
             this.$refs.menu.toggle(event);
         },
         watchRequests(data) {
+            console.log(data);
             this.actionItem = [];
 
             let canCancel = {
                 label: "Cancel Request",
                 icon: "pi pi-times",
                 command: () => {
-                    this.handleRequestChange(data, "pendingAction");
+                    this.handleRequestChange(data, "cancelAction");
+                },
+            };
+
+            let canApprove = {
+                label: "Approve Request",
+                icon: "pi pi-check",
+                command: () => {
+                    this.handleRequestChange(data, "approveAction");
                 },
             };
             let canTerminate = {
                 label: "Terminate Connection",
                 icon: "pi pi-times",
                 command: () => {
-                    this.handleRequestChange(data, "approvedAction");
+                    this.handleRequestChange(data, "terminateAction");
                 },
             };
-            if (data.connection_status === "pending") {
+
+            let canReject = {
+                label: "Reject Request",
+                icon: "pi pi-times",
+                command: () => {
+                    this.handleRequestChange(data, "rejectAction");
+                },
+            };
+            if (
+                data.connection_status === "pending" &&
+                data.request_type === "sent"
+            ) {
                 this.actionItem = [canCancel];
+            }
+            if (
+                data.connection_status === "pending" &&
+                data.request_type === "receive"
+            ) {
+                this.actionItem = [canApprove, canReject];
             }
             if (data.connection_status === "approved") {
                 this.actionItem = [canTerminate];
@@ -187,6 +219,7 @@ export default {
                 : "Requester Phone";
         },
     },
+    watch: {},
     data() {
         return {
             selectedData: null,

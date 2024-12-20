@@ -12,6 +12,7 @@ import PaymentInformationForm from "./PaymentInformationForm.vue";
 import { usePaymentMethods } from "@/Store/PaymentMethods";
 import { onMounted, ref } from "vue";
 import ConfirmationModal from "@/Components/ConfirmationModal.vue";
+import getImageUrl from "@/Utils/loadImageUtils";
 
 export default {
     components: {
@@ -124,6 +125,7 @@ export default {
         closeConfirmation() {
             this.confirmation.isOpen = false;
         },
+        getImageUrl,
     },
     data() {
         return {
@@ -191,8 +193,11 @@ export default {
                             <div class="lg:w-5/12 w-full">
                                 <img
                                     :src="
-                                        myBusiness?.business?.business?.logo ||
-                                        '/images/default-business-logo.png'
+                                        getImageUrl(
+                                            myBusiness?.business?.business
+                                                ?.logo,
+                                            '/images/default-business-logo.png'
+                                        )
                                     "
                                     class="h-60 w-60 rounded-sm"
                                     alt="Business Logo"

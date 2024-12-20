@@ -75,6 +75,8 @@ class BusinessConnectionController extends Controller
             $request = BusinessConnection::where('id', $business_request->id)
                 ->with('businessRequester', 'businessReceiver', 'userRequester', 'userReceiver')
                 ->first();
+            $request->request_type =  'sent';
+
             return response()->json([
                 'error' => false,
                 'message' => "Business Request Created",
@@ -139,6 +141,7 @@ class BusinessConnectionController extends Controller
         return response()->json([
             'error' => false,
             'message' => $successMessage,
+            'connection_status' => $newStatus
         ]);
     }
 
@@ -163,6 +166,8 @@ class BusinessConnectionController extends Controller
         return response()->json([
             'error' => false,
             'message' => $successMessage,
+            'connection_status' => $newStatus
+
         ]);
     }
 
