@@ -18,7 +18,7 @@ class ResourceItemController extends Controller
         try {
             $request->validate([
                 "item_name" => 'required|string|max:255',
-                "category_id" => 'required|exists:resource_category,id',
+                "category_id" => 'nullable|exists:resource_category,id',
                 "quantity" => 'required|min:0|numeric',
                 "unit" => 'required|string|max:50',
                 "price" => 'required|numeric|min:0',

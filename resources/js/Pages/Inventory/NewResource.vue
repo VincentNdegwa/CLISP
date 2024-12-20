@@ -145,12 +145,11 @@ export default {
 
                 <!-- Category -->
                 <div>
-                    <InputLabel value="Category" required />
+                    <InputLabel value="Category" />
                     <select
                         v-model="form.category_id"
                         id="category"
                         class="select select-bordered w-full bg-white ring-1 ring-slate-300"
-                        required
                     >
                         <option disabled value="">Select Category</option>
                         <option
