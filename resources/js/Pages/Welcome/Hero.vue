@@ -4,12 +4,14 @@ import PrimaryButton from "@/Components/PrimaryButton.vue";
 import PrimaryRoseButton from "@/Components/PrimaryRoseButton.vue";
 import PrimaryTransparentButton from "@/Components/PrimaryTransparentButton.vue";
 import { router } from "@inertiajs/vue3";
+import ApplicationLogo from "@/Components/ApplicationLogo.vue";
 export default {
     components: {
         NavButton,
         PrimaryRoseButton,
         PrimaryButton,
         PrimaryTransparentButton,
+        ApplicationLogo,
     },
     data() {
         return {
@@ -87,13 +89,7 @@ export default {
                     <div
                         class="flex md:flex-row flex-col h-full items-center md:gap-20"
                     >
-                        <div class="logo-image">
-                            <img
-                                src="images/CLISP-logo.png"
-                                class="rounded-full h-[50px] w-[50px]"
-                                alt="logo"
-                            />
-                        </div>
+                        <ApplicationLogo class="w-12 h-12" />
 
                         <nav>
                             <ul
