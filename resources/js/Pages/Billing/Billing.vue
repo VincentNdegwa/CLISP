@@ -232,8 +232,9 @@ export default {
             );
         };
         const cancelBilling = async (cancelType) => {
+            modal.value.open = false;
             await store.cancelBilling(cancelType);
-            //window.location.reload();
+            window.location.reload();
         };
 
         const onPageOrRowChange = (event) => {
