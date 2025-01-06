@@ -43,13 +43,16 @@ export const useBusinessSubscriptionStore = defineStore(
                     this.loading = false;
                 }
             },
-            async cancelBilling() {
+            async cancelBilling(cancelType) {
                 this.loading = true;
                 this.error = null;
                 try {
-                    const url = `/api/${
+                    let url = `/api/${
                         useUserStore().business
                     }/billing/cancel-subscription`;
+                    if (cancelType) {
+                        url += `?cancelType=${cancelType}`;
+                    }
                     const response = await axios.post(url);
                     if (response.data.error) {
                         this.error = response.data.message;

@@ -86,13 +86,7 @@
                         v-if="store.subscription.next_payment"
                         type="button"
                         class="bg-rose-500 text-white"
-                        @click="
-                            openAction(
-                                'Cancel Plan',
-                                'Are you sure you want to cancel your plan?',
-                                cancelBilling
-                            )
-                        "
+                        @click="openModal('CancelBilling')"
                     >
                         Cancel Plan
                     </PrimaryButton>
@@ -156,6 +150,12 @@
         :message="notification.message"
         :open="notification.open"
     />
+    <Modal :show="modal.open" @close="modal.open = false">
+        <CancelBilling
+            v-if="modal.component == 'CancelBilling'"
+            @cancel="cancelBilling"
+        />
+    </Modal>
 </template>
 
 <script>
@@ -170,6 +170,8 @@ import LoadingUI from "@/Components/LoadingUI.vue";
 import Paginator from "primevue/paginator";
 import ConfirmationModal from "@/Components/ConfirmationModal.vue";
 import AlertNotification from "@/Components/AlertNotification.vue";
+import Modal from "@/Components/Modal.vue";
+import CancelBilling from "./CancelBilling.vue";
 
 export default {
     components: {
@@ -182,6 +184,8 @@ export default {
         Paginator,
         ConfirmationModal,
         AlertNotification,
+        Modal,
+        CancelBilling,
     },
     setup() {
         const store = useBusinessSubscriptionStore();
@@ -190,6 +194,10 @@ export default {
             open: true,
             message: "",
             status: "error",
+        });
+        const modal = ref({
+            open: false,
+            component: null,
         });
         const paginationParams = ref({ page: 1, rows: 20 });
 
@@ -223,8 +231,9 @@ export default {
                 paginationParams.value.rows
             );
         };
-        const cancelBilling = async () => {
-            await store.cancelBilling();
+        const cancelBilling = async (cancelType) => {
+            await store.cancelBilling(cancelType);
+            //window.location.reload();
         };
 
         const onPageOrRowChange = (event) => {
@@ -248,6 +257,7 @@ export default {
             onPageOrRowChange,
             cancelBilling,
             notification,
+            modal,
         };
     },
     methods: {
@@ -262,9 +272,11 @@ export default {
         cancelPlan() {
             console.log("Cancel Plan");
         },
+        openModal(component) {
+            this.modal.open = true;
+            this.modal.component = component;
+        },
         openAction(title, message, confirm) {
-            console.log("Open Action");
-
             this.confirmation.isOpen = true;
             this.confirmation.title = title;
             this.confirmation.message = message;

@@ -92,7 +92,8 @@ class BusinessSubscriptionController extends Controller
     }
 
 
-    public function cancelSubscription($business_id)
+
+    public function cancelSubscription($business_id, Request $request)
     {
         $business = Business::where('business_id', $business_id)->first();
 
@@ -100,8 +101,16 @@ class BusinessSubscriptionController extends Controller
             return response()->json(['message' => 'Business not found', 'error' => true]);
         }
 
-        $business->subscription('default')->cancel();
+        $cancelType = $request->query('cancelType');
 
-        return response()->json(['message' => 'Subscription cancelled successfully', "error" => false]);
+        if ($cancelType === 'now') {
+            $business->subscription('default')->cancelNow();
+        } elseif ($cancelType === 'afterSubscription') {
+            $business->subscription('default')->cancel();
+        } else {
+            return response()->json(['message' => 'Invalid cancel type', 'error' => true]);
+        }
+
+        return response()->json(['message' => 'Subscription cancelled successfully', 'error' => false, "type" => $cancelType]);
     }
 }
