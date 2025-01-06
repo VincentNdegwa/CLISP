@@ -90,4 +90,18 @@ class BusinessSubscriptionController extends Controller
 
         return response()->json($formattedTransactions);
     }
+
+
+    public function cancelSubscription($business_id)
+    {
+        $business = Business::where('business_id', $business_id)->first();
+
+        if (!$business) {
+            return response()->json(['message' => 'Business not found', 'error' => true]);
+        }
+
+        $business->subscription('default')->cancel();
+
+        return response()->json(['message' => 'Subscription cancelled successfully', "error" => false]);
+    }
 }

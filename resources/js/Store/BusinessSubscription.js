@@ -11,6 +11,7 @@ export const useBusinessSubscriptionStore = defineStore(
             transactions: [],
             loading: false,
             error: null,
+            success: null,
         }),
         actions: {
             async getBilling() {
@@ -36,6 +37,25 @@ export const useBusinessSubscriptionStore = defineStore(
 
                     const response = await axios.get(url);
                     this.transactions = response.data;
+                } catch (err) {
+                    this.error = err.message;
+                } finally {
+                    this.loading = false;
+                }
+            },
+            async cancelBilling() {
+                this.loading = true;
+                this.error = null;
+                try {
+                    const url = `/api/${
+                        useUserStore().business
+                    }/billing/cancel-subscription`;
+                    const response = await axios.post(url);
+                    if (response.data.error) {
+                        this.error = response.data.message;
+                    } else {
+                        this.success = response.data.message;
+                    }
                 } catch (err) {
                     this.error = err.message;
                 } finally {

@@ -78,10 +78,22 @@
                     <PrimaryButton
                         type="button"
                         class="bg-slate-900 text-white"
+                        @click="upgradePlan"
                     >
                         Upgrade Plan
                     </PrimaryButton>
-                    <PrimaryButton type="button" class="bg-rose-500 text-white">
+                    <PrimaryButton
+                        v-if="store.subscription.next_payment"
+                        type="button"
+                        class="bg-rose-500 text-white"
+                        @click="
+                            openAction(
+                                'Cancel Plan',
+                                'Are you sure you want to cancel your plan?',
+                                cancelBilling
+                            )
+                        "
+                    >
                         Cancel Plan
                     </PrimaryButton>
                 </div>
@@ -131,6 +143,19 @@
             />
         </div>
     </AuthenticatedLayout>
+
+    <ConfirmationModal
+        :isOpen="confirmation.isOpen"
+        :title="confirmation.title"
+        :message="confirmation.message"
+        @confirm="confirmation.confirm"
+        @close="cancelAction"
+    />
+    <AlertNotification
+        :status="notification.status"
+        :message="notification.message"
+        :open="notification.open"
+    />
 </template>
 
 <script>
@@ -138,11 +163,13 @@ import PrimaryButton from "@/Components/PrimaryButton.vue";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import { useBusinessSubscriptionStore } from "@/Store/BusinessSubscription";
 import { Head } from "@inertiajs/vue3";
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 import Column from "primevue/column";
 import DataTable from "primevue/datatable";
 import LoadingUI from "@/Components/LoadingUI.vue";
 import Paginator from "primevue/paginator";
+import ConfirmationModal from "@/Components/ConfirmationModal.vue";
+import AlertNotification from "@/Components/AlertNotification.vue";
 
 export default {
     components: {
@@ -153,10 +180,17 @@ export default {
         Column,
         LoadingUI,
         Paginator,
+        ConfirmationModal,
+        AlertNotification,
     },
     setup() {
         const store = useBusinessSubscriptionStore();
         let loading = store.loading;
+        const notification = ref({
+            open: true,
+            message: "",
+            status: "error",
+        });
         const paginationParams = ref({ page: 1, rows: 20 });
 
         onMounted(() => {
@@ -165,11 +199,32 @@ export default {
             fetchTransactions();
         });
 
-        const fetchTransactions = () => {
-            store.getBillingTransactions(
+        watch(store, (newStore, oldStore) => {
+            if (newStore.error) {
+                notification.value = {
+                    open: true,
+                    message: newStore.error,
+                    status: "error",
+                };
+            }
+
+            if (newStore.success) {
+                notification.value = {
+                    open: true,
+                    message: newStore.success,
+                    status: "success",
+                };
+            }
+        });
+
+        const fetchTransactions = async () => {
+            await store.getBillingTransactions(
                 paginationParams.value.page,
                 paginationParams.value.rows
             );
+        };
+        const cancelBilling = async () => {
+            await store.cancelBilling();
         };
 
         const onPageOrRowChange = (event) => {
@@ -191,6 +246,8 @@ export default {
             loading,
             paginationParams,
             onPageOrRowChange,
+            cancelBilling,
+            notification,
         };
     },
     methods: {
@@ -199,8 +256,36 @@ export default {
             const date = new Date(dateString);
             return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
         },
+        upgradePlan() {
+            console.log("Upgrade Plan");
+        },
+        cancelPlan() {
+            console.log("Cancel Plan");
+        },
+        openAction(title, message, confirm) {
+            console.log("Open Action");
+
+            this.confirmation.isOpen = true;
+            this.confirmation.title = title;
+            this.confirmation.message = message;
+            this.confirmation.confirm = confirm;
+        },
+        cancelAction() {
+            this.confirmation.isOpen = false;
+        },
     },
-    data() {},
+    data() {
+        return {
+            confirmation: {
+                isOpen: false,
+                title: "Confirm Action",
+                message: "Are you sure you want to proceed?",
+                confirm: () => {
+                    this.confirmation.isOpen = false;
+                },
+            },
+        };
+    },
 };
 </script>
 

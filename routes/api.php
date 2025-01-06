@@ -104,6 +104,7 @@ Route::prefix('transactions/{business_id}')->group(function () {
 Route::prefix('{business_id}/billing')->group(function () {
     Route::get('/', [BusinessSubscriptionController::class, 'getBilling']);
     Route::get('/transaction', [BusinessSubscriptionController::class, 'getBillingTransactions']);
+    Route::post('/cancel-subscription', [BusinessSubscriptionController::class, 'cancelSubscription']);
 });
 
 
