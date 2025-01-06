@@ -382,6 +382,12 @@ export default {
                     </template>
                 </Column>
 
+                <Column header="Source" field="source">
+                    <template #body="slotProps">
+                        {{ slotProps.data.details.source|| '--' }}
+                    </template>
+                </Column>
+
                 <!-- Actions -->
                 <Column header="Actions">
                     <template #body="slotProps">
