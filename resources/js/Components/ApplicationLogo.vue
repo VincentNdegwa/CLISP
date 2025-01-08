@@ -2,6 +2,6 @@
     <img
         src="/images/logo.jpg"
         alt="logo"
-        class="h-[100px] w-[100px] rounded-full"
+        class="max-h-[100px] max-w-[100px] w-full h-full rounded-full"
     />
 </template>

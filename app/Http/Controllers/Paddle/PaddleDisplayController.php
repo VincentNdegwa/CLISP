@@ -65,7 +65,7 @@ class PaddleDisplayController extends Controller
     {
         $business = Business::where('business_id', $business_id)->first();
         if ($business && $business->subscribed('default')) {
-            return redirect(route('dashboard'));
+            return redirect(route('billing.view'));
         } else {
             return redirect(route(name: 'login'));
         }

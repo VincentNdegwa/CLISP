@@ -89,7 +89,9 @@ export default {
                     <div
                         class="flex md:flex-row flex-col h-full items-center md:gap-20"
                     >
-                        <ApplicationLogo class="w-12 h-12" />
+                        <div class="w-10 h-10">
+                            <ApplicationLogo />
+                        </div>
 
                         <nav>
                             <ul
