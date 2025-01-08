@@ -23,12 +23,12 @@ class CheckBusinessSubsription
     {
         $id = Auth::id();
         $user = User::find($id);
-        $business = $user->businesses();
-        if ($business->count() < 1) {
+        $business = $user->defaultBusiness();
+        if (!$business) {
             return redirect()->route('register-business');
         }
+
         $unsubscribedBusiness = $user->unSubscribedBusiness();
-        Log::info('Unsubscribed ' . $unsubscribedBusiness);
         if (isset($unsubscribedBusiness)) {
             return redirect()->route('choose-plan')->with([
                 "business" => $unsubscribedBusiness,

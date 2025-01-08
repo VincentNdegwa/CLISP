@@ -65,8 +65,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function unSubscribedBusiness()
     {
-        $unsubscribedBusinesses = $this->unSubscribedBusinesses();
-        return $unsubscribedBusinesses[0] ?? null;
+        return $this->defaultBusiness()->subscribed('default')? null: $this->defaultBusiness();
     }
     public static function defaultBusiness()
     {
