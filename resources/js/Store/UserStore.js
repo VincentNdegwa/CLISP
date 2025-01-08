@@ -15,5 +15,9 @@ export const useUserStore = defineStore("userStore", {
             }
             return null;
         },
-    },
+    }, actions: {
+        setDefaultBusiness() {
+            
+        }
+    }
 });

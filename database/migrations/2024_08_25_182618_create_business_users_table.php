@@ -24,6 +24,8 @@ return new class extends Migration
             $table->id();
             $table->string("business_id");
             $table->string("user_id");
+            $table->timestamps();
+
         });
     }
 

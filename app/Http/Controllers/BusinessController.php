@@ -239,8 +239,8 @@ class BusinessController extends Controller
         ]);
     }
 
-    public function setDefaultBusiness($business_id)
+    public function setDefaultBusiness($business_id, $user_id)
     {
-        Business::setDefaultBusiness($business_id, Auth::user()->id);
+        return Business::setDefaultBusiness($business_id, $user_id);
     }
 }

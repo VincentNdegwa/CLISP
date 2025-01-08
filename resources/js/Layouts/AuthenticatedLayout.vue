@@ -5,6 +5,7 @@ import Modal from "@/Components/Modal.vue";
 import NewBusiness from "@/Components/NewBusiness.vue";
 import SideNavigations from "@/Components/SideNavigations.vue";
 import getImageUrl from "@/Utils/loadImageUtils.js";
+import axios from "axios";
 import Button from "primevue/button";
 import Popover from "primevue/popover";
 import Select from "primevue/select";
@@ -59,6 +60,16 @@ export default {
                 );
                 this.default_business = data;
                 if (def_business.business_id != data.business_id) {
+                    axios
+                        .get(
+                            `/api/business/${def_business.business_id}/${this.$page.props.auth.user.id}/set-default-business`
+                        )
+                        .then((res) => {
+                            log(res);
+                        })
+                        .catch((err) => {
+                            log(err);
+                        });
                     this.fetchBusinessData();
                 }
             }
@@ -162,8 +173,7 @@ export default {
                                         <img
                                             :src="
                                                 getImageUrl(
-                                                    slotProps.option
-                                                        .logo,
+                                                    slotProps.option.logo,
                                                     '/images/default-business-logo.png'
                                                 )
                                             "
@@ -182,16 +192,12 @@ export default {
                                             <span
                                                 class="text-sm text-gray-500 text-ellipsis whitespace-nowrap w-[200px] overflow-hidden"
                                             >
-                                                {{
-                                                    slotProps.option
-                                                        .email
-                                                }}
+                                                {{ slotProps.option.email }}
                                             </span>
                                         </div>
                                         <div
                                             v-if="
-                                                slotProps.option
-                                                    .business_id ==
+                                                slotProps.option.business_id ==
                                                 default_business.business_id
                                             "
                                             class="grid h-4 w-4 place-items-center place-self-start rounded-full bg-slate-800"
