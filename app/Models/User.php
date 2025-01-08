@@ -6,6 +6,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Auth;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -66,5 +67,16 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         $unsubscribedBusinesses = $this->unSubscribedBusinesses();
         return $unsubscribedBusinesses[0] ?? null;
+    }
+    public static function defaultBusiness()
+    {
+        $defaultBusiness = DefaultBusiness::where('user_id', Auth::id())->pluck('business_id')->first();
+
+        if ($defaultBusiness) {
+            return Business::find($defaultBusiness);
+        }
+
+        $businessUser = BusinessUser::where('user_id', Auth::id())->pluck('business_id')->first();
+        return Business::find($businessUser);
     }
 }

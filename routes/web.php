@@ -32,15 +32,8 @@ Route::get('/', function () {
     ]);
 });
 
-Route::get('/subs/{business_id}', function ($business_id) {
-    $business = Business::with('subscriptions.transactions')->find($business_id);
-    // $business->subscriptions = $business->subscriptions->map(function ($subscription) {
-    //     $subscription->items = $subscription->items->map(function ($item) {
-    //         $item->plan = SubscriptionPlan::where('price_id', $item->price_id)->first();
-    //         return $item;
-    //     });
-    // });
-    return response()->json($business);
+Route::get('/default-business', function () {
+    return User::defaultBusiness();
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {

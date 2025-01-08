@@ -66,6 +66,6 @@ class Business extends Model
                 'user_id' => $user_id
             ]
         );
+        return true;
     }
-    
 }
