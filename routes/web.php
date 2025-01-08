@@ -33,7 +33,7 @@ Route::get('/', function () {
 });
 
 Route::get('/default-business', function () {
-    return User::defaultBusiness();
+    return  User::where('id', Auth::user()->id)->first()->defaultBusiness();
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {

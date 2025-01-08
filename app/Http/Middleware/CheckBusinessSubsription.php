@@ -31,7 +31,7 @@ class CheckBusinessSubsription
         $unsubscribedBusiness = $user->unSubscribedBusiness();
         if (isset($unsubscribedBusiness)) {
             return redirect()->route('choose-plan')->with([
-                "business" => $user->defaultBusiness(),
+                "business" => $unsubscribedBusiness,
             ]);
         }
         return $next($request);

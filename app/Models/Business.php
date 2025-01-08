@@ -57,7 +57,7 @@ class Business extends Model
 
     public static function setDefaultBusiness($business_id, $user_id)
     {
-        DefaultBusiness::updateOrCreate(
+        $business = DefaultBusiness::updateOrCreate(
             [
                 'user_id' => $user_id
             ],
@@ -66,6 +66,6 @@ class Business extends Model
                 'user_id' => $user_id
             ]
         );
-        return true;
+        return $business;
     }
 }

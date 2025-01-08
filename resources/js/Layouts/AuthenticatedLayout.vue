@@ -49,7 +49,7 @@ export default {
         }
     },
     methods: {
-        changeBusiness(data) {
+        async changeBusiness(data) {
             const def_business = JSON.parse(
                 window.localStorage.getItem("default_business")
             );
@@ -60,17 +60,19 @@ export default {
                 );
                 this.default_business = data;
                 if (def_business.business_id != data.business_id) {
-                    axios
+                    await axios
                         .get(
-                            `/api/business/${def_business.business_id}/${this.$page.props.auth.user.id}/set-default-business`
+                            `/api/business/${data.business_id}/${this.$page.props.auth.user.id}/set-default-business`
                         )
                         .then((res) => {
                             log(res);
                         })
                         .catch((err) => {
                             log(err);
+                        })
+                        .finally(() => {
+                            this.fetchBusinessData();
                         });
-                    this.fetchBusinessData();
                 }
             }
         },

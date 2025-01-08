@@ -65,17 +65,17 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function unSubscribedBusiness()
     {
-        return $this->defaultBusiness()->subscribed('default')? null: $this->defaultBusiness();
+        return $this->defaultBusiness()->subscribed('default') ? null : $this->defaultBusiness();
     }
-    public static function defaultBusiness()
+    public  function defaultBusiness()
     {
-        $defaultBusiness = DefaultBusiness::where('user_id', Auth::id())->pluck('business_id')->first();
+        $defaultBusiness = DefaultBusiness::where('user_id', $this->id)->pluck('business_id')->first();
 
         if ($defaultBusiness) {
             return Business::find($defaultBusiness);
         }
 
-        $businessUser = BusinessUser::where('user_id', Auth::id())->pluck('business_id')->first();
+        $businessUser = BusinessUser::where('user_id', $this->id)->pluck('business_id')->first();
         return Business::find($businessUser);
     }
 }
