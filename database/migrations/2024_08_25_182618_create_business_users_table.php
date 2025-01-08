@@ -19,6 +19,12 @@ return new class extends Migration
             $table->enum('role', ['Owner', 'Admin', 'Worker']);
             $table->timestamps();
         });
+
+        Schema::create('default_business', function (Blueprint $table) {
+            $table->id();
+            $table->string("business_id");
+            $table->string("user_id");
+        });
     }
 
     /**
@@ -27,5 +33,6 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('business_users');
+        Schema::dropIfExists('default_business');
     }
 };

@@ -54,4 +54,18 @@ class Business extends Model
     {
         return $this->hasMany(ItemBusiness::class, 'business_id');
     }
+
+    public static function setDefaultBusiness($business_id, $user_id)
+    {
+        DefaultBusiness::updateOrCreate(
+            [
+                'user_id' => $user_id
+            ],
+            [
+                'business_id' => $business_id,
+                'user_id' => $user_id
+            ]
+        );
+    }
+    
 }

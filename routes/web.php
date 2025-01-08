@@ -91,11 +91,9 @@ Route::middleware(['auth', 'verified', 'check.business'])->group(function () {
     Route::prefix('/dash')->group(function () {
         Route::post('/details', [DashboardController::class, 'create'])->name("dashboard.details");
     });
-});
 
 
 
-Route::middleware(['auth', 'check.business'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

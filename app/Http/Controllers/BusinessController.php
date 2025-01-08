@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Business;
 use App\Models\BusinessUser;
+use App\Models\DefaultBusiness;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -65,6 +66,16 @@ class BusinessController extends Controller
                 "user_id" => $validatedData['user_id'],
                 'role' => 'Owner'
             ]);
+
+            $defaultBusinessExist = DefaultBusiness::where('user_id')->exists();
+
+            if (!$defaultBusinessExist) {
+                DefaultBusiness::create([
+                    "business_id" => $business->business_id,
+                    "user_id" => $validatedData['user_id'],
+                ]);
+            }
+
 
             $newBusiness = Business::with(['businessType', 'industry'])->where("business_id", $business->business_id)->first();
             DB::commit();
@@ -226,5 +237,10 @@ class BusinessController extends Controller
             'businesses' => $businesses,
             'business_count' => count($businesses),
         ]);
+    }
+
+    public function setDefaultBusiness($business_id)
+    {
+        Business::setDefaultBusiness($business_id, Auth::user()->id);
     }
 }
