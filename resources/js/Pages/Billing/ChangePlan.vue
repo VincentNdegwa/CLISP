@@ -18,9 +18,13 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <div
                 v-for="plan in billing_plans"
-                :key="plan.name"
-                class="card w-full bg-white shadow-md border border-gray-300 rounded-lg hover:shadow-lg transition-all duration-300"
-                :class="{ 'border-red-500': selectedPlan === plan.name }"
+                :key="plan.price_id"
+                :class="[
+                    'w-full cursor-pointer shadow-md border border-gray-300 rounded-lg hover:shadow-lg transition-all duration-300',
+                    selectedPlan?.price_id === plan?.price_id
+                        ? 'bg-red-200'
+                        : '',
+                ]"
                 @click="selectPlan(plan)"
             >
                 <div class="p-5">
@@ -38,11 +42,11 @@
                     </div>
 
                     <!-- Price Section -->
-                    <div class="flex gap-1 items-center w-full">
+                    <div class="flex gap-1 items-center w-full mt-4">
                         <div class="text-xl font-extrabold text-gray-900">
                             {{ currency(plan.price) }}
                         </div>
-                        <div class="text-sm p-0 text-gray-500">
+                        <div class="text-sm text-gray-500">
                             / {{ plan.billing_cycle }}
                         </div>
                     </div>
@@ -50,8 +54,9 @@
             </div>
         </div>
 
-        <div class="flex flex-col flex-wrap gap-4 mt-10">
-            <div class="flex items-center gap-2 mt-4">
+        <!-- Change Option -->
+        <div class="flex flex-col gap-4 mt-10">
+            <div class="flex items-center gap-2">
                 <RadioButton
                     v-model="changeOption"
                     inputId="changeNow"
@@ -67,9 +72,9 @@
                     name="changeOption"
                     value="nextCycle"
                 />
-                <label for="changeNextCycle" class="text-slate-900">
-                    Change Next Billing Cycle
-                </label>
+                <label for="changeNextCycle" class="text-slate-900"
+                    >Change Next Billing Cycle</label
+                >
             </div>
         </div>
 
@@ -122,22 +127,15 @@ export default {
             });
         },
         selectPlan(plan) {
-            this.selectedPlan = plan.name;
+            this.selectedPlan = plan;
+            console.log(plan);
         },
         handleChange() {
-            if (this.changeOption === "now") {
-                this.$emit("changePlan", {
-                    plan: this.selectedPlan,
-                    when: "now",
-                    billingCycle: this.billing_cycle,
-                });
-            } else if (this.changeOption === "nextCycle") {
-                this.$emit("changePlan", {
-                    plan: this.selectedPlan,
-                    when: "nextCycle",
-                    billingCycle: this.billing_cycle,
-                });
-            }
+            const params = {
+                price_id: this.selectedPlan.price_id,
+                when: this.changeOption,
+            };
+            console.log(params);
         },
     },
     mounted() {
@@ -145,7 +143,6 @@ export default {
     },
     watch: {
         billing_cycle: {
-            deep: true,
             handler() {
                 this.setPlans();
             },
