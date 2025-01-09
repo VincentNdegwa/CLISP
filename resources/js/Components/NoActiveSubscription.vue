@@ -7,12 +7,12 @@
             The business, {{ business.business_name }}, has no active
             subscription.
         </p>
-        <button
-            @click="goToBilling"
-            class="bg-rose-500 text-white px-4 py-2 rounded hover:bg-rose-600"
+        <a
+            :href="route('billing.view')"
+            class="bg-rose-500 text-white px-4 py-4 mt-5 rounded hover:bg-rose-600"
         >
             Go to Billing
-        </button>
+        </a>
     </div>
 </template>
 
@@ -27,11 +27,7 @@ export default {
             required: true,
         },
     },
-    methods: {
-        goToBilling() {
-            this.$router.push({ name: "billing.view" });
-        },
-    },
+    methods: {},
 };
 </script>
 

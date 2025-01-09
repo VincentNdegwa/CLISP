@@ -28,12 +28,12 @@ class CheckBusinessSubsription
             return redirect()->route('register-business');
         }
 
-        $unsubscribedBusiness = $user->unSubscribedBusiness();
-        if (isset($unsubscribedBusiness)) {
-            return redirect()->route('choose-plan')->with([
-                "business" => $unsubscribedBusiness,
-            ]);
-        }
+        // $unsubscribedBusiness = $user->unSubscribedBusiness();
+        // if (isset($unsubscribedBusiness)) {
+        //     return redirect()->route('choose-plan')->with([
+        //         "business" => $unsubscribedBusiness,
+        //     ]);
+        // }
         return $next($request);
     }
 }

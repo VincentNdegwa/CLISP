@@ -19,7 +19,9 @@ export default {
             modal: {
                 open: false,
                 components: null,
+                closeable: true,
             },
+            currentUrl: `${window.location.origin + this.$page.url}`,
         };
     },
     components: {
@@ -52,9 +54,12 @@ export default {
         }
 
         if (
-            !this.$page.props.user_businesses.default_business.activeSubscription
+            !this.$page.props.user_businesses.default_business
+                .activeSubscription &&
+            this.currentUrl != route("billing.view")
         ) {
             this.modal.open = true;
+            this.modal.closeable = false;
             this.modal.components = "NoActiveSubscription";
         }
     },
@@ -116,7 +121,7 @@ export default {
 </script>
 
 <template>
-    <Modal :show="modal.open" @close="closeModal">
+    <Modal :show="modal.open" :closeable="modal.closeable" @close="closeModal">
         <NewBusiness
             v-if="modal.components == 'NewBusiness'"
             @close="closeModal"
