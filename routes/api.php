@@ -33,7 +33,7 @@ Route::prefix('business')->group(function () {
     Route::post("/{business_id}/payment-information/default/{payment_id}", [BusinessPaymentsController::class, "setDefault"]);
     Route::get("/{business_id}/check-subscription", [PaddleDisplayController::class, 'checkSubscription']);
     Route::get("/{business_id}/{user_id}/set-default-business", [BusinessController::class, 'setDefaultBusiness']);
-    Route::get("/{business_id}/change-plan", [BusinessController::class, 'changePlan']);
+    Route::post("/{business_id}/change-plan", [BusinessController::class, 'changePlan']);
 });
 
 Route::prefix('dashboard/{business_id}')->group(function () {

@@ -133,11 +133,11 @@ export default {
         },
         async handleChange() {
             const params = {
-                price_id: this.selectedPlan.price_id,
+                plan_id: this.selectedPlan.price_id,
                 when: this.changeOption,
             };
 
-            await changeMyPlan(params).then(() => {
+            await this.changeMyPlan(params).then(() => {
                 this.$emit("close");
             });
         },
@@ -154,8 +154,8 @@ export default {
     },
     setup() {
         const businessSub = useBusinessSubscriptionStore();
-        const changeMyPlan = async () => {
-            await businessSub.ChangePlan();
+        const changeMyPlan = async (params) => {
+            await businessSub.ChangePlan(params);
         };
         return { changeMyPlan };
     },

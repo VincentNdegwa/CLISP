@@ -252,7 +252,7 @@ class BusinessController extends Controller
                 "plan_id" => "required|exists:subscription_plans,price_id",
                 "when" => "required|string|in:nextCycle,now"
             ]);
-            $business = Business::where("business_id ", $business_id)->first();
+            $business = Business::find($business_id);
 
             if ($validation['when'] == 'now') {
                 $business->subscription()->swap($validation['plan_id']);
