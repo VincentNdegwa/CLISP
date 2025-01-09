@@ -156,7 +156,11 @@
             @cancel="cancelBilling"
         />
 
-        <ChangePlan v-if="modal.component == 'ChangePlan'" :plan="plan_t" />
+        <ChangePlan
+            @close="closeModal"
+            v-if="modal.component == 'ChangePlan'"
+            :plan="plan_t"
+        />
     </Modal>
 </template>
 
@@ -295,6 +299,10 @@ export default {
         },
         cancelAction() {
             this.confirmation.isOpen = false;
+        },
+        closeModal() {
+            this.modal.open = false;
+            this.modal.component = null;
         },
     },
     data() {

@@ -95,6 +95,7 @@ import SelectButton from "primevue/selectbutton";
 import PrimaryRoseButton from "@/Components/PrimaryRoseButton.vue";
 import { currencyConvertor } from "@/Store/CurrencyConvertStore";
 import RadioButton from "primevue/radiobutton";
+import { useBusinessSubscriptionStore } from "@/Store/BusinessSubscription";
 
 export default {
     components: {
@@ -130,12 +131,15 @@ export default {
             this.selectedPlan = plan;
             console.log(plan);
         },
-        handleChange() {
+        async handleChange() {
             const params = {
                 price_id: this.selectedPlan.price_id,
                 when: this.changeOption,
             };
-            console.log(params);
+
+            await changeMyPlan(params).then(() => {
+                this.$emit("close");
+            });
         },
     },
     mounted() {
@@ -147,6 +151,13 @@ export default {
                 this.setPlans();
             },
         },
+    },
+    setup() {
+        const businessSub = useBusinessSubscriptionStore();
+        const changeMyPlan = async () => {
+            await businessSub.ChangePlan();
+        };
+        return { changeMyPlan };
     },
 };
 </script>
