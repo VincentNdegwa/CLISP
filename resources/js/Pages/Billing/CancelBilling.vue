@@ -18,7 +18,7 @@
                     v-model="cancelOption"
                     inputId="cancelAfterSubscription"
                     name="cancelOption"
-                    value="afterSubscription"
+                    value="nextCycle"
                 />
                 <label for="cancelAfterSubscription" class="text-slate-900">
                     Cancel After End of Subscription
@@ -52,8 +52,8 @@ export default {
         handleCancel() {
             if (this.cancelOption === "now") {
                 this.$emit("cancel", "now");
-            } else if (this.cancelOption === "afterSubscription") {
-                this.$emit("cancel", "afterSubscription");
+            } else if (this.cancelOption === "nextCycle") {
+                this.$emit("cancel", "nextCycle");
             }
         },
     },

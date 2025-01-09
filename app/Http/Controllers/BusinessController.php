@@ -243,4 +243,39 @@ class BusinessController extends Controller
     {
         return Business::setDefaultBusiness($business_id, $user_id);
     }
+
+
+    public function changePlan($business_id, Request $request)
+    {
+        try {
+            $validation = $request->validate([
+                "plan_id" => "required|exists:subscription_plans,price_id",
+                "when" => "required|string|in:nextCycle,now"
+            ]);
+            $business = Business::where("business_id ", $business_id)->first();
+
+            if ($validation['when'] == 'now') {
+                $business->subscription()->swap($validation['plan_id']);
+            } else {
+                $business->subscription()->swapAndInvoice($validation['plan_id']);
+            }
+
+            return response()->json([
+                'error' => false,
+                'message' => 'Plan changed successfully!',
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'error' => true,
+                'message' => 'Validation error.',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => true,
+                'message' => 'An unexpected error occurred.',
+                'errors' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

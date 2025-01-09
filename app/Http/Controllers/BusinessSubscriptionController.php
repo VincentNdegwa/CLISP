@@ -110,7 +110,7 @@ class BusinessSubscriptionController extends Controller
 
         if ($cancelType === 'now') {
             $business->subscription('default')->cancelNow();
-        } elseif ($cancelType === 'afterSubscription') {
+        } elseif ($cancelType === 'nextCycle') {
             $business->subscription('default')->cancel();
         } else {
             return response()->json(['message' => 'Invalid cancel type', 'error' => true]);
