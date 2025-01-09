@@ -78,7 +78,7 @@
                     <PrimaryButton
                         type="button"
                         class="bg-slate-900 text-white"
-                        @click="upgradePlan"
+                        @click="openModal('ChangePlan')"
                     >
                         Upgrade Plan
                     </PrimaryButton>
@@ -155,6 +155,8 @@
             v-if="modal.component == 'CancelBilling'"
             @cancel="cancelBilling"
         />
+
+        <ChangePlan v-if="modal.component == 'ChangePlan'" :plan="plan_t" />
     </Modal>
 </template>
 
@@ -172,8 +174,15 @@ import ConfirmationModal from "@/Components/ConfirmationModal.vue";
 import AlertNotification from "@/Components/AlertNotification.vue";
 import Modal from "@/Components/Modal.vue";
 import CancelBilling from "./CancelBilling.vue";
+import ChangePlan from "./ChangePlan.vue";
 
 export default {
+    props: {
+        plan_t: {
+            type: Array,
+            required: true,
+        },
+    },
     components: {
         AuthenticatedLayout,
         Head,
@@ -186,6 +195,7 @@ export default {
         AlertNotification,
         Modal,
         CancelBilling,
+        ChangePlan,
     },
     setup() {
         const store = useBusinessSubscriptionStore();
@@ -297,9 +307,8 @@ export default {
                     this.confirmation.isOpen = false;
                 },
             },
+            plan: this.plan_t,
         };
     },
 };
 </script>
-
-<style scoped></style>

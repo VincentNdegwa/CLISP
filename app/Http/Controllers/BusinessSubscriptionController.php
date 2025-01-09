@@ -12,7 +12,18 @@ class BusinessSubscriptionController extends Controller
 {
     public function index()
     {
-        return Inertia::render("Billing/Billing");
+        $subscription_plans = SubscriptionPlan::all()
+            ->groupBy('product_id')
+            ->map(function ($plans, $product_id) {
+                return $plans->map(function ($plan) {
+                    $plan->features = json_decode($plan->features);
+                    return $plan;
+                });
+            })
+            ->values();
+        return Inertia::render("Billing/Billing", [
+            'plan_t' => $subscription_plans
+        ]);
     }
 
     public function getBilling($business_id)
