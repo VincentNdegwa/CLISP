@@ -3,6 +3,7 @@ import Dropdown from "@/Components/Dropdown.vue";
 import DropdownLink from "@/Components/DropdownLink.vue";
 import Modal from "@/Components/Modal.vue";
 import NewBusiness from "@/Components/NewBusiness.vue";
+import NoActiveSubscription from "@/Components/NoActiveSubscription.vue";
 import SideNavigations from "@/Components/SideNavigations.vue";
 import getImageUrl from "@/Utils/loadImageUtils.js";
 import axios from "axios";
@@ -17,6 +18,7 @@ export default {
             default_business: null,
             modal: {
                 open: false,
+                components: null,
             },
         };
     },
@@ -29,6 +31,7 @@ export default {
         Popover,
         Select,
         Button,
+        NoActiveSubscription,
     },
 
     mounted() {
@@ -46,6 +49,13 @@ export default {
                 this.$page.props.user_businesses.default_business;
         } else {
             this.default_business = def_business;
+        }
+
+        if (
+            !this.$page.props.user_businesses.default_business.activeSubscription
+        ) {
+            this.modal.open = true;
+            this.modal.components = "NoActiveSubscription";
         }
     },
     methods: {
@@ -81,6 +91,7 @@ export default {
         },
         createNewBusiness() {
             this.modal.open = true;
+            this.modal.components = "NewBusiness";
             console.log("creating business");
         },
         closeModal() {
@@ -106,7 +117,14 @@ export default {
 
 <template>
     <Modal :show="modal.open" @close="closeModal">
-        <NewBusiness @close="closeModal" />
+        <NewBusiness
+            v-if="modal.components == 'NewBusiness'"
+            @close="closeModal"
+        />
+        <NoActiveSubscription
+            v-if="modal.components == 'NoActiveSubscription'"
+            :business="$page.props.user_businesses.default_business"
+        />
     </Modal>
     <div>
         <div class="min-h-screen bg-gray-100 text-slate-950 relative">

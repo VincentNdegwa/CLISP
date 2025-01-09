@@ -52,7 +52,7 @@ class PaddleDisplayController extends Controller
             $checkout = $business->subscribe(
                 $priceId = $price_id,
                 $type = 'default'
-            )->returnTo(route('subscription.check', ['business_id' => $business->business_id]));
+            )->returnTo(route('billing.view', ['business_id' => $business->business_id]));
 
 
             return view('Paddle.checkout', ['checkout' => $checkout, 'business' => $business, 'subscription' => $subscription_plan, 'payment_status' => null]);
