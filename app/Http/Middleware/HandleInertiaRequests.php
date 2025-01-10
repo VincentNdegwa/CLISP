@@ -46,10 +46,11 @@ class HandleInertiaRequests extends Middleware
             ])->first();
 
             $default_business = $user_businesses->business_user->first()->business ?? null;
-            $user_businesses->default_business = $user_businesses->defaultBusiness();
-            $user_businesses->default_business->activeSubscription = $user_businesses->defaultBusiness()->subscribed('default');
-
+ 
             if ($default_business) {
+                $user_businesses->default_business = $user_businesses->defaultBusiness();
+                $user_businesses->default_business->activeSubscription = $user_businesses->defaultBusiness()->subscribed('default');
+    
                 $role = BusinessUser::where('user_id', $user->id)
                     ->where('business_id', $default_business->business_id)
                     ->first();

@@ -17,8 +17,8 @@
                     <div class="flex items-center space-x-4">
                         <div class="text-slate-900 text-2xl font-bold">
                             {{
-                                store.subscription?.subscriptions[0]?.name +
-                                    " Plan" || "Plan Name"
+                                store.subscription?.subscriptions.length>0 && store.subscription?.subscriptions[0]?.name +
+                                    " Plan" || "No Plan"
                             }}
                         </div>
                         <div class="text-rose-500 text-sm">
@@ -36,7 +36,7 @@
                         }}
                         {{
                             store.subscription?.subscriptions[0]?.items[0]?.plan
-                                .currency || ""
+                                .currency || "--"
                         }}
                     </div>
                 </div>
@@ -70,7 +70,7 @@
                             Next Billing Amount
                         </div>
                         <div class="text-lg font-bold">
-                            {{ store.subscription?.last_payment?.amount }}
+                            {{ store.subscription?.last_payment?.amount || "--" }}
                         </div>
                     </div>
                 </div>
