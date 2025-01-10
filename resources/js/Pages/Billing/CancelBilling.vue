@@ -27,25 +27,47 @@
         </div>
 
         <div class="flex justify-end mt-10">
-            <PrimaryRoseButton @click="handleCancel" :disabled="!cancelOption">
+            <PrimaryRoseButton @click="openAction('Cancel Plan', 'Are you sure want to cancel plan',handleCancel  )" :disabled="!cancelOption">
                 Cancel Plan
             </PrimaryRoseButton>
         </div>
+
+        <ConfirmationModal
+            :isOpen="confirmation.isOpen"
+            :title="confirmation.title"
+            :message="confirmation.message"
+            @confirm="confirmation.confirm"
+            @close="cancelAction"
+        />
     </div>
 </template>
 
 <script>
 import PrimaryRoseButton from "@/Components/PrimaryRoseButton.vue";
 import RadioButton from "primevue/radiobutton";
+import ConfirmationModal from "@/Components/ConfirmationModal.vue";
 
 export default {
     components: {
         RadioButton,
         PrimaryRoseButton,
+        ConfirmationModal,
+
     },
     data() {
         return {
             cancelOption: null,
+            confirmation: {
+                isOpen: false,
+                title: "Confirm Action",
+                message: "Are you sure you want to proceed?",
+                confirm: () => {
+                    this.confirmation.open == false;
+                },
+                cancel: () => {
+                    this.confirmation.open == false;
+                },
+            },
         };
     },
     methods: {
@@ -55,6 +77,14 @@ export default {
             } else if (this.cancelOption === "nextCycle") {
                 this.$emit("cancel", "nextCycle");
             }
+        }, openAction(title, message, confirm) {
+            this.confirmation.isOpen = true;
+            this.confirmation.title = title;
+            this.confirmation.message = message;
+            this.confirmation.confirm = confirm;
+        },
+        cancelAction() {
+            this.confirmation.isOpen = false;
         },
     },
 };

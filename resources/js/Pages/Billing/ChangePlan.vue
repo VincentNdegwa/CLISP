@@ -90,6 +90,14 @@
                 Change Plan
             </PrimaryRoseButton>
         </div>
+
+        <ConfirmationModal
+            :isOpen="confirmation.isOpen"
+            :title="confirmation.title"
+            :message="confirmation.message"
+            @confirm="confirmation.confirm"
+            @close="cancelAction"
+        />
     </div>
 </template>
 
@@ -100,12 +108,14 @@ import { currencyConvertor } from "@/Store/CurrencyConvertStore";
 import RadioButton from "primevue/radiobutton";
 import { useBusinessSubscriptionStore } from "@/Store/BusinessSubscription";
 import { useUserStore } from "@/Store/UserStore";
-import { router } from "@inertiajs/vue3";
+import ConfirmationModal from "@/Components/ConfirmationModal.vue";
+
 export default {
     components: {
         SelectButton,
         PrimaryRoseButton,
         RadioButton,
+        ConfirmationModal,
     },
     props: {
         plan: { type: Array, required: true },
@@ -118,6 +128,17 @@ export default {
             billing_plans: [],
             selectedPlan: null,
             changeOption: null,
+            confirmation: {
+                isOpen: false,
+                title: "Confirm Action",
+                message: "Are you sure you want to proceed?",
+                confirm: () => {
+                    this.confirmation.open == false;
+                },
+                cancel: () => {
+                    this.confirmation.open == false;
+                },
+            },
         };
     },
     methods: {
@@ -132,6 +153,15 @@ export default {
                 );
             });
         },
+        openAction(title, message, confirm) {
+            this.confirmation.isOpen = true;
+            this.confirmation.title = title;
+            this.confirmation.message = message;
+            this.confirmation.confirm = confirm;
+        },
+        cancelAction() {
+            this.confirmation.isOpen = false;
+        },
         selectPlan(plan) {
             this.selectedPlan = plan;
         },
@@ -145,11 +175,16 @@ export default {
                 const businessId = useUserStore().business;
                 const priceId = this.selectedPlan.price_id;
                 window.location.href = `/checkout/subscription/${businessId}/${priceId}`;
-
             } else {
-                await this.changeMyPlan(params).then(() => {
-                    this.$emit("close");
-                });
+                this.openAction(
+                    "Confirm Change Plan",
+                    "Are you sure you want to change plan?",
+                    async () => {
+                        await this.changeMyPlan(params).then(() => {
+                            this.$emit("close");
+                        });
+                    }
+                );
             }
         },
     },
