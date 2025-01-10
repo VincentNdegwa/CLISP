@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\BusinessResource\Pages;
 use App\Filament\Resources\BusinessResource\RelationManagers;
 use App\Filament\Resources\BusinessResource\RelationManagers\BusinessUserRelationManager;
+use App\Filament\Resources\BusinessResource\RelationManagers\SubscriptionsRelationManager;
 use App\Models\Business;
 use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
@@ -102,7 +103,8 @@ class BusinessResource extends Resource
     public static function getRelations(): array
     {
         return [
-            BusinessUserRelationManager::class
+            BusinessUserRelationManager::class,
+            SubscriptionsRelationManager::class,
         ];
     }
 
@@ -112,6 +114,7 @@ class BusinessResource extends Resource
             'index' => Pages\ListBusinesses::route('/'),
             'create' => Pages\CreateBusiness::route('/create'),
             'edit' => Pages\EditBusiness::route('/{record}/edit'),
+            'transactions' => Pages\ViewTransactions::route('/{record}/transactions')
         ];
     }
 }

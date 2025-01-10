@@ -33,6 +33,7 @@ Route::get('/', function () {
 });
 
 Route::get('/default-business', function () {
+
     return  User::where('id', Auth::user()->id)->first()->defaultBusiness();
 });
 
