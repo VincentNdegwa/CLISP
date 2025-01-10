@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Business;
 use App\Models\SubscriptionPlan;
 use App\Models\Paddle\SubscriptionTransaction;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class BusinessSubscriptionController extends Controller
@@ -15,8 +17,10 @@ class BusinessSubscriptionController extends Controller
         $subscription_plans = SubscriptionPlan::all()
             ->groupBy('product_id')
             ->values();
+        $user = User::find(Auth::id());
         return Inertia::render("Billing/Billing", [
-            'plan_t' => $subscription_plans
+            'plan_t' => $subscription_plans,
+            "activeSubscriptions" => $user->defaultBusiness()->subscribed('default'),
         ]);
     }
 

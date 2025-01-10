@@ -55,7 +55,7 @@
         </div>
 
         <!-- Change Option -->
-        <div class="flex flex-col gap-4 mt-10">
+        <div class="flex flex-col gap-4 mt-10" v-if="activeSubscriptions">
             <div class="flex items-center gap-2">
                 <RadioButton
                     v-model="changeOption"
@@ -82,7 +82,10 @@
         <div class="flex justify-end mt-10">
             <PrimaryRoseButton
                 @click="handleChange"
-                :disabled="!selectedPlan || !changeOption"
+                :disabled="
+                    !selectedPlan ||
+                    (activeSubscriptions ? !changeOption : false)
+                "
             >
                 Change Plan
             </PrimaryRoseButton>
@@ -96,7 +99,8 @@ import PrimaryRoseButton from "@/Components/PrimaryRoseButton.vue";
 import { currencyConvertor } from "@/Store/CurrencyConvertStore";
 import RadioButton from "primevue/radiobutton";
 import { useBusinessSubscriptionStore } from "@/Store/BusinessSubscription";
-
+import { useUserStore } from "@/Store/UserStore";
+import { router } from "@inertiajs/vue3";
 export default {
     components: {
         SelectButton,
@@ -105,6 +109,7 @@ export default {
     },
     props: {
         plan: { type: Array, required: true },
+        activeSubscriptions: { type: Boolean, required: true },
     },
     data() {
         return {
@@ -129,17 +134,23 @@ export default {
         },
         selectPlan(plan) {
             this.selectedPlan = plan;
-            console.log(plan);
         },
         async handleChange() {
             const params = {
                 plan_id: this.selectedPlan.price_id,
-                when: this.changeOption,
+                when: this.activeSubscriptions ? this.changeOption : "now",
+                activeSubscriptions: this.activeSubscriptions,
             };
+            if (!this.activeSubscriptions) {
+                const businessId = useUserStore().business;
+                const priceId = this.selectedPlan.price_id;
+                window.location.href = `/checkout/subscription/${businessId}/${priceId}`;
 
-            await this.changeMyPlan(params).then(() => {
-                this.$emit("close");
-            });
+            } else {
+                await this.changeMyPlan(params).then(() => {
+                    this.$emit("close");
+                });
+            }
         },
     },
     mounted() {

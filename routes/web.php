@@ -63,7 +63,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/billing', [BusinessSubscriptionController::class, 'index'])->name('billing.view');
 
-    Route::get("checkout/subscription/{business_id}/{price_id}", [PaddleDisplayController::class, 'choose']);
+    Route::get("checkout/subscription/{business_id}/{price_id}", [PaddleDisplayController::class, 'choose'])->name('checkout.subscription');
     Route::get("subscription/check/{business_id}", [PaddleDisplayController::class, 'checkSubscription'])->name('subscription.check');
 });
 

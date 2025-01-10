@@ -250,9 +250,14 @@ class BusinessController extends Controller
         try {
             $validation = $request->validate([
                 "plan_id" => "required|exists:subscription_plans,price_id",
-                "when" => "required|string|in:nextCycle,now"
+                "when" => "required|string|in:nextCycle,now",
+                "activeSubscriptions" => "required|boolean"
             ]);
             $business = Business::find($business_id);
+            if($validation['activeSubscriptions']){
+                
+                $business->subscription('default')->cancelNow();
+            }
 
             if ($validation['when'] == 'now') {
                 $business->subscription()->swap($validation['plan_id']);

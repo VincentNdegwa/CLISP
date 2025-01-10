@@ -160,6 +160,7 @@
             @close="closeModal"
             v-if="modal.component == 'ChangePlan'"
             :plan="plan_t"
+            :activeSubscriptions="activeSubscriptions"
         />
     </Modal>
 </template>
@@ -185,7 +186,10 @@ export default {
         plan_t: {
             type: Array,
             required: true,
-        },
+        },activeSubscriptions:{
+            type:Boolean,
+            required:true
+        }
     },
     components: {
         AuthenticatedLayout,
