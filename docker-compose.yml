@@ -3,6 +3,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    env_file:
+      - .env.docker
+    image: clisp:latest
     volumes:
       - .:/var/www/html
     networks:
@@ -20,6 +23,17 @@ services:
     networks:
       - app-network
 
+  database:
+    image: mariadb:latest
+    env_file:
+      - .env.docker
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - app-network
+
 networks:
   app-network:
     driver: bridge
+volumes:
+  db_data: {}
