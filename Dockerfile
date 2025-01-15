@@ -1,9 +1,9 @@
-FROM node:iron-alpine3.21 AS node-build
-WORKDIR /app
-COPY package.json package-lock.json ./
-RUN npm install
-COPY . .
-RUN NODE_OPTIONS="--max-old-space-size=2048" npm run build
+# FROM node:iron-alpine3.21 AS node-build
+# WORKDIR /app
+# COPY package.json package-lock.json ./
+# RUN npm install
+# COPY . .
+# RUN NODE_OPTIONS="--max-old-space-size=2048" npm run build
 
 FROM php:8.2-fpm-alpine3.18
 
@@ -52,7 +52,7 @@ WORKDIR /var/www/html
 
 COPY package.json package-lock.json /var/www/html/
 
-RUN npm install && npm run build
+RUN export NODE_OPTIONS="--max-old-space-size=4096" && npm install && npm run build
 
 EXPOSE 9000
 
