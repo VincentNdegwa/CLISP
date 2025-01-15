@@ -40,7 +40,6 @@ WORKDIR /var/www/html
 
 COPY . .
 
-WORKDIR /var/www/html
 
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
     && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
@@ -50,11 +49,13 @@ COPY composer.json composer.lock ./
 
 RUN composer install --no-dev --optimize-autoloader
 
-WORKDIR /var/www/html
+ENV NODE_OPTIONS="--max-old-space-size=4096"
 
 COPY package.json package-lock.json /var/www/html/
 
-RUN export NODE_OPTIONS="--max-old-space-size=4096" && npm install && npm run build
+WORKDIR /var/www/html
+
+RUN npm install && npm run build
 
 EXPOSE 9000
 
