@@ -57,6 +57,12 @@ WORKDIR /var/www/html
 
 RUN npm install && npm run build
 
+RUN php artisan migrate --force \
+    && php artisan optimize:clear \
+    && php artisan config:cache \
+    && php artisan route:cache \
+    && php artisan view:cache
+
 EXPOSE 9000
 
 CMD ["php-fpm"]
