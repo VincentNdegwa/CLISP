@@ -1,3 +1,10 @@
+FROM node:iron-alpine3.21 AS node-build
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm install
+COPY . .
+RUN NODE_OPTIONS="--max-old-space-size=2048" npm run build
+
 FROM php:8.2-fpm-alpine3.18
 
 RUN apk add --no-cache \
