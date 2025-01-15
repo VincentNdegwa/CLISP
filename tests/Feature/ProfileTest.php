@@ -49,7 +49,9 @@ class ProfileTest extends TestCase
 
     public function test_email_verification_status_is_unchanged_when_the_email_address_is_unchanged(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create([
+            'email_verified_at' => now(),
+        ]);
 
         $response = $this
             ->withoutMiddleware()
@@ -57,15 +59,16 @@ class ProfileTest extends TestCase
             ->patch('/profile', [
                 'name' => 'Test User',
                 'email' => $user->email,
+                'profile_image' => null,
             ]);
 
         $response
             ->assertSessionHasNoErrors()
-            ->withoutMiddleware()
             ->assertRedirect('/profile');
 
-        // $this->assertNotNull($user->refresh()->email_verified_at);
+        $this->assertNotNull($user->refresh()->email_verified_at);
     }
+
 
 
     public function test_correct_password_must_be_provided_to_delete_account(): void
