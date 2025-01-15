@@ -47,25 +47,25 @@ class ProfileTest extends TestCase
         $this->assertNull($user->email_verified_at);
     }
 
-    // public function test_email_verification_status_is_unchanged_when_the_email_address_is_unchanged(): void
-    // {
-    //     $user = User::factory()->create();
+    public function test_email_verification_status_is_unchanged_when_the_email_address_is_unchanged(): void
+    {
+        $user = User::factory()->create();
 
-    //     $response = $this
-    //         ->withoutMiddleware()
-    //         ->actingAs($user)
-    //         ->patch('/profile', [
-    //             'name' => 'Test User',
-    //             'email' => $user->email,
-    //         ]);
+        $response = $this
+            ->withoutMiddleware()
+            ->actingAs($user)
+            ->patch('/profile', [
+                'name' => 'Test User',
+                'email' => $user->email,
+            ]);
 
-    //     $response
-    //         ->assertSessionHasNoErrors()
-    //         ->withoutMiddleware()
-    //         ->assertRedirect('/profile');
+        $response
+            ->assertSessionHasNoErrors()
+            ->withoutMiddleware()
+            ->assertRedirect('/profile');
 
-    //     // $this->assertNotNull($user->refresh()->email_verified_at);
-    // }
+        // $this->assertNotNull($user->refresh()->email_verified_at);
+    }
 
 
     public function test_correct_password_must_be_provided_to_delete_account(): void
