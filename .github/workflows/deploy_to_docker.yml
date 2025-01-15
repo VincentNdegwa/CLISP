@@ -1,35 +1,12 @@
-name: CI/CD Pipeline
+name: Clisp Deployement
 
 on:
   push:
     branches:
       - main
 jobs:
-  ci:
+  deploy_to_droplet:
     runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: "8.2"
-
-      - name: Install dependencies
-        run: |
-          composer install
-          npm install
-
-      # - name: Run tests
-      #   run: |
-      #     vendor/bin/phpunit --config phpunit.xml
-
-  merge_and_deploy:
-    runs-on: ubuntu-latest
-    # needs: ci
-    # if: success()
 
     steps:
       - name: Checkout code
@@ -49,4 +26,5 @@ jobs:
           git pull origin main
           docker compose down
           docker compose up -d --build
+          docker image prune -f
           EOF
