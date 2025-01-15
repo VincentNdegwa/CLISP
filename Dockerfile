@@ -34,28 +34,26 @@ RUN apk add --no-cache \
     && docker-php-ext-install -j$(nproc) gd \
     && docker-php-ext-enable gd
 
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-
 WORKDIR /var/www/html
 
-COPY . .
-
-
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
-    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
-
-
 COPY composer.json composer.lock ./
+COPY package.json package-lock.json ./
 
-RUN composer install --no-dev --optimize-autoloader
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
 
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
-COPY package.json package-lock.json /var/www/html/
+COPY . .
 
-WORKDIR /var/www/html
+RUN composer install --no-dev --optimize-autoloader \
+    && npm install \
+    && npm run build \
+    && chown -R www-data:www-data storage bootstrap/cache \
+    && chmod -R 775 storage bootstrap/cache
 
-RUN npm install && npm run build
+RUN php artisan migrate --force \
+    && php artisan route:cache
 
 EXPOSE 9000
 

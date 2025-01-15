@@ -7,7 +7,8 @@ services:
       - .env.production
     image: clisp:latest
     volumes:
-      - .:/var/www/html
+      - ./storage:/var/www/html/storage
+      - ./resources:/var/www/html/resources
     networks:
       - app-network
 
