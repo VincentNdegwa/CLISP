@@ -44,7 +44,7 @@ jobs:
 
       - name: Deploy Application
         run: |
-          ssh -i ~/.ssh/id_rsa ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} << 'EOF'
+          ssh -t -i ~/.ssh/id_rsa ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} << 'EOF'
           cd /var/www/html/CLISP || git clone git@github.com:VincentNdegwa/CLISP.git /var/www/html/CLISP && cd /var/www/html/CLISP
           git pull origin main
           docker-compose down
