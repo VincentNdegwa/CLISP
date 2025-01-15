@@ -7,8 +7,13 @@ services:
       - .env.production
     image: clisp:latest
     volumes:
-      - ./storage:/var/www/html/storage
-      - ./resources:/var/www/html/resources
+      - .:/var/www/html
+    command: >
+      sh -c "
+        chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache &&
+        chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache &&
+        php-fpm
+      "
     networks:
       - app-network
 
