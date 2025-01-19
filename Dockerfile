@@ -47,7 +47,7 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
 
 COPY composer.json composer.lock /var/www/html/
 
-RUN composer install --no-dev --optimize-autoloader
+RUN composer install --optimize-autoloader
 
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
