@@ -16,8 +16,6 @@ services:
       "
     networks:
       - app-network
-    ports:
-      - "9000:9000"
 
   nginx:
     image: nginx:alpine
