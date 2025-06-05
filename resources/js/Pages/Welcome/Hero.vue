@@ -77,7 +77,7 @@ export default {
                 ]"
             >
                 <div class="container mx-auto flex items-center justify-between">
-                    <!-- Logo -->
+                    <!-- Logo im -->
                     <div class="flex items-center">
                         <div class="w-10 h-10 mr-3">
                             <ApplicationLogo />
