@@ -4,6 +4,13 @@ import { Link } from '@inertiajs/vue3';
 
 const currentYear = ref(new Date().getFullYear());
 
+const companyInfo = {
+  legalName: "CLISP Technologies Ltd.",
+  address: "123 Business Avenue, Suite 500, Silicon Valley, CA 94000",
+  email: "support@tech360.com",
+  phone: "+254769287724"
+};
+
 const companyLinks = [
   { name: 'About Us', url: '/about' },
   { name: 'Careers', url: '/careers' },
@@ -29,10 +36,11 @@ const resourceLinks = [
 ];
 
 const legalLinks = [
-  { name: 'Privacy Policy', url: '/privacy' },
-  { name: 'Terms of Service', url: '/terms' },
-  { name: 'Cookie Policy', url: '/cookies' },
-  { name: 'Security', url: '/security' }
+  { name: 'Terms & Conditions', url: '/legal?tab=terms' },
+  { name: 'Privacy Policy', url: '/legal?tab=privacy' },
+  { name: 'Refund Policy', url: '/legal?tab=refund' },
+  { name: 'Security', url: '/security' },
+  { name: 'Acceptable Use Policy', url: '/acceptable-use' }
 ];
 
 const socialLinks = [
@@ -74,6 +82,33 @@ const submitNewsletter = () => {
     </div>
     
     <div class="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <!-- Company information banner - Required for domain review -->
+      <div class="bg-slate-800/50 rounded-lg p-6 mb-12 border border-slate-700/50">
+        <div class="flex flex-col md:flex-row justify-between">
+          <div>
+            <h2 class="text-xl font-bold text-white mb-2">CLISP - Inventory Sharing Platform</h2>
+            <p class="text-slate-300 mb-4 max-w-2xl">
+              CLISP is a comprehensive SaaS platform that empowers local businesses to manage, share, and optimize their inventory resources, creating a more efficient and collaborative business ecosystem.
+            </p>
+            <div class="text-sm text-slate-400">
+              <p><strong>Legal Business Name:</strong> {{ companyInfo.legalName }}</p>
+              <p><strong>Contact:</strong> {{ companyInfo.email }} | {{ companyInfo.phone }}</p>
+            </div>
+          </div>
+          <div class="mt-6 md:mt-0 flex flex-col justify-center">
+            <Link 
+              href="/#pricing" 
+              class="px-6 py-3 bg-rose-500 hover:bg-rose-600 text-white rounded-lg font-medium transition-colors text-center"
+            >
+              View Pricing Plans
+            </Link>
+            <div class="mt-2 text-center text-sm text-slate-400">
+              <Link href="/legal?tab=refund" class="underline hover:text-rose-400">14-day money-back guarantee</Link>
+            </div>
+          </div>
+        </div>
+      </div>
+      
       <!-- Footer top section -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 mb-16">
         <!-- Company info -->
@@ -193,20 +228,32 @@ const submitNewsletter = () => {
       </div>
       
       <!-- Footer bottom -->
-      <div class="border-t border-slate-800 pt-8 mt-8 flex flex-col md:flex-row justify-between items-center">
-        <div class="text-slate-400 text-sm mb-4 md:mb-0">
-          © {{ currentYear }} CLISP. All rights reserved.
-        </div>
-        
-        <div class="flex flex-wrap gap-x-6 gap-y-2 justify-center">
+      <div class="border-t border-slate-800 pt-8 mt-8">
+        <!-- Legal links - Important for domain review -->
+        <div class="flex flex-wrap gap-x-6 gap-y-3 justify-center mb-6">
           <Link 
             v-for="link in legalLinks" 
             :key="link.name"
             :href="link.url"
-            class="text-slate-400 hover:text-slate-300 text-sm transition-colors"
+            class="text-slate-400 hover:text-slate-300 text-sm transition-colors font-medium"
           >
             {{ link.name }}
           </Link>
+        </div>
+        
+        <div class="flex flex-col md:flex-row justify-between items-center">
+          <div class="text-slate-400 text-sm mb-4 md:mb-0">
+            {{ currentYear }} {{ companyInfo.legalName }}. All rights reserved.
+          </div>
+          
+          <div class="flex items-center">
+            <span class="text-slate-400 text-sm mr-2">Secure payments by</span>
+            <img src="/images/paddle-logo.svg" alt="Paddle" class="h-5" />
+            <div class="ml-3 bg-green-600/20 text-green-400 text-xs px-2 py-1 rounded flex items-center">
+              <i class="pi pi-lock mr-1 text-xs"></i>
+              <span>SSL Secured</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>

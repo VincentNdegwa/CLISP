@@ -32,44 +32,59 @@ Route::get('/', function () {
     ]);
 });
 
+// Legal pages for domain review compliance
+Route::get('/legal', function () {
+    $tab = request('tab', 'terms');
+    return Inertia::render('Welcome/Legal', [
+        'activeTab' => $tab
+    ]);
+})->name('legal');
+
+// Acceptable Use Policy page
+Route::get('/acceptable-use', function () {
+    return Inertia::render('Welcome/AcceptableUse');
+})->name('acceptable-use');
+
+// Security page
+Route::get('/security', function () {
+    return Inertia::render('Welcome/Security');
+})->name('security');
+
 Route::get('/default-business', function () {
 
     return  User::where('id', Auth::user()->id)->first()->defaultBusiness();
 });
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::get('/choose-plan', function () {
+    $id = Auth::id();
+    $business = User::find($id)->unSubscribedBusiness();
+    $subscription_plans = SubscriptionPlan::all()
+        ->groupBy('product_id')
+        ->map(function ($plans, $product_id) {
+            return $plans->map(function ($plan) {
+                $plan->features = json_decode($plan->features);
+                return $plan;
+            });
+        })
+        ->values();
 
+
+    return Inertia::render('Auth/ChoosePlan', [
+        "business" => $business,
+        'plans_t' => $subscription_plans,
+    ]);
+})->name('choose-plan');
+
+Route::get('/billing', [BusinessSubscriptionController::class, 'index'])->name('billing.view');
+
+Route::get("checkout/subscription/{business_id}/{price_id}", [PaddleDisplayController::class, 'choose'])->name('checkout.subscription');
+Route::get("subscription/check/{business_id}", [PaddleDisplayController::class, 'checkSubscription'])->name('subscription.check');
+
+Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/register-business', [BusinessController::class, 'openRegister'])->name('register-business');
 
-    Route::get('/choose-plan', function () {
-        $id = Auth::id();
-        $business = User::find($id)->unSubscribedBusiness();
-        $subscription_plans = SubscriptionPlan::all()
-            ->groupBy('product_id')
-            ->map(function ($plans, $product_id) {
-                return $plans->map(function ($plan) {
-                    $plan->features = json_decode($plan->features);
-                    return $plan;
-                });
-            })
-            ->values();
-
-
-        return Inertia::render('Auth/ChoosePlan', [
-            "business" => $business,
-            'plans_t' => $subscription_plans,
-        ]);
-    })->name('choose-plan');
-
-    Route::get('/billing', [BusinessSubscriptionController::class, 'index'])->name('billing.view');
-
-    Route::get("checkout/subscription/{business_id}/{price_id}", [PaddleDisplayController::class, 'choose'])->name('checkout.subscription');
-    Route::get("subscription/check/{business_id}", [PaddleDisplayController::class, 'checkSubscription'])->name('subscription.check');
 });
-
-
-
 
 Route::middleware(['auth', 'verified', 'check.business'])->group(function () {
 
@@ -85,8 +100,6 @@ Route::middleware(['auth', 'verified', 'check.business'])->group(function () {
     Route::prefix('/dash')->group(function () {
         Route::post('/details', [DashboardController::class, 'create'])->name("dashboard.details");
     });
-
-
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -184,8 +197,5 @@ Route::middleware(['auth', 'verified', 'check.business'])->group(function () {
 Route::get('not-found', function () {
     return Inertia::render('NotFound');
 })->name('not-found');
-
-
-
 
 require __DIR__ . '/auth.php';

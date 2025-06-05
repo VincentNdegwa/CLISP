@@ -19,7 +19,7 @@ import Footer from "./Footer.vue";
         <Goals />
         <Pricing />
         <Testimonials />
-        <CustomerDetails />
+        <!-- <CustomerDetails /> -->
         <Footer />
     </div>
 </template>

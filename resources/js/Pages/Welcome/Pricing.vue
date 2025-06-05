@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue';
 
-const isAnnual = ref(true);
+const isAnnual = ref(false);
 
 const plans = ref([
   {

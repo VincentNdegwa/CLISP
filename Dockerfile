@@ -55,7 +55,8 @@ COPY package.json package-lock.json /var/www/html/
 
 WORKDIR /var/www/html
 
-RUN npm install && npm run build
+RUN npm install
+RUN npm run build
 
 RUN php artisan migrate --force \
     && php artisan optimize:clear \
