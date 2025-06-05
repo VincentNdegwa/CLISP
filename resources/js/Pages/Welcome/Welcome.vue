@@ -8,11 +8,14 @@ import Pricing from "./Pricing.vue";
 import Testimonials from "./Testimonials.vue";
 import CustomerDetails from "./CustomerDetails.vue";
 import Footer from "./Footer.vue";
+import Header from "./Header.vue";
+
 </script>
 
 <template>
     <Head title="CLISP | Inventory Sharing Platform" />
-    <div class="text-slate-800 bg-gradient-to-b from-white to-slate-50 dark:from-slate-900 dark:to-slate-800">
+    <div class="relative text-slate-800 bg-gradient-to-b from-white to-slate-50 dark:from-slate-900 dark:to-slate-800">
+        <Header />
         <Hero />
         <Features />
         <Products />
