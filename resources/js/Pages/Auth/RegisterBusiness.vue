@@ -77,19 +77,49 @@ export default {
     <Head title="Register Business" />
 
     <div
-        class="w-full max-h-screen h-screen overflow-y-scroll bg-white grid place-items-center text-slate-950"
+        class="w-full min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white"
     >
-        <ul class="steps hidden md:grid mt-1">
-            <li class="step step-warning">Register</li>
-            <li class="step step-warning">Register Business</li>
-            <li class="step">Choose Plan</li>
-        </ul>
-        <div class="flex flex-col w-full p-2 sm:p-0 sm:w-fit mt-2">
-            <div class="text-xl text-center">Register your business!</div>
+        <!-- Steps indicator -->
+        <div class="w-full max-w-6xl mx-auto px-4 sm:px-6 pt-8">
+            <div class="relative">
+                <!-- Steps line -->
+                <div class="absolute top-4 left-0 w-full h-1 bg-white/10 rounded-full"></div>
+
+                <!-- Steps circles -->
+                <div class="relative z-10 flex justify-between items-center">
+                    <div class="flex flex-col items-center">
+                        <div class="w-8 h-8 rounded-full bg-rose-500 flex items-center justify-center text-white font-semibold shadow-lg shadow-rose-500/30">1</div>
+                        <span class="mt-2 text-xs text-rose-400 font-medium">Register</span>
+                    </div>
+
+                    <div class="flex flex-col items-center">
+                        <div class="w-8 h-8 rounded-full bg-rose-500 flex items-center justify-center text-white font-semibold shadow-lg shadow-rose-500/30">2</div>
+                        <span class="mt-2 text-xs text-rose-400 font-medium">Business</span>
+                    </div>
+
+                    <div class="flex flex-col items-center">
+                        <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white/70 font-semibold">3</div>
+                        <span class="mt-2 text-xs text-white/50 font-medium">Plan</span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white/70 font-semibold">4</div>
+                        <span class="mt-2 text-xs text-white/50 font-medium">Payment</span>
+                    </div>
+                    
+                    <div class="flex flex-col items-center">
+                        <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white/70 font-semibold">5</div>
+                        <span class="mt-2 text-xs text-white/50 font-medium">Complete</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex flex-col w-full p-4 sm:p-6 items-center mt-8">
             <form
-                @submit.prevent="submit"
-                class="bg-white p-3 text-slate-950 shadow-md rounded-md md:min-w-[40rem] max-w-[50rem] sm:min-w-[30rem] min-w-full"
+            @submit.prevent="submit"
+            class=" backdrop-blur-sm p-6 shadow-xl rounded-xl border border-white/10 md:min-w-[40rem] max-w-[50rem] sm:min-w-[30rem] min-w-full"
             >
+            <div class="text-2xl font-bold text-white text-center mb-2">Register your business!</div>
                 <div class="mt-4">
                     <InputLabel
                         for="business_name"
@@ -100,7 +130,6 @@ export default {
                     <TextInput
                         id="business_name"
                         type="text"
-                        class="mt-1 block w-full border"
                         v-model="form.business_name"
                         required
                         autofocus
@@ -108,7 +137,6 @@ export default {
                     />
 
                     <InputError
-                        class="mt-2"
                         :message="form.errors.business_name"
                     />
                 </div>
@@ -122,14 +150,13 @@ export default {
                     <TextInput
                         id="email"
                         type="email"
-                        class="mt-1 block w-full border"
                         v-model="form.email"
                         required
                         autofocus
                         autocomplete="email"
                     />
 
-                    <InputError class="mt-2" :message="form.errors.email" />
+                    <InputError :message="form.errors.email" />
                 </div>
 
                 <div class="mt-4">
@@ -138,7 +165,7 @@ export default {
                         value="Business Currency"
                         required="true"
                     />
-                    <p class="text-red-600 font-semibold">
+                    <p class="text-rose-400 text-sm mb-2">
                         Please note: The selected currency will be used for all
                         transactions. Ensure that you choose carefully, as
                         changes cannot be made after your business is created.
@@ -147,7 +174,6 @@ export default {
                     <Select
                         v-model="form.currency_code"
                         :options="currencyCodes"
-                        filter
                         optionLabel="name"
                         optionValue="code"
                         placeholder="Select a Currency"
@@ -169,12 +195,12 @@ export default {
                         <template #option="slotProps">
                             <div class="flex items-center">
                                 <div>{{ slotProps.option.code }}</div>
-                                <span>-</span>
+                                <span class="mx-1">-</span>
                                 <div>{{ slotProps.option.name }}</div>
                             </div>
                         </template>
                     </Select>
-                    <InputError class="mt-2" :message="form.errors.email" />
+                    <InputError :message="form.errors.currency_code" />
                 </div>
 
                 <div class="mt-4">
@@ -187,13 +213,12 @@ export default {
                     <TextInput
                         id="location"
                         type="text"
-                        class="mt-1 block w-full"
                         v-model="form.location"
                         required
                         autocomplete="location"
                     />
 
-                    <InputError class="mt-2" :message="form.errors.location" />
+                    <InputError :message="form.errors.location" />
                 </div>
 
                 <div class="mt-4">
@@ -206,37 +231,29 @@ export default {
                     <TextInput
                         id="phone_number"
                         type="text"
-                        class="mt-1 block w-full"
                         v-model="form.phone_number"
                         required
                         autocomplete="phone_number"
                     />
 
                     <InputError
-                        class="mt-2"
                         :message="form.errors.phone_number"
                     />
                 </div>
                 <div class="mt-4">
                     <InputLabel for="business_type" value="Business Type" />
 
-                    <select
+                    <Select
                         id="business_type"
-                        class="mt-1 block w-full p-2 border border-gray-300 rounded-md"
                         v-model="form.business_type_id"
-                    >
-                        <option value="">Select Business Type</option>
-                        <option
-                            v-for="type in businessTypes"
-                            :key="type.id"
-                            :value="type.id"
-                        >
-                            {{ type.name }}
-                        </option>
-                    </select>
+                        :options="businessTypes"
+                        optionLabel="name"
+                        optionValue="id"
+                        placeholder="Select Business Type"
+                        class="w-full"
+                    />
 
                     <InputError
-                        class="mt-2"
                         :message="form.errors.business_type_id"
                     />
                 </div>
@@ -244,23 +261,17 @@ export default {
                 <div class="mt-4">
                     <InputLabel for="industry" value="Industry" />
 
-                    <select
+                    <Select
                         id="industry"
-                        class="mt-1 block w-full p-2 border border-gray-300 rounded-md"
                         v-model="form.industry_id"
-                    >
-                        <option value="">Select Industry</option>
-                        <option
-                            v-for="industry in industries"
-                            :key="industry.id"
-                            :value="industry.id"
-                        >
-                            {{ industry.name }}
-                        </option>
-                    </select>
+                        :options="industries"
+                        optionLabel="name"
+                        optionValue="id"
+                        placeholder="Select Industry"
+                        class="w-full"
+                    />
 
                     <InputError
-                        class="mt-2"
                         :message="form.errors.industry_id"
                     />
                 </div>
@@ -271,12 +282,11 @@ export default {
                     <TextInput
                         id="website"
                         type="text"
-                        class="mt-1 block w-full"
                         v-model="form.website"
                         autocomplete="website"
                     />
 
-                    <InputError class="mt-2" :message="form.errors.website" />
+                    <InputError :message="form.errors.website" />
                 </div>
 
                 <div class="mt-4">
@@ -288,24 +298,25 @@ export default {
                     <TextInput
                         id="registration_number"
                         type="text"
-                        class="mt-1 block w-full"
                         v-model="form.registration_number"
                         autocomplete="registration_number"
                     />
 
                     <InputError
-                        class="mt-2"
                         :message="form.errors.registration_number"
                     />
                 </div>
 
-                <PrimaryButton
-                    class="mt-4 w-full"
-                    :class="{ 'opacity-25': form.processing }"
-                    :disabled="form.processing"
-                >
-                    Register Business
-                </PrimaryButton>
+                <div class="mt-6">
+                    <button
+                        type="submit"
+                        class="w-full py-3 bg-rose-500 hover:bg-rose-600 text-white font-medium rounded-lg shadow-lg shadow-rose-500/20 hover:shadow-rose-500/40 transition-all flex justify-center items-center"
+                        :class="{ 'opacity-75': form.processing }"
+                        :disabled="form.processing"
+                    >
+                        Register Business
+                    </button>
+                </div>
             </form>
         </div>
     </div>
