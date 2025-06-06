@@ -5,8 +5,8 @@ import { Link } from '@inertiajs/vue3';
 const currentYear = ref(new Date().getFullYear());
 
 const companyInfo = {
-  legalName: "CLISP Technologies Ltd.",
-  address: "123 Business Avenue, Suite 500, Silicon Valley, CA 94000",
+  legalName: "Tech360 Systems.",
+  address: "Westlands, Nairobi, Kenya",
   email: "support@tech360.com",
   phone: "+254769287724"
 };
