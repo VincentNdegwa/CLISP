@@ -55,28 +55,27 @@ onMounted(() => {
             <div class="space-y-6">
                 <!-- Email Field -->
                 <div>
-                    <InputLabel for="email" value="Email Address" class="text-white text-sm font-medium mb-2" />
+                    <InputLabel for="email" value="Email Address" />
                     <TextInput
                         id="email"
                         type="email"
-                        class="block w-full bg-white/5 border-white/10 focus:border-rose-500 focus:ring focus:ring-rose-500/20 rounded-lg shadow-sm text-white"
                         v-model="form.email"
                         required
                         autofocus
                         autocomplete="username"
                         placeholder="your@email.com"
                     />
-                    <InputError class="mt-2 text-rose-400" :message="form.errors.email" />
+                    <InputError class="mt-2 text-rose-600 dark:text-rose-400" :message="form.errors.email" />
                 </div>
 
                 <!-- Password Field -->
                 <div>
                     <div class="flex items-center justify-between mb-2">
-                        <InputLabel for="password" value="Password" class="text-white text-sm font-medium" />
+                        <InputLabel for="password" value="Password" />
                         <Link
                             v-if="canResetPassword"
                             :href="route('password.request')"
-                            class="text-xs text-slate-400 hover:text-rose-400 transition-colors"
+                            class="text-xs text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors"
                         >
                             Forgot password?
                         </Link>
@@ -85,20 +84,19 @@ onMounted(() => {
                     <TextInput
                         id="password"
                         type="password"
-                        class="block w-full bg-white/5 border-white/10 focus:border-rose-500 focus:ring focus:ring-rose-500/20 rounded-lg shadow-sm text-white"
                         v-model="form.password"
                         required
                         autocomplete="current-password"
                         placeholder="••••••••"
                     />
-                    <InputError class="mt-2 text-rose-400" :message="form.errors.password" />
+                    <InputError class="mt-2 text-rose-600 dark:text-rose-400" :message="form.errors.password" />
                 </div>
 
                 <!-- Remember Me -->
                 <div>
                     <label class="flex items-center">
-                        <Checkbox name="remember" v-model:checked="form.remember" class="text-rose-500 border-white/20 bg-white/5 rounded focus:ring-rose-500/20" />
-                        <span class="ms-2 text-sm text-slate-300">Remember me</span>
+                        <Checkbox name="remember" v-model:checked="form.remember" class="text-rose-500 border-slate-300 dark:border-white/20 bg-white dark:bg-white/5 rounded focus:ring-rose-500/20" />
+                        <span class="ms-2 text-sm text-slate-600 dark:text-slate-300">Remember me</span>
                     </label>
                 </div>
 
@@ -119,11 +117,11 @@ onMounted(() => {
 
                 <!-- Register Link -->
                 <div class="text-center">
-                    <p class="text-sm text-slate-400">
+                    <p class="text-sm text-slate-500 dark:text-slate-400">
                         Don't have an account?
                         <Link
                             :href="route('register')"
-                            class="text-rose-400 hover:text-rose-300 font-medium transition-colors"
+                            class="text-rose-600 dark:text-rose-400 hover:text-rose-500 dark:hover:text-rose-300 font-medium transition-colors"
                         >
                             Create one now
                         </Link>

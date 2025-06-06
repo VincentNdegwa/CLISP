@@ -44,7 +44,7 @@ const submit = () => {
         
         <Head title="Reset Password" />
 
-        <div class="mb-6 text-slate-300 text-sm leading-relaxed">
+        <div class="mb-6 text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
             Please create a new secure password for your account.
         </div>
 
@@ -52,47 +52,44 @@ const submit = () => {
             <div class="space-y-5">
                 <!-- Email Field -->
                 <div>
-                    <InputLabel for="email" value="Email Address" class="text-white text-sm font-medium mb-2" />
+                    <InputLabel for="email" value="Email Address" />
                     <TextInput
                         id="email"
                         type="email"
-                        class="block w-full bg-white/5 border-white/10 focus:border-rose-500 focus:ring focus:ring-rose-500/20 rounded-lg shadow-sm text-white"
                         v-model="form.email"
                         required
                         readonly
                         autocomplete="username"
                     />
-                    <InputError class="mt-2 text-rose-400" :message="form.errors.email" />
+                    <InputError class="mt-2 text-rose-600 dark:text-rose-400" :message="form.errors.email" />
                 </div>
 
                 <!-- Password Field -->
                 <div>
-                    <InputLabel for="password" value="New Password" class="text-white text-sm font-medium mb-2" />
+                    <InputLabel for="password" value="New Password" />
                     <TextInput
                         id="password"
                         type="password"
-                        class="block w-full bg-white/5 border-white/10 focus:border-rose-500 focus:ring focus:ring-rose-500/20 rounded-lg shadow-sm text-white"
                         v-model="form.password"
                         required
                         autocomplete="new-password"
                         placeholder="••••••••"
                     />
-                    <InputError class="mt-2 text-rose-400" :message="form.errors.password" />
+                    <InputError class="mt-2 text-rose-600 dark:text-rose-400" :message="form.errors.password" />
                 </div>
 
                 <!-- Confirm Password Field -->
                 <div>
-                    <InputLabel for="password_confirmation" value="Confirm Password" class="text-white text-sm font-medium mb-2" />
+                    <InputLabel for="password_confirmation" value="Confirm Password" />
                     <TextInput
                         id="password_confirmation"
                         type="password"
-                        class="block w-full bg-white/5 border-white/10 focus:border-rose-500 focus:ring focus:ring-rose-500/20 rounded-lg shadow-sm text-white"
                         v-model="form.password_confirmation"
                         required
                         autocomplete="new-password"
                         placeholder="••••••••"
                     />
-                    <InputError class="mt-2 text-rose-400" :message="form.errors.password_confirmation" />
+                    <InputError class="mt-2 text-rose-600 dark:text-rose-400" :message="form.errors.password_confirmation" />
                 </div>
 
                 <!-- Submit Button -->
@@ -112,11 +109,11 @@ const submit = () => {
 
                 <!-- Back to Login Link -->
                 <div class="text-center pt-2">
-                    <p class="text-sm text-slate-400">
+                    <p class="text-sm text-slate-500 dark:text-slate-400">
                         Remember your password?
                         <Link
                             :href="route('login')"
-                            class="text-rose-400 hover:text-rose-300 font-medium transition-colors"
+                            class="text-rose-600 dark:text-rose-400 hover:text-rose-500 dark:hover:text-rose-300 font-medium transition-colors"
                         >
                             Back to login
                         </Link>

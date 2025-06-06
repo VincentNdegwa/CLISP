@@ -38,48 +38,45 @@ const submit = () => {
             <div class="space-y-5">
                 <!-- Name Field -->
                 <div>
-                    <InputLabel for="name" value="Full Name" class="text-white text-sm font-medium mb-2" />
+                    <InputLabel for="name" value="Full Name" />
                     <TextInput
                         id="name"
                         type="text"
-                        class="block w-full bg-white/5 border-white/10 focus:border-rose-500 focus:ring focus:ring-rose-500/20 rounded-lg shadow-sm text-white"
                         v-model="form.name"
                         required
                         autofocus
                         autocomplete="name"
                         placeholder="John Doe"
                     />
-                    <InputError class="mt-2 text-rose-400" :message="form.errors.name" />
+                    <InputError class="mt-2 text-rose-600 dark:text-rose-400" :message="form.errors.name" />
                 </div>
 
                 <!-- Email Field -->
                 <div>
-                    <InputLabel for="email" value="Email Address" class="text-white text-sm font-medium mb-2" />
+                    <InputLabel for="email" value="Email Address" />
                     <TextInput
                         id="email"
                         type="email"
-                        class="block w-full bg-white/5 border-white/10 focus:border-rose-500 focus:ring focus:ring-rose-500/20 rounded-lg shadow-sm text-white"
                         v-model="form.email"
                         required
                         autocomplete="username"
                         placeholder="your@email.com"
                     />
-                    <InputError class="mt-2 text-rose-400" :message="form.errors.email" />
+                    <InputError class="mt-2 text-rose-600 dark:text-rose-400" :message="form.errors.email" />
                 </div>
 
                 <!-- Password Field -->
                 <div>
-                    <InputLabel for="password" value="Password" class="text-white text-sm font-medium mb-2" />
+                    <InputLabel for="password" value="Password" />
                     <TextInput
                         id="password"
                         type="password"
-                        class="block w-full bg-white/5 border-white/10 focus:border-rose-500 focus:ring focus:ring-rose-500/20 rounded-lg shadow-sm text-white"
                         v-model="form.password"
                         required
                         autocomplete="new-password"
                         placeholder="••••••••"
                     />
-                    <InputError class="mt-2 text-rose-400" :message="form.errors.password" />
+                    <InputError class="mt-2 text-rose-600 dark:text-rose-400" :message="form.errors.password" />
                 </div>
 
                 <!-- Confirm Password Field -->
@@ -87,19 +84,17 @@ const submit = () => {
                     <InputLabel
                         for="password_confirmation"
                         value="Confirm Password"
-                        class="text-white text-sm font-medium mb-2"
                     />
                     <TextInput
                         id="password_confirmation"
                         type="password"
-                        class="block w-full bg-white/5 border-white/10 focus:border-rose-500 focus:ring focus:ring-rose-500/20 rounded-lg shadow-sm text-white"
                         v-model="form.password_confirmation"
                         required
                         autocomplete="new-password"
                         placeholder="••••••••"
                     />
                     <InputError
-                        class="mt-2 text-rose-400"
+                        class="mt-2 text-rose-600 dark:text-rose-400"
                         :message="form.errors.password_confirmation"
                     />
                 </div>
@@ -121,11 +116,11 @@ const submit = () => {
 
                 <!-- Login Link -->
                 <div class="text-center pt-2">
-                    <p class="text-sm text-slate-400">
+                    <p class="text-sm text-slate-500 dark:text-slate-400">
                         Already have an account?
                         <Link
                             :href="route('login')"
-                            class="text-rose-400 hover:text-rose-300 font-medium transition-colors"
+                            class="text-rose-600 dark:text-rose-400 hover:text-rose-500 dark:hover:text-rose-300 font-medium transition-colors"
                         >
                             Sign in
                         </Link>

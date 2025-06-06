@@ -79,7 +79,7 @@ export default {
     />
 
     <div
-        class="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white flex flex-col items-center py-12"
+        class="min-h-screen bg-white dark:bg-gradient-to-br dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 text-slate-900 dark:text-white flex flex-col items-center py-12"
         v-if="
             !form.subscription && !form.selected_plan && !success_subscription
         "
@@ -88,32 +88,32 @@ export default {
         <div class="w-full max-w-6xl mx-auto px-4 sm:px-6 mb-10">
             <div class="relative">
                 <!-- Steps line -->
-                <div class="absolute top-4 left-0 w-full h-1 bg-white/10 rounded-full"></div>
+                <div class="absolute top-4 left-0 w-full h-1 bg-slate-200 dark:bg-white/10 rounded-full"></div>
                 
                 <!-- Steps circles -->
                 <div class="relative z-10 flex justify-between items-center">
                     <div class="flex flex-col items-center">
                         <div class="w-8 h-8 rounded-full bg-rose-500 flex items-center justify-center text-white font-semibold shadow-lg shadow-rose-500/30">1</div>
-                        <span class="mt-2 text-xs text-rose-400 font-medium">Register</span>
+                        <span class="mt-2 text-xs text-rose-600 dark:text-rose-400 font-medium">Register</span>
                     </div>
                     
                     <div class="flex flex-col items-center">
                         <div class="w-8 h-8 rounded-full bg-rose-500 flex items-center justify-center text-white font-semibold shadow-lg shadow-rose-500/30">2</div>
-                        <span class="mt-2 text-xs text-rose-400 font-medium">Business</span>
+                        <span class="mt-2 text-xs text-rose-600 dark:text-rose-400 font-medium">Business</span>
                     </div>
                     
                     <div class="flex flex-col items-center">
                         <div class="w-8 h-8 rounded-full bg-rose-500 flex items-center justify-center text-white font-semibold shadow-lg shadow-rose-500/30">3</div>
-                        <span class="mt-2 text-xs text-rose-400 font-medium">Plan</span>
+                        <span class="mt-2 text-xs text-rose-600 dark:text-rose-400 font-medium">Plan</span>
                     </div>
                     <div class="flex flex-col items-center">
-                        <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white/70 font-semibold">4</div>
-                        <span class="mt-2 text-xs text-white/50 font-medium">Payment</span>
+                        <div class="w-8 h-8 rounded-full bg-slate-200 dark:bg-white/20 flex items-center justify-center text-slate-500 dark:text-white/70 font-semibold">4</div>
+                        <span class="mt-2 text-xs text-slate-500 dark:text-white/50 font-medium">Payment</span>
                     </div>
                     
                     <div class="flex flex-col items-center">
-                        <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white/70 font-semibold">5</div>
-                        <span class="mt-2 text-xs text-white/50 font-medium">Complete</span>
+                        <div class="w-8 h-8 rounded-full bg-slate-200 dark:bg-white/20 flex items-center justify-center text-slate-500 dark:text-white/70 font-semibold">5</div>
+                        <span class="mt-2 text-xs text-slate-500 dark:text-white/50 font-medium">Complete</span>
                     </div>
                 </div>
             </div>
@@ -121,8 +121,8 @@ export default {
 
         <div class="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center">
-                <h1 class="text-3xl font-bold text-white">Choose Your Plan</h1>
-                <p class="mt-4 text-slate-300">
+                <h1 class="text-3xl font-bold text-slate-900 dark:text-white">Choose Your Plan</h1>
+                <p class="mt-4 text-slate-600 dark:text-slate-300">
                     Find the plan that best suits your needs.
                 </p>
             </div>
@@ -135,7 +135,7 @@ export default {
                         (option) =>
                             option.charAt(0).toUpperCase() + option.slice(1)
                     "
-                    class="bg-white/10 rounded-lg overflow-hidden"
+                    class="bg-slate-100 dark:bg-white/10 rounded-lg overflow-hidden"
                 />
             </div>
 
@@ -143,12 +143,12 @@ export default {
                 <div
                     v-for="plan in billing_plans"
                     :key="plan.name"
-                    class="card w-full mt-6 bg-white/10 backdrop-blur-sm border border-white/10 p-8 rounded-lg hover:shadow-xl transition-all duration-300"
+                    class="card w-full mt-6 bg-white dark:bg-white/10 backdrop-blur-sm border border-slate-200 dark:border-white/10 p-8 rounded-lg hover:shadow-xl transition-all duration-300"
                 >
                     <div class="card-body">
                         <!-- Plan Header -->
                         <div class="flex items-center justify-between">
-                            <h2 class="text-xl font-semibold text-white">
+                            <h2 class="text-xl font-semibold text-slate-900 dark:text-white">
                                 {{ plan.name }} Plan
                             </h2>
                             <div
@@ -161,23 +161,23 @@ export default {
 
                         <!-- Price Section -->
                         <div class="mt-4 text-center">
-                            <p class="text-4xl font-extrabold text-white">
+                            <p class="text-4xl font-extrabold text-slate-900 dark:text-white">
                                 {{ currency(plan.price) }}
                             </p>
-                            <span class="text-sm text-slate-300">
+                            <span class="text-sm text-slate-600 dark:text-slate-300">
                                 / {{ plan.billing_cycle }}
                             </span>
                         </div>
 
                         <!-- Features List -->
-                        <ul class="mt-6 space-y-4 text-slate-300">
+                        <ul class="mt-6 space-y-4 text-slate-600 dark:text-slate-300">
                             <li
                                 v-for="feature in plan.features"
                                 :key="feature"
                                 class="flex items-start"
                             >
                                 <svg
-                                    class="w-5 h-5 text-rose-400 mr-3"
+                                    class="w-5 h-5 text-rose-600 dark:text-rose-400 mr-3"
                                     fill="currentColor"
                                     viewBox="0 0 20 20"
                                 >

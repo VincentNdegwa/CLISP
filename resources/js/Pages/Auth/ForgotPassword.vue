@@ -36,7 +36,7 @@ const submit = () => {
         
         <Head title="Forgot Password" />
 
-        <div class="mb-6 text-slate-300 text-sm leading-relaxed">
+        <div class="mb-6 text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
             Enter your email address below and we'll send you a password reset link to get back into your account.
         </div>
 
@@ -48,18 +48,17 @@ const submit = () => {
             <div class="space-y-6">
                 <!-- Email Field -->
                 <div>
-                    <InputLabel for="email" value="Email Address" class="text-white text-sm font-medium mb-2" />
+                    <InputLabel for="email" value="Email Address" />
                     <TextInput
                         id="email"
                         type="email"
-                        class="block w-full bg-white/5 border-white/10 focus:border-rose-500 focus:ring focus:ring-rose-500/20 rounded-lg shadow-sm text-white"
                         v-model="form.email"
                         required
                         autofocus
                         autocomplete="username"
                         placeholder="your@email.com"
                     />
-                    <InputError class="mt-2 text-rose-400" :message="form.errors.email" />
+                    <InputError class="mt-2 text-rose-600 dark:text-rose-400" :message="form.errors.email" />
                 </div>
 
                 <!-- Submit Button -->
@@ -79,11 +78,11 @@ const submit = () => {
 
                 <!-- Back to Login Link -->
                 <div class="text-center">
-                    <p class="text-sm text-slate-400">
+                    <p class="text-sm text-slate-500 dark:text-slate-400">
                         Remember your password?
                         <Link
                             :href="route('login')"
-                            class="text-rose-400 hover:text-rose-300 font-medium transition-colors"
+                            class="text-rose-600 dark:text-rose-400 hover:text-rose-500 dark:hover:text-rose-300 font-medium transition-colors"
                         >
                             Back to login
                         </Link>

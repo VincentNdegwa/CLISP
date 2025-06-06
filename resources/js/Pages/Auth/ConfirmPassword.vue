@@ -31,7 +31,7 @@ const submit = () => {
         
         <Head title="Confirm Password" />
 
-        <div class="mb-6 text-slate-300 text-sm leading-relaxed">
+        <div class="mb-6 text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
             This is a secure area of the application. Please confirm your
             password before continuing.
         </div>
@@ -40,18 +40,17 @@ const submit = () => {
             <div class="space-y-6">
                 <!-- Password Field -->
                 <div>
-                    <InputLabel for="password" value="Password" class="text-white text-sm font-medium mb-2" />
+                    <InputLabel for="password" value="Password" />
                     <TextInput
                         id="password"
                         type="password"
-                        class="block w-full bg-white/5 border-white/10 focus:border-rose-500 focus:ring focus:ring-rose-500/20 rounded-lg shadow-sm text-white"
                         v-model="form.password"
                         required
                         autocomplete="current-password"
                         autofocus
                         placeholder="••••••••"
                     />
-                    <InputError class="mt-2 text-rose-400" :message="form.errors.password" />
+                    <InputError class="mt-2 text-rose-600 dark:text-rose-400" :message="form.errors.password" />
                 </div>
 
                 <!-- Submit Button -->

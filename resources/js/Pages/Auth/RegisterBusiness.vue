@@ -77,39 +77,39 @@ export default {
     <Head title="Register Business" />
 
     <div
-        class="w-full min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white"
+        class="w-full min-h-screen bg-white dark:bg-gradient-to-br dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 text-slate-900 dark:text-white"
     >
         <!-- Steps indicator -->
         <div class="w-full max-w-6xl mx-auto px-4 sm:px-6 pt-8">
             <div class="relative">
                 <!-- Steps line -->
-                <div class="absolute top-4 left-0 w-full h-1 bg-white/10 rounded-full"></div>
+                <div class="absolute top-4 left-0 w-full h-1 bg-slate-200 dark:bg-white/10 rounded-full"></div>
 
                 <!-- Steps circles -->
                 <div class="relative z-10 flex justify-between items-center">
                     <div class="flex flex-col items-center">
                         <div class="w-8 h-8 rounded-full bg-rose-500 flex items-center justify-center text-white font-semibold shadow-lg shadow-rose-500/30">1</div>
-                        <span class="mt-2 text-xs text-rose-400 font-medium">Register</span>
+                        <span class="mt-2 text-xs text-rose-600 dark:text-rose-400 font-medium">Register</span>
                     </div>
 
                     <div class="flex flex-col items-center">
                         <div class="w-8 h-8 rounded-full bg-rose-500 flex items-center justify-center text-white font-semibold shadow-lg shadow-rose-500/30">2</div>
-                        <span class="mt-2 text-xs text-rose-400 font-medium">Business</span>
+                        <span class="mt-2 text-xs text-rose-600 dark:text-rose-400 font-medium">Business</span>
                     </div>
-
+<!-- 
                     <div class="flex flex-col items-center">
-                        <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white/70 font-semibold">3</div>
-                        <span class="mt-2 text-xs text-white/50 font-medium">Plan</span>
+                        <div class="w-8 h-8 rounded-full bg-slate-200 dark:bg-white/20 flex items-center justify-center text-slate-500 dark:text-white/70 font-semibold">3</div>
+                        <span class="mt-2 text-xs text-slate-500 dark:text-white/50 font-medium">Plan</span>
                     </div>
                     <div class="flex flex-col items-center">
-                        <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white/70 font-semibold">4</div>
-                        <span class="mt-2 text-xs text-white/50 font-medium">Payment</span>
+                        <div class="w-8 h-8 rounded-full bg-slate-200 dark:bg-white/20 flex items-center justify-center text-slate-500 dark:text-white/70 font-semibold">4</div>
+                        <span class="mt-2 text-xs text-slate-500 dark:text-white/50 font-medium">Payment</span>
                     </div>
                     
                     <div class="flex flex-col items-center">
-                        <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white/70 font-semibold">5</div>
-                        <span class="mt-2 text-xs text-white/50 font-medium">Complete</span>
-                    </div>
+                        <div class="w-8 h-8 rounded-full bg-slate-200 dark:bg-white/20 flex items-center justify-center text-slate-500 dark:text-white/70 font-semibold">5</div>
+                        <span class="mt-2 text-xs text-slate-500 dark:text-white/50 font-medium">Complete</span>
+                    </div> -->
                 </div>
             </div>
         </div>
@@ -117,9 +117,9 @@ export default {
         <div class="flex flex-col w-full p-4 sm:p-6 items-center mt-8">
             <form
             @submit.prevent="submit"
-            class=" backdrop-blur-sm p-6 shadow-xl rounded-xl border border-white/10 md:min-w-[40rem] max-w-[50rem] sm:min-w-[30rem] min-w-full"
+            class="dark:bg-transparent dark:backdrop-blur-sm p-6 shadow-xl rounded-xl border border-slate-200 dark:border-white/10 md:min-w-[40rem] max-w-[50rem] sm:min-w-[30rem] min-w-full"
             >
-            <div class="text-2xl font-bold text-white text-center mb-2">Register your business!</div>
+            <div class="text-2xl font-bold text-slate-900 dark:text-white text-center mb-2">Register your business!</div>
                 <div class="mt-4">
                     <InputLabel
                         for="business_name"
@@ -165,7 +165,7 @@ export default {
                         value="Business Currency"
                         required="true"
                     />
-                    <p class="text-rose-400 text-sm mb-2">
+                    <p class="text-rose-600 dark:text-rose-400 text-sm mb-2">
                         Please note: The selected currency will be used for all
                         transactions. Ensure that you choose carefully, as
                         changes cannot be made after your business is created.
