@@ -155,7 +155,7 @@ onMounted(() => {
             We envision a future where businesses collaborate seamlessly, sharing resources and inventory to create a more sustainable and efficient economy. CLISP is leading this transformation by providing the technology and network to make it happen.
           </p>
 
-          <PrimaryRoseButton class="bg-white text-rose-500 hover:bg-white/90 transition-colors px-8 py-3 rounded-lg font-medium shadow-lg">
+          <PrimaryRoseButton class="bg-slate-50 text-rose-500 hover:bg-slate-100 transition-colors px-8 py-3 rounded-lg font-medium shadow-lg">
             Start Your Journey!
           </PrimaryRoseButton>
         </div>

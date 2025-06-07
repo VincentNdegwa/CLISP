@@ -1,11 +1,11 @@
 <template>
     <div
-        class="flex lg:flex-row flex-col gap-4 bg-surface-0 dark:bg-surface-900"
+        class="flex lg:flex-row flex-col gap-4 bg-slate-50 dark:bg-slate-900"
     >
         <div class="flex-1 flex items-center justify-center">
             <div class="p-6 pt-12 lg:p-12">
                 <h1
-                    class="text-3xl lg:text-5xl font-bold text-surface-900 dark:text-surface-0 mb-4 lg:leading-normal text-center lg:text-left"
+                    class="text-3xl lg:text-5xl font-bold text-slate-900 dark:text-slate-50 mb-4 lg:leading-normal text-center lg:text-left"
                 >
                     Create the screens your <br /><span
                         class="text-blue-500 dark:text-blue-400"
@@ -13,7 +13,7 @@
                     >
                 </h1>
                 <p
-                    class="text-surface-700 dark:text-surface-200 leading-normal mb-8 text-center lg:text-left"
+                    class="text-slate-700 dark:text-slate-200 leading-normal mb-8 text-center lg:text-left"
                 >
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
                     do eiusmod tempor incididunt ut labore et dolore magna

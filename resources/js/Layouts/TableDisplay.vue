@@ -5,15 +5,15 @@
         <NoRecords v-else-if="!loading && data_length === 0" />
 
         <div v-else class="max-h-[70vh] h-[70vh] overflow-y-scroll relative">
-            <table class="min-w-full relative table bg-white">
+            <table class="min-w-full relative table bg-white dark:bg-slate-800">
                 <thead
-                    class="sticky top-0 bg-gray-200 z-[2] font-bold text-slate-950 w-full"
+                    class="sticky top-0 bg-gray-200 dark:bg-slate-700 z-[2] font-bold text-slate-950 dark:text-white w-full"
                 >
                     <tr>
                         <th
                             v-for="(key, index) in keys"
                             :key="index"
-                            class="py-2 px-4 border"
+                            class="py-2 px-4 border border-gray-300 dark:border-slate-600"
                         >
                             {{ key }}
                         </th>

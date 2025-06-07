@@ -1,6 +1,6 @@
 <template>
-    <div class="bg-white p-6 rounded-lg shadow-md">
-        <h2 class="text-2xl font-semibold text-slate-900 mb-4">Change Plan</h2>
+    <div class="bg-slate-50 dark:bg-slate-900 text-slate-950 dark:text-slate-50 p-6 rounded-lg shadow-md">
+        <h2 class="text-2xl font-semibold mb-4">Change Plan</h2>
 
         <!-- Billing Cycle Selector -->
         <div class="flex justify-end mb-6">
@@ -23,19 +23,19 @@
                     'w-full cursor-pointer shadow-md border border-gray-300 rounded-lg hover:shadow-lg transition-all duration-300',
                     selectedPlan?.price_id === plan?.price_id
                         ? 'bg-red-200'
-                        : '',
+                        : 'bg-slate-50 dark:bg-slate-800 text-slate-950 dark:text-slate-50',
                 ]"
                 @click="selectPlan(plan)"
             >
                 <div class="p-5">
                     <!-- Plan Header -->
                     <div class="flex items-center justify-between">
-                        <h2 class="text-md font-semibold text-gray-800">
+                        <h2 class="text-md font-semibold text-slate-900 dark:text-slate-50">
                             {{ plan.name }} Plan
                         </h2>
                         <div
                             v-if="plan.isPopular"
-                            class="bg-red-500 text-white text-xs px-3 py-1 rounded-full uppercase tracking-wider"
+                            class="bg-red-500 text-slate-700 text-xs px-3 py-1 rounded-full uppercase tracking-wider"
                         >
                             Popular
                         </div>
@@ -43,7 +43,7 @@
 
                     <!-- Price Section -->
                     <div class="flex gap-1 items-center w-full mt-4">
-                        <div class="text-xl font-extrabold text-gray-900">
+                        <div class="text-xl font-extrabold text-gray-900 dark:text-slate-50">
                             {{ currency(plan.price) }}
                         </div>
                         <div class="text-sm text-gray-500">
@@ -63,7 +63,7 @@
                     name="changeOption"
                     value="now"
                 />
-                <label for="changeNow" class="text-slate-900">Change Now</label>
+                <label for="changeNow" class="text-slate-900 dark:text-slate-50">Change Now</label>
             </div>
             <div class="flex items-center gap-2">
                 <RadioButton
@@ -72,7 +72,7 @@
                     name="changeOption"
                     value="nextCycle"
                 />
-                <label for="changeNextCycle" class="text-slate-900"
+                <label for="changeNextCycle" class="text-slate-900 dark:text-slate-50"
                     >Change Next Billing Cycle</label
                 >
             </div>

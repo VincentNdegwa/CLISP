@@ -123,7 +123,7 @@ onUnmounted(() => {
           <div
             v-for="i in 3"
             :key="i"
-            class="bg-slate-800/70 dark:bg-slate-800 rounded-2xl shadow-lg p-8 border border-slate-200 dark:border-slate-700 transform transition-all duration-300 hover:-translate-y-1 hover:shadow-xl relative"
+            class="bg-slate-50 dark:bg-slate-800 rounded-2xl shadow-lg p-8 border border-slate-200 dark:border-slate-700 transform transition-all duration-300 hover:-translate-y-1 hover:shadow-xl relative"
           >
             <!-- Quote icon -->
             <div class="absolute -top-4 -left-4 w-8 h-8 bg-rose-500 rounded-full flex items-center justify-center shadow-lg">
@@ -171,14 +171,14 @@ onUnmounted(() => {
           <button
             @click="prevTestimonial"
             @mouseenter="stopAutoplay"
-            class="w-12 h-12 rounded-full bg-slate-800/70 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+            class="w-12 h-12 rounded-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
           >
             <i class="pi pi-chevron-left text-slate-600 dark:text-slate-300"></i>
           </button>
           <button
             @click="nextTestimonial"
             @mouseenter="stopAutoplay"
-            class="w-12 h-12 rounded-full bg-slate-800/70 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+            class="w-12 h-12 rounded-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
           >
             <i class="pi pi-chevron-right text-slate-600 dark:text-slate-300"></i>
           </button>
