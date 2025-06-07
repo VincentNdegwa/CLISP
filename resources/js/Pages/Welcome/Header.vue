@@ -14,7 +14,6 @@ const props = defineProps({
     }
 });
 
-// Define emit for toggle-dark-mode
 const emit = defineEmits(['toggle-dark-mode']);
 
 const isHeaderVisible = ref(false);

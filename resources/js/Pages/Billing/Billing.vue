@@ -98,7 +98,7 @@
                 v-if="store.transactions?.data?.length > 0"
                 class="border-2 rounded-lg shadow p-6 flex-1 h-[65vh] overflow-auto"
             >
-                <h2 class="text-slate-900 text-xl font-bold mb-4">
+                <h2 class="text-slate-900 dark:text-slate-50 text-xl font-bold mb-4">
                     Transaction History
                 </h2>
                 <DataTable
