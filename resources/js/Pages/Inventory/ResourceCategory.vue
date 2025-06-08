@@ -4,15 +4,11 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import { useResourceCategoryStore } from "@/Store/ResourceCategory";
 import { Head } from "@inertiajs/vue3";
 import NewCategory from "./NewCategory.vue";
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import TableSkeleton from "@/Components/TableSkeleton.vue";
 import ConfirmationModal from "@/Components/ConfirmationModal.vue";
-import NoRecords from "@/Components/NoRecords.vue";
-import Column from "primevue/column";
-import Button from "primevue/button";
-import DataTable from "primevue/datatable";
-import Menu from "primevue/menu";
-import Paginator from "primevue/paginator";
+import AlertNotification from "@/Components/AlertNotification.vue";
+import ModularDataTable from "@/Components/ModularDataTable.vue";
 
 export default {
     components: {
@@ -22,38 +18,39 @@ export default {
         NewCategory,
         TableSkeleton,
         ConfirmationModal,
-        NoRecords,
-        Column,
-        Button,
-        DataTable,
-        Menu,
-        Paginator,
+        AlertNotification,
+        ModularDataTable,
     },
     setup() {
         const params = ref({
             page: 1,
             rows: 20,
         });
+
         const categories = useResourceCategoryStore();
         categories.fetchResourceCategory(params.value);
+
         const categoryAdd = async (category) => {
             await categories.addItem(category);
             if (categories.success) {
                 closeModal();
             }
         };
+
         const categoryUpdate = async (category) => {
             await categories.updateCategory(category);
             if (categories.success) {
                 closeModal();
             }
         };
+
         const categoryDelete = async (id) => {
             await categories.deleteCategory(id);
             if (categories.success) {
                 closeModal();
             }
         };
+
         const modal = ref({
             open: false,
             component: "",
@@ -67,11 +64,12 @@ export default {
         const closeModal = () => {
             modal.value.open = false;
         };
+
         const paginateCategories = (page) => {
             params.value.page = page.page + 1;
-
             categories.fetchResourceCategory(params.value);
         };
+
         const onRowChange = (rows) => {
             params.value.rows = rows;
         };
@@ -99,12 +97,59 @@ export default {
             },
             category_to_delete: {},
             selectedCategory: null,
+
+            // Table columns configuration 
+            columns: [
+                { header: "Name", field: "name", sortable: true },
+                { header: "Description", field: "description", sortable: false },
+            ],
+            
+            // Start actions 
+            startActions: [
+                {
+                    label: "Add Category",
+                    icon: "pi pi-plus",
+                    severity: "secondary",
+                    size: "small",
+                    command: () => this.openNewCategoryForm("NewCategory"),
+                },
+            ],
+            
+            // Row actions
+            rowActions: [
+                {
+                    label: "Edit",
+                    icon: "pi pi-pencil",
+                    command: (data) => this.openEditCategory(data),
+                },
+                {
+                    label: "Delete",
+                    icon: "pi pi-trash",
+                    command: (data) => this.openConfirm(
+                        `Are you sure you want to delete category ${data.name}? This process cannot be undone`,
+                        "Confirm Item Delete",
+                        data
+                    ),
+                },
+            ],
         };
+    },
+    computed: {
+        tableData() {
+            return this.categories.items?.data || [];
+        },
+        totalRecords() {
+            return this.categories.items?.total || 0;
+        },
+        currentPage() {
+            return this.categories.items?.current_page || 1;
+        },
+        rowsPerPage() {
+            return this.params?.rows || 20;
+        }
     },
     methods: {
         openEditCategory(data) {
-            console.log(data);
-
             this.openNewCategoryForm("UpdateCategory");
             this.category_data = data;
         },
@@ -125,14 +170,31 @@ export default {
         handleCofirm() {
             this.categoryDelete(this.category_to_delete.id);
         },
-        toggleActionMenu(data, event) {
-            event.preventDefault();
-            this.selectedCategory = data;
-            this.$refs.menu.toggle(event);
+        handleRowAction({ action, row }) {
+            if (action.label === "Edit") {
+                this.openEditCategory(row);
+            } else if (action.label === "Delete") {
+                this.openConfirm(
+                    `Are you sure you want to delete category ${row.name}? This process cannot be undone`,
+                    "Confirm Item Delete",
+                    row
+                );
+            }
         },
+        handleSearch(query) {
+            this.params.search = query;
+            this.categories.fetchResourceCategory(this.params);
+        },
+        handlePageChange(event) {
+            this.paginateCategories(event);
+        },
+        handleRowsChange(rows) {
+            this.onRowChange(rows);
+        }
     },
 };
 </script>
+
 <template>
     <Head title="Resource Categories" />
     <AuthenticatedLayout>
@@ -143,110 +205,42 @@ export default {
             @confirm="handleCofirm"
             @close="closeConfirm"
         />
+
         <AlertNotification
             :open="categories.error != null"
             :message="categories.error ? categories.error : ''"
             :status="categories.error ? 'error' : 'success'"
         />
+
         <AlertNotification
             :open="categories.success != null"
             :message="categories.success ? categories.success : ''"
             status="success"
         />
-        <div class="mx-auto p-4 h-fit">
-            <div class="w-full mt-2 flex justify-between">
-                <h1 class="text-xl font-bold mb-4">Resource Categories</h1>
-                <div class="join gap-2">
-                    <button
-                        @click="() => openNewCategoryForm('NewCategory')"
-                        class="btn bg-slate-950 text-white"
-                    >
-                        Add Categories
-                    </button>
-                </div>
-            </div>
 
-            <TableSkeleton v-if="categories.loading" />
-            <NoRecords v-else-if="categories.items?.data?.length == 0" />
+        <TableSkeleton v-if="categories.loading && !categories.items?.data" />
 
-            <div v-else class="h-[74vh] overflow-y-scroll relative mt-1">
-                <DataTable
-                    v-if="categories.items?.data?.length > 0"
-                    :value="categories.items.data"
-                    dataKey="id"
-                    :tableStyle="{ width: '100%' }"
-                    class="min-w-full"
-                >
-                    <!-- Name -->
-                    <Column header="Name" field="name" />
-
-                    <!-- Description -->
-                    <Column header="Description" field="description" />
-
-                    <!-- Actions -->
-                    <Column header="Actions">
-                        <template #body="slotProps">
-                            <div class="card flex justify-center">
-                                <Button
-                                    type="button"
-                                    icon="pi pi-ellipsis-v"
-                                    @click="
-                                        toggleActionMenu(slotProps.data, $event)
-                                    "
-                                    aria-haspopup="true"
-                                    severity="contrast"
-                                    size="small"
-                                    aria-controls="'action_menu_' + slotProps.data.id"
-                                />
-                                <Menu
-                                    ref="menu"
-                                    :id="'action_menu_' + slotProps.data.id"
-                                    :model="[
-                                        {
-                                            label: 'Edit',
-                                            icon: 'pi pi-pencil',
-                                            command: () =>
-                                                openEditCategory(
-                                                    selectedCategory
-                                                ),
-                                        },
-                                        {
-                                            label: 'Delete',
-                                            icon: 'pi pi-trash',
-                                            command: () =>
-                                                openConfirm(
-                                                    `Are you sure you want to delete category ${selectedCategory.name}? This process cannot be undone`,
-                                                    'Confirm Item Delete',
-                                                    selectedCategory
-                                                ),
-                                        },
-                                    ]"
-                                    :popup="true"
-                                />
-                            </div>
-                        </template>
-                    </Column>
-                </DataTable>
-            </div>
-
-            <div
-                v-if="categories.items?.data?.length > 0"
-                class="flex justify-center items-center w-full"
-            >
-                <Paginator
-                    :totalRecords="categories.items?.total"
-                    :rows="categories.items?.per_page"
-                    :first="
-                        (categories.items?.current_page - 1) *
-                        categories.items?.per_page
-                    "
-                    @page="paginateCategories"
-                    @update:rows="onRowChange"
-                    :rowsPerPageOptions="[10, 20, 50]"
-                >
-                </Paginator>
-            </div>
-        </div>
+        <ModularDataTable
+            v-else
+            :value="tableData"
+            :loading="categories.loading"
+            dataKey="id"
+            :columns="columns"
+            :startActions="startActions"
+            :rowActions="rowActions"
+            searchPlaceholder="Search categories..."
+            :rows="rowsPerPage"
+            :totalRecords="totalRecords"
+            :currentPage="currentPage"
+            :rowsPerPageOptions="[10, 20, 50]"
+            @page-change="handlePageChange"
+            @rows-change="handleRowsChange"
+            @row-action="handleRowAction"
+            @search="handleSearch"
+            emptyMessage="No categories found"
+            exportable
+            stripedRows
+        />
 
         <Modal :show="modal.open" @close="closeModal">
             <NewCategory
