@@ -8,9 +8,9 @@ import { useUserStore } from "@/Store/UserStore";
 import ConfirmationModal from "@/Components/ConfirmationModal.vue";
 import axios from "axios";
 import NoRecords from "@/Components/NoRecords.vue";
-import RequestList from "./RequestList.vue";
-import Paginator from "primevue/paginator";
+import ModularDataTable from "@/Components/ModularDataTable.vue";
 import LoadingUI from "@/Components/LoadingUI.vue";
+import Badge from "primevue/badge";
 
 export default {
     components: {
@@ -21,14 +21,13 @@ export default {
         ConnectionRequestForm,
         ConfirmationModal,
         NoRecords,
-        RequestList,
-        Paginator,
+        ModularDataTable,
         LoadingUI,
+        Badge,
     },
     data() {
         return {
             requests: [],
-            incomingRequests: [],
             modal: {
                 open: false,
                 component: "",
@@ -46,8 +45,96 @@ export default {
                 method: null,
             },
             selectedRequest: null,
-            isDropdownOpen: false,
+            tableColumns: [
+                {
+                    header: "Request From",
+                    field: "business_requester.business_name",
+                    sortable: true,
+                },
+                {
+                    header: "Request To",
+                    field: "business_receiver.business_name",
+                    sortable: true,
+                },
+                {
+                    header: "Request Type",
+                    field: "request_type",
+                    sortable: true,
+                },
+                {
+                    header: "Status",
+                    field: "connection_status",
+                    sortable: true,
+                    template: this.renderStatus,
+                },
+                {
+                    header: "Date",
+                    field: "created_at",
+                    sortable: true,
+                    format: (value) => this.formatDate(value),
+                },
+            ],
+            tableFilters: [
+                {
+                    label: "Status",
+                    field: "connection_status",
+                    type: "dropdown",
+                    options: [
+                        { label: "All", value: null },
+                        { label: "Pending", value: "pending" },
+                        { label: "Approved", value: "approved" },
+                        { label: "Rejected", value: "rejected" },
+                    ],
+                },
+            ],
+            searchQuery: "",
+            currentPage: 1,
+            rowsPerPage: 10,
+            sortField: null,
+            sortOrder: null,
         };
+    },
+    computed: {
+        tableRowActions() {
+            return [
+                // {
+                //     label: "View Details",
+                //     icon: "pi pi-eye",
+                //     command: (row) => this.viewDetails(row),
+                // },
+                {
+                    label: "Cancel Request",
+                    icon: "pi pi-times",
+                    command: (row) => this.startMakingRequestChanges(row, "Cancel"),
+                    visible: (row) => row.connection_status === "pending" && row.request_type=='sent',
+                },
+                {
+                    label: "Approve Request",
+                    icon: "pi pi-check",
+                    command: (row) => this.startMakingRequestChanges(row, "Approve"),
+                    visible: (row) => row.connection_status === "pending" && row.request_type !=='sent',
+                },
+                {
+                    label: "Reject Request",
+                    icon: "pi pi-times",
+                    command: (row) => this.startMakingRequestChanges(row, "Reject"),
+                    visible: (row) => row.connection_status === "pending" && row.request_type !=='sent',
+                },
+                {
+                    label: "Terminate Connection",
+                    icon: "pi pi-trash",
+                    command: (row) => this.startMakingRequestChanges(row, "Terminate"),
+                    visible: (row) => row.connection_status === "approved",
+                },
+            ];
+        },
+        filteredRowActions() {
+            return this.requests?.data?.map(row => {
+                return this.tableRowActions.filter(action => {
+                    return !action.visible || action.visible(row);
+                });
+            }) || [];
+        },
     },
     async mounted() {
         const userStore = useUserStore();
@@ -80,12 +167,12 @@ export default {
                 });
 
                 if (!response.data.error) {
-                    this.requests.data= this.requests.data.map((req)=> {
-                        if(req.id === request.id){
-                            return {...req, connection_status: response.data.connection_status };
+                    this.requests.data = this.requests.data.map((req) => {
+                        if (req.id === request.id) {
+                            return { ...req, connection_status: response.data.connection_status };
                         }
                         return req;
-                    })
+                    });
                     this.displayNotification(response.data.message, "success");
                 } else {
                     this.displayNotification(response.data.message, "error");
@@ -195,11 +282,45 @@ export default {
             this.confirmation.title = "";
             this.confirmation.method = null;
         },
-        toggleDropdown() {
-            this.isDropdownOpen = !this.isDropdownOpen;
+        onPageChange(event) {
+            this.currentPage = event.page + 1;
         },
-        onPageChange() {},
-        onRowChange() {},
+        onRowsChange(rows) {
+            this.rowsPerPage = rows;
+        },
+        onSort(event) {
+            this.sortField = event.sortField;
+            this.sortOrder = event.sortOrder;
+        },
+        onSearch(query) {
+            this.searchQuery = query;
+        },
+        onFilterChange(filters) {
+            console.log("Filters changed:", filters);
+        },
+        formatDate(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            return new Intl.DateTimeFormat('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+            }).format(date);
+        },
+        renderStatus(status, rowData) {
+            const statusMap = {
+                pending: { severity: 'warning', label: 'Pending' },
+                approved: { severity: 'success', label: 'Approved' },
+                rejected: { severity: 'danger', label: 'Rejected' }
+            };
+            
+            const statusInfo = statusMap[status] || { severity: 'info', label: status };
+            
+            return `<span class="p-tag p-tag-${statusInfo.severity}">${statusInfo.label}</span>`;
+        },
+        // viewDetails(row) {
+        //     console.log("View details for:", row);
+        // }
     },
 };
 </script>
@@ -227,94 +348,32 @@ export default {
     />
     <AuthenticatedLayout>
         <LoadingUI v-if="loading" customClass="h-[90vh]" />
-        <div v-else>
-            <div class="flex items-center justify-between">
-                <h1 class="text-2xl font-bold mb-6">Business Connections</h1>
-                <div class="flex items-center">
-                    <div class="dropdown">
-                        <div
-                            tabindex="0"
-                            role="button"
-                            class="btn m-1 bg-slate-900 text-white"
-                            @click="toggleDropdown"
-                        >
-                            Filters <i class="bi bi-funnel"></i>
-                        </div>
-                        <ul
-                            tabindex="0"
-                            v-if="isDropdownOpen"
-                            class="dropdown-content flex flex-col gap-2 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-box z-[1] w-52 p-2 shadow"
-                        >
-                            <li>
-                                <div class="flex flex-col gap-1">
-                                    <div class="inline-block">
-                                        Filter By Status
-                                    </div>
-                                    <select
-                                        class="select select-bordered bg-slate-50 dark:bg-slate-700 text-slate-950 dark:text-slate-100 ring-1 ring-slate-300 dark:ring-slate-600"
-                                    >
-                                        <option
-                                            value="Filter By Status"
-                                            selected
-                                            disabled
-                                        >
-                                            Filter By Status
-                                        </option>
-                                    </select>
-                                </div>
-                            </li>
-                            <li
-                                class="mt-3 p-2 bg-slate-900 text-white rounded-md text-center hover:bg-slate-800 transition-all ease-linear duration-700"
-                            >
-                                <button @click="clearFilters">
-                                    Clear Filters <i class="bi bi-trash"></i>
-                                </button>
-                            </li>
-                        </ul>
-                    </div>
-                    <PrimaryButton
-                        @click="() => openModal('ConnectionRequestForm')"
-                    >
-                        Make Request
-                    </PrimaryButton>
-                </div>
-            </div>
-
-            <!-- Sent Requests -->
-            <div class="mb-10">
-                <RequestList
-                    :requests="requests?.data || []"
-                    request_type="sent"
-                    pendingActionText="Cancel Request"
-                    approvedActionText="Terminate Connection"
-                    :cancelAction="
-                        (request) =>
-                            startMakingRequestChanges(request, 'Cancel')
-                    "
-                    :approveAction="
-                        (request) =>
-                            startMakingRequestChanges(request, 'Approve')
-                    "
-                    :rejectAction="
-                        (request) =>
-                            startMakingRequestChanges(request, 'Reject')
-                    "
-                    :terminateAction="
-                        (request) =>
-                            startMakingRequestChanges(request, 'Terminate')
-                    "
-                />
-                <Paginator
-                    v-if="requests?.data?.length > 0"
-                    :totalRecords="requests?.total"
-                    :rows="requests?.per_page"
-                    :first="(requests?.current_page - 1) * requests?.per_page"
-                    @page="onPageChange"
-                    @update:rows="onRowChange"
-                    :rowsPerPageOptions="[10, 20, 50]"
-                >
-                </Paginator>
-            </div>
-        </div>
+        <ModularDataTable
+            v-else
+                :value="requests?.data || []"
+                :loading="loading"
+                :columns="tableColumns"
+                :rowActions="tableRowActions"
+                :filters="tableFilters"
+                :totalRecords="requests?.total || 0"
+                :rows="requests?.per_page || 10"
+                :currentPage="requests?.current_page || 1"
+                :rowsPerPageOptions="[10, 20, 50]"
+                :startActions="[
+                    {
+                        label: 'Request',
+                        icon: 'pi pi-plus',
+                        command: () => openModal('ConnectionRequestForm')
+                    }
+                ]"
+                @page-change="onPageChange"
+                @rows-change="onRowsChange"
+                @sort="onSort"
+                @search="onSearch"
+                @filter-change="onFilterChange"
+                dataKey="id"
+                :rowHover="true"
+                emptyMessage="No connection requests found"
+            />
     </AuthenticatedLayout>
 </template>

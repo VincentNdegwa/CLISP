@@ -218,8 +218,7 @@ export default {
                     class="text-white p-2 rounded flex-1"
                     :disabled="loading || !selectedBusiness"
                 >
-                    <LoadingIcon v-if="loading" class="h-5 w-5 mr-2" />
-                    Send Connection Request
+                   {{ loading ? "Sending..." : "Send Connection Request" }} 
                 </PrimaryButton>
                 <PrimaryRoseButton
                     type="button"
