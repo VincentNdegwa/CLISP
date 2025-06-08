@@ -243,7 +243,7 @@ export default {
                         <ul
                             tabindex="0"
                             v-if="isDropdownOpen"
-                            class="dropdown-content flex flex-col gap-2 bg-white text-slate-900 rounded-box z-[1] w-52 p-2 shadow"
+                            class="dropdown-content flex flex-col gap-2 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-box z-[1] w-52 p-2 shadow"
                         >
                             <li>
                                 <div class="flex flex-col gap-1">
@@ -251,7 +251,7 @@ export default {
                                         Filter By Status
                                     </div>
                                     <select
-                                        class="select select-bordered bg-white text-slate-950 ring-1 ring-slate-800"
+                                        class="select select-bordered bg-slate-50 dark:bg-slate-700 text-slate-950 dark:text-slate-100 ring-1 ring-slate-300 dark:ring-slate-600"
                                     >
                                         <option
                                             value="Filter By Status"
