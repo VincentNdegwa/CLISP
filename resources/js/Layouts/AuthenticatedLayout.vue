@@ -55,15 +55,15 @@ export default {
                 this.default_business = def_business;
             }
 
-            if (
-                !this.$page.props.user_businesses.default_business
-                    .activeSubscription &&
-                this.currentUrl != route("billing.view")
-            ) {
-                this.modal.open = true;
-                this.modal.closeable = false;
-                this.modal.components = "NoActiveSubscription";
-            }
+            // if (
+            //     !this.$page.props.user_businesses.default_business
+            //         .activeSubscription &&
+            //     this.currentUrl != route("billing.view")
+            // ) {
+            //     this.modal.open = true;
+            //     this.modal.closeable = false;
+            //     this.modal.components = "NoActiveSubscription";
+            // }
         } catch (error) {
             console.error("Error in business data processing:", error);
         }

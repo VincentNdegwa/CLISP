@@ -92,7 +92,7 @@ export default {
             default: () => []
         },
         rowActions: {
-            type: Array,
+            type: [Array, Function],
             default: () => []
         },
         
@@ -140,6 +140,7 @@ export default {
         const selectedRow = ref(null);
         const activeFilters = ref({});
         const isFilterOpen = ref(false);
+        const currentActions = ref([]);
         
         // Initialize filters
         onMounted(() => {
@@ -176,9 +177,19 @@ export default {
             }
         };
         
+        // Get row actions based on the rowActions prop type
+        const getRowActions = (rowData) => {
+            if (typeof props.rowActions === 'function') {
+                return props.rowActions(rowData);
+            } else {
+                return props.rowActions;
+            }
+        };
+        
         // Handle row actions
         const toggleMenu = (event, rowData) => {
             selectedRow.value = rowData;
+            currentActions.value = getRowActions(rowData);
             menu.value.toggle(event);
         };
         
@@ -225,11 +236,19 @@ export default {
         });
         
         const rowActionsModel = computed(() => {
-            return props.rowActions.map(action => ({
+            return currentActions.value.map(action => ({
                 label: action.label,
                 icon: action.icon,
                 command: () => handleRowAction(action)
             }));
+        });
+        
+        const hasRowActions = computed(() => {
+            if (typeof props.rowActions === 'function') {
+                return true; // Assume function will return actions
+            } else {
+                return props.rowActions && props.rowActions.length > 0;
+            }
         });
         
         const recordsCount = computed(() => {
@@ -249,6 +268,7 @@ export default {
             selectedRow,
             activeFilters,
             isFilterOpen,
+            currentActions,
             handleSearch,
             onPageChange,
             onRowsChange,
@@ -263,7 +283,8 @@ export default {
             tableClass,
             rowActionsModel,
             recordsCount,
-            getNestedValue
+            getNestedValue,
+            hasRowActions
         };
     },
     components: {
@@ -382,7 +403,7 @@ export default {
         <div class="flex justify-between flex-column sm:flex-row mb-4">
             <div v-if="showSearch" class="w-full sm:w-64 mb-3 sm:mb-0">
                 <span class="p-input-icon-left w-full">
-                    <InputText v-model="searchQuery" @input="handleSearch" :placeholder="searchPlaceholder"
+                    <InputText v-model="searchQuery" id="search-input" @input="handleSearch" :placeholder="searchPlaceholder"
                         class="w-full" />
                 </span>
             </div>
@@ -401,7 +422,7 @@ export default {
         <NoRecords v-if="!loading && (!value || value.length === 0)" :message="emptyMessage" class="mt-4" />
 
         <!-- Data table -->
-        <DataTable v-if="value && value.length > 0" :value="value" :loading="loading" :dataKey="dataKey"
+        <DataTable v-if="loading||(value && value.length > 0)" :value="value" :loading="loading" :dataKey="dataKey"
             responsiveLayout="scroll" :class="tableClass" :rowHover="rowHover" ref="dt" @sort="onSort">
             
             <!-- Dynamic columns -->
@@ -430,7 +451,7 @@ export default {
             </template>
 
             <!-- Actions column -->
-            <Column v-if="rowActions && rowActions.length > 0" header="Actions" :exportable="false">
+            <Column v-if="hasRowActions" header="Actions" :exportable="false">
                 <template #body="slotProps">
                     <Button type="button" severity="secondary" icon="pi pi-ellipsis-v"
                         @click="toggleMenu($event, slotProps.data)" aria-haspopup="true" aria-controls="row_actions_menu" />
