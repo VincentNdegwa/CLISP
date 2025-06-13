@@ -1,4 +1,4 @@
-name: Clisp Deployement
+name: Clisp Deployment
 
 on:
   workflow_run:
@@ -6,9 +6,13 @@ on:
       - Laravel Test
     types:
       - completed
+    branches:
+      - main
+
 jobs:
   deploy_to_droplet:
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - name: Checkout code
