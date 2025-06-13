@@ -1,6 +1,6 @@
 <!-- CustomerForm.vue -->
 <template>
-    <div class="bg-white h-fit p-6 rounded-lg shadow-md relative">
+    <div class="bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-50 h-fit p-6 rounded-lg shadow-md relative">
         <AlertNotification
             position="top"
             :open="form.success || form.error"
@@ -9,7 +9,7 @@
             "
             :status="form.success ? 'success' : 'error'"
         />
-        <h2 class="text-slate-900 text-xl font-semibold mb-4">
+        <h2 class="text-xl font-semibold mb-4">
             {{ isEditing ? "Update Customer" : "Create New Customer" }}
         </h2>
 
@@ -76,7 +76,7 @@
                     type="submit"
                     class="bg-slate-900 text-white flex-1"
                 >
-                    {{ isEditing ? "Update" : "Create" }} Customer
+                   {{ customerStore.loading ? "Loading..." : isEditing ? "Update Customer" : "Create Customer" }}
                 </PrimaryButton>
 
                 <PrimaryRoseButton @click="$emit('close')" class="flex-1">
@@ -101,6 +101,10 @@ export default {
         TextInput,
         PrimaryButton,
         PrimaryRoseButton,
+    },
+    setup() {
+        const customerStore = useCustomerStore();
+        return { customerStore };
     },
     props: {
         customer: {
@@ -137,27 +141,26 @@ export default {
             this.form.error = null;
 
             try {
-                const customerStore = useCustomerStore();
                 if (this.isEditing) {
-                    await customerStore.updateCustomer({
+                    await this.customerStore.updateCustomer({
                         id: this.customer.id,
                         ...this.form,
                     });
 
-                    if (customerStore.error == null) {
+                    if (this.customerStore.error == null) {
                         this.form.success = "Customer updated successfully!";
                         this.$emit("close");
                     } else {
-                        this.form.error = customerStore.error;
+                        this.form.error = this.customerStore.error;
                         // this.resetForm();
                     }
                 } else {
-                    await customerStore.createCustomer(this.form);
-                    if (customerStore.error == null) {
+                    await this.customerStore.createCustomer(this.form);
+                    if (this.customerStore.error == null) {
                         this.form.success = "Customer created successfully!";
                         this.$emit("close");
                     } else {
-                        this.form.error = customerStore.error;
+                        this.form.error = this.customerStore.error;
                         // this.resetForm();
                     }
                 }

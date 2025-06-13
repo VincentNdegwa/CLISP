@@ -174,7 +174,7 @@ export default {
 
 <template>
     <div
-        class="w-full max-w-5xl mx-auto p-5 bg-white shadow-md rounded-md text-slate-950"
+        class="w-full max-w-5xl mx-auto p-5 bg-slate-50 dark:bg-slate-800 shadow-md rounded-md text-slate-900 dark:text-slate-100"
     >
         <div class="text-center text-2xl font-semibold mb-6">
             Create New Business
@@ -291,20 +291,15 @@ export default {
             <!-- Business Type -->
             <div>
                 <InputLabel for="business_type" value="Business Type" />
-                <select
+                <Select
                     id="business_type"
-                    class="mt-1 w-full p-2 border border-gray-300 rounded-md"
                     v-model="form.business_type_id"
-                >
-                    <option value="">Select Business Type</option>
-                    <option
-                        v-for="type in businessTypes"
-                        :key="type.id"
-                        :value="type.id"
-                    >
-                        {{ type.name }}
-                    </option>
-                </select>
+                    :options="businessTypes"
+                    optionLabel="name"
+                    optionValue="id"
+                    placeholder="Select Business Type"
+                    class="w-full"
+                />
                 <InputError
                     class="mt-2"
                     :message="form.errors.business_type_id"
@@ -314,20 +309,15 @@ export default {
             <!-- Industry -->
             <div>
                 <InputLabel for="industry" value="Industry" />
-                <select
+                <Select
                     id="industry"
-                    class="mt-1 w-full p-2 border border-gray-300 rounded-md"
                     v-model="form.industry_id"
-                >
-                    <option value="">Select Industry</option>
-                    <option
-                        v-for="industry in industries"
-                        :key="industry.id"
-                        :value="industry.id"
-                    >
-                        {{ industry.name }}
-                    </option>
-                </select>
+                    :options="industries"
+                    optionLabel="name"
+                    optionValue="id"
+                    placeholder="Select Industry"
+                    class="w-full"
+                />
                 <InputError class="mt-2" :message="form.errors.industry_id" />
             </div>
 
@@ -371,7 +361,7 @@ export default {
                         type="file"
                         @change="setLogoFile"
                         accept="image/*"
-                        class=""
+                        class="text-slate-900 dark:text-slate-100 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-slate-100 dark:file:bg-slate-700 file:text-slate-700 dark:file:text-slate-100 hover:file:bg-slate-200 dark:hover:file:bg-slate-600"
                     />
                 </div>
                 <InputError class="mt-2" :message="form.errors.logo" />

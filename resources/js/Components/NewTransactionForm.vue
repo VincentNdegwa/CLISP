@@ -1,5 +1,5 @@
 <template>
-    <div class="p-1 h-fit relative">
+    <div class="p-1 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-50 h-fit relative">
         <div class="text-2xl font-bold ms-6 mt-2 capitalize">
             {{
                 newTransaction == true
@@ -8,8 +8,8 @@
             }}
         </div>
         <form
-            @submit.prevent="submitForm"
-            class="space-y-8 p-6 bg-white shadow-lg rounded-lg"
+            @submit.prevent="validateAndSubmit"
+            class="space-y-8 p-6 shadow-lg rounded-lg"
         >
             <!-- Row 2: Initiator and Receiver -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -20,23 +20,19 @@
                         :required="isB2B"
                     />
 
-                    <select
+                    <Select
                         v-model="form.receiver_business_id"
+                        :options="business"
+                        :optionLabel="(option) => option.business_name"
+                        :optionValue="(option) => option.business_id"
+                        placeholder="Select Connected Business"
                         id="receiver_business_id"
                         :required="isB2B"
-                        class="select w-full max-w-xs bg-white text-slate-950 ring-1 ring-slate-300 hover:ring-slate-300"
-                    >
-                        <option disabled selected>
-                            Select Connected Business
-                        </option>
-                        <option
-                            :value="item.business_id"
-                            v-for="(item, index) in business"
-                            :key="index"
-                        >
-                            {{ item.business_name }}
-                        </option>
-                    </select>
+                        :class="{'p-invalid': validationErrors.receiver_business_id}"
+                    />
+                    <small v-if="validationErrors.receiver_business_id" class="p-error text-red-500">
+                        {{ validationErrors.receiver_business_id }}
+                    </small>
                 </div>
 
                 <div v-if="!isB2B">
@@ -46,23 +42,19 @@
                         :required="!isB2B"
                     />
 
-                    <select
+                    <Select
                         v-model="form.receiver_customer_id"
+                        :options="customer"
+                        :optionLabel="(option) => option.full_names"
+                        :optionValue="(option) => option.id"
+                        placeholder="Select Connected Customer"
                         id="receiver_customer_id"
                         :required="!isB2B"
-                        class="select w-full max-w-xs bg-white text-slate-950 ring-1 ring-slate-300 hover:ring-slate-300"
-                    >
-                        <option disabled selected>
-                            Select Connected Customer
-                        </option>
-                        <option
-                            :value="item.id"
-                            v-for="(item, index) in customer"
-                            :key="index"
-                        >
-                            {{ item.full_names }}
-                        </option>
-                    </select>
+                        :class="{'p-invalid': validationErrors.receiver_customer_id}"
+                    />
+                    <small v-if="validationErrors.receiver_customer_id" class="p-error text-red-500">
+                        {{ validationErrors.receiver_customer_id }}
+                    </small>
                 </div>
             </div>
 
@@ -71,7 +63,7 @@
                 class="flex gap-1"
                 v-if="tr_with_dates.includes(transactionType)"
             >
-                <div>
+                <div class="w-full">
                     <InputLabel
                         for="lease_start_date"
                         value="Lease Start Date"
@@ -83,11 +75,15 @@
                         iconDisplay="input"
                         dateFormat="yy-mm-dd"
                         :minDate="new Date()"
+                        :class="{'p-invalid': validationErrors.lease_start_date}"
                     />
+                    <small v-if="validationErrors.lease_start_date" class="p-error text-red-500">
+                        {{ validationErrors.lease_start_date }}
+                    </small>
                 </div>
 
                 <!-- Lease End Date -->
-                <div>
+                <div class="w-full">
                     <InputLabel for="lease_end_date" value="Lease End Date" />
                     <DatePicker
                         v-model="form.lease_end_date"
@@ -97,7 +93,11 @@
                         id="lease_end_date"
                         dateFormat="yy-mm-dd"
                         :minDate="new Date(form.lease_start_date)"
+                        :class="{'p-invalid': validationErrors.lease_end_date}"
                     />
+                    <small v-if="validationErrors.lease_end_date" class="p-error text-red-500">
+                        {{ validationErrors.lease_end_date }}
+                    </small>
                 </div>
             </div>
 
@@ -115,10 +115,13 @@
                         </button>
                     </div>
                 </div>
+                <div v-if="validationErrors.transaction_items" class="mb-2 p-2 bg-red-100 dark:bg-red-900/20 text-red-500 dark:text-red-400 rounded-md">
+                    {{ validationErrors.transaction_items }}
+                </div>
                 <div
                     v-for="(item, index) in form.transaction_items"
                     :key="index"
-                    class="w-full flex flex-col md:flex-row gap-2 md:gap-4 items-center mt-2"
+                    class="w-full flex flex-col md:flex-row gap-2 md:gap-4 items-start mt-2 pb-2 border-b dark:border-slate-700 last:border-0"
                 >
                     <!-- Item ID -->
                     <div class="w-full md:w-fit">
@@ -137,8 +140,11 @@
                             @update:modelValue="selectChange"
                             filter
                             @filter="selectSearch"
-                            class="md:max-w-60 md:w-60 bg-white text-slate-950 p-1 b-0 ring-0 w-full relative"
+                            :class="{'p-invalid': getItemError(index, 'item_id')}"
                         />
+                        <small v-if="getItemError(index, 'item_id')" class="p-error text-red-500">
+                            Item is required
+                        </small>
                     </div>
 
                     <!-- Quantity -->
@@ -152,11 +158,16 @@
                         <TextInput
                             v-model="item.quantity"
                             :id="`quantity_${index}`"
-                            type="text"
+                            type="number"
                             class="w-full"
                             min="0.01"
+                            step="0.01"
                             required
+                            :class="{'border-red-500': getItemError(index, 'quantity')}"
                         />
+                        <small v-if="getItemError(index, 'quantity')" class="p-error text-red-500">
+                            Quantity must be greater than 0
+                        </small>
                     </div>
 
                     <!-- Price -->
@@ -173,12 +184,17 @@
                             type="number"
                             class="w-full"
                             min="0"
+                            step="0.01"
                             required
+                            :class="{'border-red-500': getItemError(index, 'price')}"
                         />
+                        <small v-if="getItemError(index, 'price')" class="p-error text-red-500">
+                            Price must be valid
+                        </small>
                     </div>
 
                     <!-- Remove Item Button -->
-                    <div class="mt-4">
+                    <div class="mt-7">
                         <button
                             type="button"
                             @click="removeItem(index)"
@@ -192,7 +208,7 @@
 
             <!-- Transaction Details Section -->
             <div
-                class="bg-gray-100 p-4 rounded-lg shadow-md"
+                class="bg-slate-100 dark:bg-slate-700/40 p-4 rounded-lg shadow-md"
                 v-if="tr_with_dates.includes(transactionType)"
             >
                 <h3 class="text-lg font-bold mb-4">Transaction Details</h3>
@@ -205,6 +221,7 @@
                             v-model="form.transaction_details.late_fees"
                             type="number"
                             min="0"
+                            step="0.01"
                             id="late_fees"
                             class="w-full"
                         />
@@ -217,6 +234,7 @@
                             v-model="form.transaction_details.damage_fees"
                             type="number"
                             min="0"
+                            step="0.01"
                             id="damage_fees"
                             class="w-full"
                         />
@@ -229,11 +247,22 @@
                             v-model="form.transaction_details.shipping_fees"
                             type="number"
                             min="0"
+                            step="0.01"
                             id="shipping_fees"
                             class="w-full"
                         />
                     </div>
                 </div>
+            </div>
+
+            <!-- Form Errors Summary -->
+            <div v-if="hasValidationErrors" class="p-3 bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-md">
+                <p class="font-medium">Please fix the following errors:</p>
+                <ul class="list-disc pl-5 mt-1">
+                    <li v-for="(error, field) in validationErrors" :key="field" v-show="error && typeof error === 'string'">
+                        {{ error }}
+                    </li>
+                </ul>
             </div>
 
             <!-- Submit Button -->
@@ -243,7 +272,7 @@
                     type="submit"
                     :disabled="transactionStore.loading || loadingClose"
                 >
-                    {{ newTransaction == true ? "Submit" : "Update" }}
+                  {{ transactionStore.loading || loadingClose ? "Loading..." : newTransaction ? "Submit" : "Update" }}
                 </PrimaryButton>
                 <PrimaryRoseButton
                     :disabled="transactionStore.loading || loadingClose"
@@ -271,7 +300,7 @@
 </template>
 
 <script>
-import { ref, watch } from "vue";
+import { ref, watch, computed } from "vue";
 import InputLabel from "@/Components/InputLabel.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import TextInput from "@/Components/TextInput.vue";
@@ -334,6 +363,8 @@ export default {
         const resourceStore = useResourceStore();
         const transactionStore = useTransactionStore();
         const loadingClose = ref(false);
+        const validationErrors = ref({});
+        const itemErrors = ref([]);
 
         const form = ref({
             type: props.transactionType,
@@ -351,6 +382,11 @@ export default {
                 damage_fees: "0",
                 shipping_fees: "0",
             },
+        });
+        
+        // Check if there are validation errors
+        const hasValidationErrors = computed(() => {
+            return Object.keys(validationErrors.value).length > 0;
         });
 
         const initializeForm = () => {
@@ -412,6 +448,9 @@ export default {
                     },
                 };
             }
+            // Reset validation errors when form is initialized
+            validationErrors.value = {};
+            itemErrors.value = [];
         };
 
         // Watch for changes in the newTransaction prop or transactionData
@@ -429,12 +468,94 @@ export default {
                 quantity: "1",
                 price: 0,
             });
+            // Add a placeholder for this item's errors
+            itemErrors.value.push({});
         };
 
         const removeItem = (index) => {
             if (form.value.transaction_items.length > 1) {
                 form.value.transaction_items.splice(index, 1);
+                // Also remove the errors for this item
+                itemErrors.value.splice(index, 1);
             }
+        };
+        
+        const getItemError = (index, field) => {
+            if (!itemErrors.value[index]) return false;
+            return itemErrors.value[index][field];
+        };
+
+        const validateForm = () => {
+            const errors = {};
+            const items = form.value.transaction_items;
+            
+            // Reset itemErrors array to match the number of items
+            itemErrors.value = Array(items.length).fill().map(() => ({}));
+            
+            // Validate receiver (business or customer)
+            if (props.isB2B) {
+                if (!form.value.receiver_business_id) {
+                    errors.receiver_business_id = 'Please select a business';
+                }
+            } else {
+                if (!form.value.receiver_customer_id) {
+                    errors.receiver_customer_id = 'Please select a customer';
+                }
+            }
+            
+            // Validate transaction dates if applicable
+            if (props.tr_with_dates && props.tr_with_dates.includes(form.value.type)) {
+                if (!form.value.lease_start_date) {
+                    errors.lease_start_date = 'Start date is required';
+                }
+                if (!form.value.lease_end_date) {
+                    errors.lease_end_date = 'End date is required';
+                } else if (form.value.lease_start_date && form.value.lease_end_date && 
+                           new Date(form.value.lease_end_date) <= new Date(form.value.lease_start_date)) {
+                    errors.lease_end_date = 'End date must be after start date';
+                }
+            }
+            
+            // Validate items
+            let hasItemErrors = false;
+            
+            items.forEach((item, index) => {
+                const itemError = {};
+                
+                if (!item.item_id) {
+                    itemError.item_id = true;
+                    hasItemErrors = true;
+                }
+                
+                if (!item.quantity || parseFloat(item.quantity) <= 0) {
+                    itemError.quantity = true;
+                    hasItemErrors = true;
+                }
+                
+                if (!item.price || isNaN(parseFloat(item.price))) {
+                    itemError.price = true;
+                    hasItemErrors = true;
+                }
+                
+                itemErrors.value[index] = itemError;
+            });
+            
+            if (hasItemErrors) {
+                errors.transaction_items = 'Please complete all transaction items with valid information';
+            }
+            
+            validationErrors.value = errors;
+            return Object.keys(errors).length === 0;
+        };
+
+        const validateAndSubmit = async () => {
+            if (!validateForm()) {
+                // Form is invalid, don't submit
+                return;
+            }
+            
+            // Form is valid, proceed with submission
+            await submitForm();
         };
 
         const submitForm = async () => {
@@ -495,6 +616,12 @@ export default {
             transactionStore,
             closeForm,
             loadingClose,
+            validateForm,
+            validateAndSubmit,
+            validationErrors,
+            hasValidationErrors,
+            itemErrors,
+            getItemError
         };
     },
 
@@ -572,10 +699,5 @@ export default {
 </script>
 
 <style>
-@import url(".././../css/select.css");
-.p-inputtext {
-    background: white !important;
-    color: black !important;
-    border: 1px solid rgba(44, 43, 43, 0.644) !important;
-}
+/* @import url(".././../css/select.css"); */
 </style>

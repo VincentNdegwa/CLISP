@@ -83,7 +83,7 @@ const setActiveFeature = (id) => {
 
             <!-- Center icon -->
             <div class="absolute inset-0 flex items-center justify-center">
-              <div class="w-24 h-24 bg-white dark:bg-slate-800 rounded-full shadow-xl flex items-center justify-center">
+              <div class="w-24 h-24 bg-slate-50 dark:bg-slate-800 rounded-full shadow-xl flex items-center justify-center">
                 <i class="pi pi-box text-4xl text-rose-500"></i>
               </div>
             </div>

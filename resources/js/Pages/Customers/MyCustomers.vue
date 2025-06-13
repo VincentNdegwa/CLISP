@@ -11,10 +11,7 @@ import Modal from "@/Components/Modal.vue";
 import NewCustomer from "./NewCustomer.vue";
 import NoRecords from "@/Components/NoRecords.vue";
 import ConfirmationModal from "@/Components/ConfirmationModal.vue";
-import DataTable from "primevue/datatable";
-import Column from "primevue/column";
-import Button from "primevue/button";
-import Menu from "primevue/menu";
+import ModularDataTable from "@/Components/ModularDataTable.vue";
 
 export default {
     components: {
@@ -28,14 +25,10 @@ export default {
         NewCustomer,
         NoRecords,
         ConfirmationModal,
-        DataTable,
-        Column,
-        Menu,
-        Button,
+        ModularDataTable,
     },
     data() {
         return {
-            isDropdownOpen: false,
             selectcustomer: {
                 full_names: "",
                 email: "",
@@ -49,22 +42,55 @@ export default {
                 title: "Confirm Action",
                 method: null,
             },
-            menuOptions: [
+            tableColumns: [
+                {
+                    header: "Full Names",
+                    field: "full_names",
+                    sortable: true,
+                },
+                {
+                    header: "Email",
+                    field: "email",
+                    sortable: true,
+                },
+                {
+                    header: "Phone",
+                    field: "phone_number",
+                    sortable: true,
+                },
+                {
+                    header: "Address",
+                    field: "address",
+                    sortable: true,
+                },
+            ],
+            tableRowActions: [
                 {
                     label: "Edit",
                     icon: "pi pi-pencil",
-                    command: () =>
-                        this.openEditCustomerForm(this.selectcustomer),
+                    command: (row) => this.openEditCustomerForm(row),
                 },
                 {
                     label: "Delete",
                     icon: "pi pi-trash",
-                    command: () =>
+                    command: (row) =>
                         this.openConfirm(
                             "Are you sure you want to delete this customer",
                             "Confirm Delete action",
-                            () => this.handleDelete(this.selectcustomer.id)
+                            () => this.handleDelete(row.id)
                         ),
+                },
+            ],
+            tableFilters: [
+                {
+                    label: "Filter By",
+                    field: "filter_type",
+                    type: "dropdown",
+                    options: [
+                        { label: "All", value: "all" },
+                        { label: "Email", value: "email" },
+                        { label: "Phone", value: "phone" },
+                    ],
                 },
             ],
         };
@@ -85,8 +111,9 @@ export default {
 
         const handleCreate = () => {};
 
-        const handleFilter = () => {
-            customerStore.fetchBusinessCustomers();
+        const handleFilter = (filters) => {
+            filter.value = filters?.filter_type || "all";
+            customerStore.fetchBusinessCustomers(search.value, filter.value);
         };
 
         const handleEdit = (customer) => {};
@@ -107,9 +134,6 @@ export default {
         };
     },
     methods: {
-        toggleDropdown() {
-            this.isDropdownOpen = !this.isDropdownOpen;
-        },
         openCreateNewCustomer() {
             this.componentModal.open = true;
             this.componentModal.component = "NewCustomer";
@@ -117,6 +141,13 @@ export default {
         closeModal() {
             this.componentModal.open = false;
             this.componentModal.component = "";
+            this.edit_customer = false;
+            this.selectcustomer = {
+                full_names: "",
+                email: "",
+                phone_number: "",
+                address: "",
+            };
         },
         openEditCustomerForm(customer) {
             this.componentModal.open = true;
@@ -136,9 +167,9 @@ export default {
             this.confirmBox.title = "Confirm Action";
             this.confirmBox.method = null;
         },
-        toggleMenu(data, event) {
-            this.selectcustomer = data;
-            this.$refs.menu.toggle(event);
+        handleSearch(query) {
+            this.search = query;
+            this.customerStore.fetchBusinessCustomers(query, this.filter);
         },
     },
 };
@@ -162,143 +193,39 @@ export default {
         @close="closeConfirm"
     />
     <AuthenticatedLayout>
-        <div class="bg-white">
-            <div class="flex justify-between items-center mb-1">
-                <div class="flex items-center gap-1">
-                    <h1 class="text-slate-900 text-xl font-semibold">
-                        My Customers
-                    </h1>
-                    <!-- Filter and Search -->
-                    <div class="flex items-center mb-4">
-                        <div class="mr-4">
-                            <TextInput
-                                id="search"
-                                v-model="search"
-                                class="block mt-1 w-full"
-                                placeholder="Search by name or email"
-                            />
-                        </div>
-                        <div class="dropdown">
-                            <div
-                                tabindex="0"
-                                role="button"
-                                class="btn m-1 bg-slate-900 text-white"
-                                @click="toggleDropdown"
-                            >
-                                Filters <i class="bi bi-funnel"></i>
-                            </div>
-                            <ul
-                                tabindex="0"
-                                v-if="isDropdownOpen"
-                                class="dropdown-content flex flex-col gap-2 bg-white text-slate-900 rounded-box z-[1] w-52 p-2 shadow"
-                            >
-                                <ul
-                                    tabindex="0"
-                                    class="dropdown-content menu p-2 shadow bg-white rounded-box w-52"
-                                >
-                                    <li>
-                                        <a
-                                            @click="
-                                                filter = 'all';
-                                                handleFilter();
-                                            "
-                                            >All</a
-                                        >
-                                    </li>
-                                    <li>
-                                        <a
-                                            @click="
-                                                filter = 'email';
-                                                handleFilter();
-                                            "
-                                            >Email</a
-                                        >
-                                    </li>
-                                    <li>
-                                        <a
-                                            @click="
-                                                filter = 'phone';
-                                                handleFilter();
-                                            "
-                                            >Phone</a
-                                        >
-                                    </li>
-                                </ul>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
+        <ModularDataTable
+            :value="customerStore.customers"
+            :loading="customerStore.loading"
+            :columns="tableColumns"
+            :rowActions="tableRowActions"
+            :filters="tableFilters"
+            :startActions="[
+                {
+                    label: 'Customer',
+                    icon: 'pi pi-plus',
+                    command: () => openCreateNewCustomer(),
+                },
+            ]"
+            @search="handleSearch"
+            @filter-change="handleFilter"
+            dataKey="id"
+            :rowHover="true"
+            emptyMessage="No customers found"
+            :showSearch="true"
+            searchPlaceholder="Search by name or email"
+        />
 
-                <PrimaryButton
-                    @click="openCreateNewCustomer"
-                    class="bg-slate-900 text-white"
-                >
-                    Create New Customer
-                </PrimaryButton>
-            </div>
-
-            <!-- Customer Table -->
-            <div class="h-[74vh] overflow-scroll relative mt-1">
-                <!-- <TableSkeleton v-if="customerStore.loading" /> -->
-                <NoRecords v-if="customerStore.customers.length == 0" />
-                <DataTable
-                    v-else
-                    :value="customerStore.customers"
-                    :loading="customerStore.loading"
-                    class="p-datatable-customers"
-                    responsiveLayout="scroll"
-                    emptyMessage="No customers found."
-                >
-                    <!-- Full Names Column -->
-                    <Column field="full_names" header="Full Names" />
-
-                    <!-- Email Column -->
-                    <Column field="email" header="Email" />
-
-                    <!-- Phone Column -->
-                    <Column field="phone_number" header="Phone" />
-
-                    <!-- Address Column -->
-                    <Column field="address" header="Address" />
-
-                    <!-- Actions Column -->
-
-                    <Column header="Actions">
-                        <template #body="slotProps">
-                            <Button
-                                type="button"
-                                icon="pi pi-ellipsis-v"
-                                @click="toggleMenu(slotProps.data, $event)"
-                                aria-haspopup="true"
-                                aria-controls="overlay_menu"
-                                severity="contrast"
-                                size="s"
-                            />
-                            <Menu
-                                ref="menu"
-                                id="overlay_menu"
-                                :model="menuOptions"
-                                :popup="true"
-                            />
-                        </template>
-                    </Column>
-                </DataTable>
-            </div>
-
-            <!-- Alert Notifications -->
-            <AlertNotification
-                :open="
-                    customerStore.success != null || customerStore.error != null
-                "
-                :message="
-                    customerStore.success != null
-                        ? customerStore.success
-                        : '' || customerStore.error != null
-                        ? customerStore.error
-                        : ''
-                "
-                :status="customerStore.success ? 'success' : 'error'"
-            />
-        </div>
+        <!-- Alert Notifications -->
+        <AlertNotification
+            :open="customerStore.success != null || customerStore.error != null"
+            :message="
+                customerStore.success != null
+                    ? customerStore.success
+                    : '' || customerStore.error != null
+                    ? customerStore.error
+                    : ''
+            "
+            :status="customerStore.success ? 'success' : 'error'"
+        />
     </AuthenticatedLayout>
 </template>

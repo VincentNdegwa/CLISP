@@ -1,5 +1,5 @@
 <template>
-    <div class="max-w-3xl mx-auto p-6 bg-white shadow-md rounded-lg">
+    <div class="max-w-3xl mx-auto p-6 bg-slate-50 dark:bg-slate-800 shadow-md rounded-lg text-slate-900 dark:text-slate-100">
         <h3 class="text-2xl font-semibold mb-6">Payment Information</h3>
 
         <form @submit.prevent="submitForm" class="space-y-6">
@@ -35,7 +35,7 @@
 
             <!-- Custom Fields -->
             <div>
-                <h4 class="text-lg font-medium mb-4">Custom Fields</h4>
+                <h4 class="text-lg font-medium mb-4 text-slate-800 dark:text-slate-200">Custom Fields</h4>
                 <div
                     v-for="(field, index) in form.payment_details"
                     :key="index"

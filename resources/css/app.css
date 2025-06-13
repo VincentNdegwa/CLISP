@@ -28,7 +28,7 @@
     display: none !important;
 }
 :root {
-    --p-paginator-background: #ffffff !important;
-    --p-paginator-color: #111827 !important;
-    --p-paginator-nav-button-selected-background: #0e1016 !important;
+    /* --p-paginator-background: transparent !important; */
+    /* --p-paginator-color: #111827 !important; */
+    /* --p-paginator-nav-button-selected-background: #0e1016 !important; */
 }

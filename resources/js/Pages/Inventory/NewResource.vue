@@ -1,13 +1,18 @@
 <script>
 import InputLabel from "@/Components/InputLabel.vue";
+import TextInput from "@/Components/TextInput.vue";
+import InputError from "@/Components/InputError.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import { useResourceCategoryStore } from "@/Store/ResourceCategory";
 import axios from "axios";
 import { onMounted } from "vue";
 import { VDateInput } from "vuetify/labs/VDateInput";
+import Select from "primevue/select";
+import Textarea from "primevue/textarea";
+import FileUpload from "primevue/fileupload";
 
 export default {
-    props: ["dataEdit", "newResource", "loading"],
+    props: ["dataEdit", "newResource", "loading", "category"],
 
     setup() {
         const category = useResourceCategoryStore();
@@ -39,6 +44,10 @@ export default {
                 },
             },
             formData,
+            taxTypes: [
+                { name: 'Inclusive', value: 'Inclusive' },
+                { name: 'Exclusive', value: 'Exclusive' },
+            ]
         };
     },
     methods: {
@@ -84,8 +93,13 @@ export default {
     },
     components: {
         InputLabel,
+        TextInput,
+        InputError,
         PrimaryButton,
         VDateInput,
+        Select,
+        Textarea,
+        FileUpload
     },
     watch: {
         dataEdit: {
@@ -138,176 +152,185 @@ export default {
 </script>
 
 <template>
-    <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-6">
+    <div class="max-w-4xl mx-auto dark:bg-slate-800/70 dark:backdrop-blur-sm bg-slate-50 rounded-lg shadow-lg p-6 border border-slate-200 dark:border-white/10">
         <form @submit.prevent="submitForm" class="space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Item Name -->
                 <div>
-                    <InputLabel value="Item Name" required />
-                    <input
+                    <InputLabel value="Item Name" required="true" />
+                    <TextInput
                         v-model="form.item_name"
                         type="text"
                         id="item_name"
-                        class="input input-bordered w-full bg-white ring-1 ring-slate-300"
+                        class="w-full"
                         required
                     />
+                    <InputError :message="null" />
                 </div>
 
                 <!-- Quantity -->
                 <div>
-                    <InputLabel value="Quantity" required />
-                    <input
+                    <InputLabel value="Quantity" required="true" />
+                    <TextInput
                         v-model="form.quantity"
                         :readonly="newResource == 'false'"
                         type="number"
                         id="quantity"
-                        class="input input-bordered w-full bg-white ring-1 ring-slate-300"
+                        class="w-full"
                         min="1"
                         required
                     />
+                    <InputError :message="null" />
                 </div>
 
                 <!-- Unit -->
                 <div>
-                    <InputLabel value="Unit" required />
-                    <input
+                    <InputLabel value="Unit" required="true" />
+                    <TextInput
                         v-model="form.unit"
                         type="text"
                         id="unit"
-                        class="input input-bordered w-full bg-white ring-1 ring-slate-300"
+                        class="w-full"
                         required
                     />
+                    <InputError :message="null" />
                 </div>
 
                 <!-- Price -->
                 <div>
-                    <InputLabel value="Price" required />
-                    <input
+                    <InputLabel value="Price" required="true" />
+                    <TextInput
                         v-model="form.price"
                         type="number"
                         id="price"
-                        class="input input-bordered w-full bg-white ring-1 ring-slate-300"
+                        class="w-full"
                         min="0"
                         step="0.01"
                         required
                     />
+                    <InputError :message="null" />
                 </div>
 
                 <!-- Tax Rate -->
                 <div>
-                    <InputLabel value="Tax Rate (%)" :required="true" />
-                    <input
+                    <InputLabel value="Tax Rate (%)" required="true" />
+                    <TextInput
                         v-model="form.details.tax_rate"
                         type="number"
                         id="tax_rate"
-                        class="input input-bordered w-full bg-white ring-1 ring-slate-300"
+                        class="w-full"
                         min="0"
                         max="100"
                         step="0.01"
                         required
                     />
+                    <InputError :message="null" />
                 </div>
 
                 <!-- Tax Type -->
                 <div>
-                    <InputLabel value="Tax Type" :required="true" />
-                    <select
+                    <InputLabel value="Tax Type" required="true" />
+                    <Select
                         v-model="form.details.tax_type"
-                        id="tax_type"
-                        class="select select-bordered w-full bg-white ring-1 ring-slate-300"
-                        required
-                    >
-                        <option value="Inclusive">Inclusive</option>
-                        <option value="Exclusive">Exclusive</option>
-                    </select>
+                        :options="taxTypes"
+                        optionLabel="name"
+                        optionValue="value"
+                        placeholder="Select Tax Type"
+                        class="w-full"
+                    />
+                    <InputError :message="null" />
                 </div>
 
                 <!-- Category -->
                 <div>
                     <InputLabel value="Category" />
-                    <select
+                    <Select
                         v-model="form.category_id"
-                        id="category"
-                        class="select select-bordered w-full bg-white ring-1 ring-slate-300"
-                    >
-                        <option disabled value="">Select Category</option>
-                        <option
-                            v-for="(item, index) in category.items.data"
-                            :key="index"
-                            :value="item.id"
-                        >
-                            {{ item.name }}
-                        </option>
-                    </select>
+                        :options="category.items.data"
+                        optionLabel="name"
+                        optionValue="id"
+                        placeholder="Select Category"
+                        class="w-full"
+                    />
+                    <InputError :message="null" />
                 </div>
 
                 <!-- Purchase Price -->
                 <div>
                     <InputLabel value="Purchase Price" />
-                    <input
+                    <TextInput
                         v-model="form.details.purchase_price"
                         type="number"
                         id="purchase_price"
-                        class="input input-bordered w-full bg-white ring-1 ring-slate-300"
+                        class="w-full"
                         min="0"
                         step="0.01"
                     />
+                    <InputError :message="null" />
                 </div>
 
                 <!-- Lease Price -->
                 <div>
                     <InputLabel value="Lease Price" />
-                    <input
+                    <TextInput
                         v-model="form.details.lease_price"
                         type="number"
                         id="lease_price"
-                        class="input input-bordered w-full bg-white ring-1 ring-slate-300"
+                        class="w-full"
                         min="0"
                         step="0.01"
                     />
+                    <InputError :message="null" />
                 </div>
 
                 <!-- Borrow Fee -->
                 <div>
                     <InputLabel value="Borrow Fee" />
-                    <input
+                    <TextInput
                         v-model="form.details.borrow_fee"
                         type="number"
                         id="borrow_fee"
-                        class="input input-bordered w-full bg-white ring-1 ring-slate-300"
+                        class="w-full"
                         min="0"
                         step="0.01"
                     />
+                    <InputError :message="null" />
                 </div>
             </div>
 
             <!-- Description -->
             <div>
                 <InputLabel value="Description" />
-                <textarea
+                <Textarea
                     v-model="form.description"
                     id="description"
-                    class="textarea textarea-bordered w-full bg-white ring-1 ring-slate-300"
                     rows="3"
-                ></textarea>
+                    class="w-full"
+                    autoResize
+                />
+                <InputError :message="null" />
             </div>
 
             <!-- Photos -->
             <div>
                 <InputLabel value="Photos" />
-                <input
-                    @change="addResourceImage"
-                    type="file"
-                    id="photos"
-                    class="file-input file-input-bordered w-full bg-white ring-1 ring-slate-300"
-                />
+                <div class="bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg p-2">
+                    <input
+                        @change="addResourceImage"
+                        type="file"
+                        id="photos"
+                        class="w-full text-sm text-slate-500 dark:text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0
+                            file:text-sm file:font-medium file:bg-rose-50 file:text-rose-600 dark:file:bg-rose-900/30 dark:file:text-rose-400
+                            hover:file:bg-rose-100 dark:hover:file:bg-rose-900/40"
+                    />
+                </div>
             </div>
 
             <!-- Submit Button -->
-            <div class="flex w-full text-white gap-2">
+            <div class="flex w-full gap-2">
                 <PrimaryButton
                     type="submit"
-                    class="btn bg-slate-900 flex-1"
+                    class="flex-1 py-3 bg-rose-500 hover:bg-rose-600 text-white font-medium rounded-lg shadow-lg shadow-rose-500/20 hover:shadow-rose-500/40 transition-all flex justify-center items-center"
                     :disabled="loading"
                 >
                     {{ newResource != "false" ? "Save Item" : "Update Item" }}

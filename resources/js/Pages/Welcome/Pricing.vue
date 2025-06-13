@@ -109,7 +109,7 @@ const faqs = ref([
           >
             <span class="sr-only">Toggle billing period</span>
             <span
-              :class="`${isAnnual ? 'translate-x-9' : 'translate-x-1'} inline-block h-6 w-6 transform rounded-full bg-white transition-transform`"
+              :class="`${isAnnual ? 'translate-x-9' : 'translate-x-1'} inline-block h-6 w-6 transform rounded-full bg-slate-50 transition-transform`"
             ></span>
           </button>
           <span :class="`ml-3 text-sm font-medium ${isAnnual ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`">
@@ -204,7 +204,7 @@ const faqs = ref([
             <p class="text-slate-300">Contact our sales team to discuss custom pricing and features tailored to your specific business requirements.</p>
           </div>
 
-          <button class="px-6 py-3 bg-white hover:bg-white/90 text-slate-900 rounded-lg shadow-lg transition-all font-medium">
+          <button class="px-6 py-3 bg-slate-50 hover:bg-slate-100 text-slate-900 rounded-lg shadow-lg transition-all font-medium">
             Contact Sales
           </button>
         </div>

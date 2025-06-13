@@ -11,11 +11,11 @@
         <div v-else class="flex flex-col w-full p-5 space-y-6 h-[90vh]">
             <!-- Subscription Section -->
             <div
-                class="flex flex-col gap-7 border-2 rounded-lg shadow p-6 h-[25vh]"
+                class="flex flex-col gap-7 border-2 rounded-lg shadow p-6 h-fit"
             >
                 <div class="flex justify-between items-center">
                     <div class="flex items-center space-x-4">
-                        <div class="text-slate-900 text-2xl font-bold">
+                        <div class="text-slate-900 dark:text-slate-50 text-2xl font-bold">
                             {{
                                 store.subscription?.subscriptions.length>0 && store.subscription?.subscriptions[0]?.name +
                                     " Plan" || "No Plan"
@@ -28,7 +28,7 @@
                             }})
                         </div>
                     </div>
-                    <div class="text-slate-900 text-lg font-semibold">
+                    <div class="text-slate-900 dark:text-slate-50 text-lg font-semibold">
                         Price:
                         {{
                             store.subscription?.subscriptions[0]?.items[0]?.plan
@@ -98,7 +98,7 @@
                 v-if="store.transactions?.data?.length > 0"
                 class="border-2 rounded-lg shadow p-6 flex-1 h-[65vh] overflow-auto"
             >
-                <h2 class="text-slate-900 text-xl font-bold mb-4">
+                <h2 class="text-slate-900 dark:text-slate-50 text-xl font-bold mb-4">
                     Transaction History
                 </h2>
                 <DataTable
@@ -128,6 +128,7 @@
                 </DataTable>
             </div>
             <Paginator
+                v-if="store.transactions?.data?.length > 0"
                 :totalRecords="store.transactions?.total"
                 :rows="paginationParams.rows"
                 :first="(paginationParams.page - 1) * paginationParams.rows"

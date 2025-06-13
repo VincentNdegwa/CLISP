@@ -17,6 +17,11 @@ import Menu from "primevue/menu";
 import Paginator from "primevue/paginator";
 import { currencyConvertor } from "@/Store/CurrencyConvertStore";
 import Drawer from "primevue/drawer";
+import Toolbar from "primevue/toolbar";
+import InputText from "primevue/inputtext";
+import Dropdown from "primevue/dropdown";
+import Tag from "primevue/tag";
+import Badge from "primevue/badge";
 
 export default {
     setup() {
@@ -49,6 +54,7 @@ export default {
             open: false,
             component: "",
         });
+        const selectedResource = ref(null);
         const openResorceForm = (component) => {
             drawer.value.open = true;
             drawer.value.component = component;
@@ -119,6 +125,28 @@ export default {
                 "Date Added",
                 "Actions",
             ],
+            items: [
+                {
+                    label: 'View',
+                    icon: 'pi pi-eye',
+                    command: () => {
+                        this.viewItem(this.selectedItem.id);
+                    }
+                },
+                {
+                    label: 'Edit',
+                    icon: 'pi pi-pencil',
+                    command: () => {
+                        this.editResource(this.selectedItem);
+                    }
+                }, {
+                    label: 'Delete',
+                    icon: 'pi pi-trash',
+                    command: () => {
+                        this.handleResourceDelete(this.selectedItem);
+                    }
+                }
+            ]
         };
     },
     methods: {
@@ -217,7 +245,10 @@ export default {
         },
         convertCurrency(currency) {
             return currencyConvertor().convertMyCurrency(currency);
-        },
+        }, toggle(event, data) {
+            this.selectedItem = data;
+            this.$refs.menu.toggle(event);
+        }
     },
     components: {
         SearchInput,
@@ -234,282 +265,178 @@ export default {
         Menu,
         Paginator,
         Drawer,
-    },
+        Toolbar,
+        InputText,
+        Dropdown,
+        Tag,
+        Badge,
+    }
 };
 </script>
 
 <template>
     <div class="">
-        <AlertNotification
-            :open="notification.open"
-            :message="notification.message"
-            :status="notification.status"
-        />
-        <AlertNotification
-            :open="resources.success != null || resources.error != null"
-            :message="
+        <AlertNotification :open="notification.open" :message="notification.message" :status="notification.status" />
+        <AlertNotification :open="resources.success != null || resources.error != null" :message="
                 resources.success != null
                     ? resources.success
                     : '' || resources.error != null
                     ? resources.error
                     : ''
-            "
-            :status="resources.success ? 'success' : 'error'"
-        />
-        <ConfirmationModal
-            :isOpen="confirmBox.open"
-            :message="confirmBox.message"
-            :title="confirmBox.title"
-            @confirm="handleCofirm"
-            @close="closeConfirm"
-        />
+            " :status="resources.success ? 'success' : 'error'" />
+        <ConfirmationModal :isOpen="confirmBox.open" :message="confirmBox.message" :title="confirmBox.title"
+            @confirm="handleCofirm" @close="closeConfirm" />
 
-        <div class="mt-1 flex justify-between items-center">
-            <div class="flex items-center gap-2">
-                <SearchInput @search="makeSearch" />
-
-                <div class="dropdown">
-                    <div
-                        tabindex="0"
-                        role="button"
-                        class="btn m-1 bg-slate-900 text-white"
-                        @click="toggleDropdown"
-                    >
-                        Filters <i class="bi bi-funnel"></i>
+        <div class="card">
+            <Toolbar class="mb-4">
+                <template #start>
+                    <div class="flex flex-wrap gap-2">
+                        <Button label="Add" severity="secondary" size="small" icon="pi pi-plus"
+                            @click="() => openResorceForm('NewResource')" />
+                        <Button label="Category" icon="pi pi-folder-plus" size="small" @click="openNewCategoryForm"
+                            severity="secondary" />
                     </div>
-                    <ul
-                        tabindex="0"
-                        v-if="isDropdownOpen"
-                        class="dropdown-content flex flex-col gap-2 bg-white text-slate-900 rounded-box z-[1] w-52 p-2 shadow"
-                    >
-                        <li>
-                            <div class="flex flex-col gap-1">
-                                <div class="inline-block">
-                                    Filter By Category
+                </template>
+
+                <template #end>
+                    <div class="flex flex-wrap gap-2">
+                        <div class="relative">
+                            <Button icon="pi pi-filter" size="small" label="Filters" @click="toggleDropdown" outlined
+                                :class="{ 'p-button-info': isDropdownOpen }" />
+
+                            <div v-if="isDropdownOpen"
+                                class="absolute right-0 top-full mt-2 bg-slate-50 dark:bg-slate-800 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 p-4 z-50 w-80">
+                                <div class="flex justify-between items-center mb-3">
+                                    <h3 class="font-medium text-slate-900 dark:text-white">Filters</h3>
+                                    <Button icon="pi pi-times" @click.stop="toggleDropdown" text />
                                 </div>
-                                <select
-                                    v-model="query.category"
-                                    @change="filterByCategory"
-                                    class="select select-bordered bg-white text-slate-950 ring-1 ring-slate-800"
-                                >
-                                    <option
-                                        value="Filter By Category"
-                                        selected
-                                        disabled
-                                    >
-                                        Filter By Category
-                                    </option>
-                                    <option
-                                        v-for="cat in category.items.data"
-                                        :key="cat.id"
-                                        :value="cat.id"
-                                    >
-                                        {{ cat.name }}
-                                    </option>
-                                </select>
+
+                                <div class="space-y-4">
+                                    <Dropdown v-model="query.category" @change="filterByCategory"
+                                            :options="category.items.data" optionLabel="name" optionValue="id"
+                                            placeholder="Select Category" class="w-full" />
+
+                                    <div
+                                        class="flex justify-between pt-2 border-t border-slate-200 dark:border-slate-700">
+                                        <Button @click.stop="clearFilters" icon="pi pi-filter-slash"
+                                            label="Clear Filters" text />
+                                        <Button @click.stop="toggleDropdown" label="Apply" size="small" />
+                                    </div>
+                                </div>
                             </div>
-                        </li>
-                        <li
-                            class="mt-3 p-2 bg-slate-900 text-white rounded-md text-center hover:bg-slate-800 transition-all ease-linear duration-700"
-                        >
-                            <button @click="clearFilters">
-                                Clear Filters <i class="bi bi-trash"></i>
-                            </button>
-                        </li>
-                    </ul>
+                        </div>
+                        <Button label="Export" size="small" icon="pi pi-download" severity="info"
+                            @click="exportCSV($event)" />
+                    </div>
+                </template>
+
+            </Toolbar>
+
+            <div class="flex justify-between flex-column sm:flex-row mb-4">
+                <div class="w-full sm:w-64 mb-3 sm:mb-0">
+                    <InputText v-model="query.search" @input="makeSearch" placeholder="Search resources..."
+                        class="w-full" />
+                </div>
+
+                <div v-if="resources.items?.data?.length > 0" class="flex items-center">
+                    <span class="text-sm text-slate-500 dark:text-slate-400">
+                        {{ resources.items.data.length }} resources found
+                    </span>
                 </div>
             </div>
 
-            <div class="join gap-2">
-                <button
-                    class="btn join-item text-white"
-                    @click="() => openResorceForm('NewResource')"
-                >
-                    Add Resources
-                </button>
+            <NoRecords v-if="!resources.loading && resources.items?.data?.length === 0" message="No resources found."
+                class="mt-4" />
 
-                <button
-                    @click="openNewCategoryForm"
-                    class="btn bg-slate-950 text-white"
-                >
-                    Add Categories
-                </button>
-                <Button
-                    icon="pi pi-external-link"
-                    label="Export"
-                    @click="exportCSV($event)"
-                />
-            </div>
-        </div>
-        <div
-            v-if="resources.items?.data?.length > 0"
-            class="h-[75vh] overflow-y-scroll relative mt-1"
-        >
-            <DataTable
-                :value="resources.items.data"
-                :loading="resources.loading"
-                dataKey="id"
-                tableStyle="width:100%"
-                ref="dt"
-            >
-                <!-- Item Name -->
-                <Column header="Item Name" field="item_name" />
-
-                <!-- Category -->
-                <Column header="Category" field="category.name">
+            <DataTable :value="resources.items.data" :loading="resources.loading" dataKey="id" responsiveLayout="scroll"
+                class="p-datatable-sm" ref="dt">
+                <Column header="Item Name" field="item_name" sortable>
                     <template #body="slotProps">
-                        {{ slotProps.data.category?.name || "--" }}
+                        <div class="flex items-center">
+                            <div class="w-2 h-2 rounded-full bg-rose-500 mr-2"></div>
+                            <span class="font-medium">{{ slotProps.data.item_name }}</span>
+                        </div>
                     </template>
                 </Column>
 
-                <!-- Quantity -->
-                <Column header="Quantity" field="quantity" />
-
-                <!-- Unit -->
-                <Column header="Unit" field="unit" />
-
-                <!-- Price -->
-                <Column header="Price" field="price">
+                <Column header="Category" field="category.name" sortable>
                     <template #body="slotProps">
-                        {{ convertCurrency(slotProps.data.price) }}
+                        <Tag v-if="slotProps.data.category?.name" :value="slotProps.data.category?.name" severity="info"
+                            class="text-xs" />
+                        <span v-else>--</span>
                     </template>
                 </Column>
 
-                <!-- Date Added -->
-                <Column header="Date Added" field="date_added">
+                <Column header="Quantity" field="quantity" sortable>
                     <template #body="slotProps">
-                        {{ formatDate(slotProps.data.date_added) }}
+                        <span class="font-semibold">{{ slotProps.data.quantity }}</span>
+                    </template>
+                </Column>
+
+                <Column header="Unit" field="unit">
+                    <template #body="slotProps">
+                        <Badge :value="slotProps.data.unit" severity="secondary" />
+                    </template>
+                </Column>
+
+                <Column header="Price" field="price" sortable>
+                    <template #body="slotProps">
+                        <span class="text-slate-700 dark:text-slate-300">{{ convertCurrency(slotProps.data.price)
+                            }}</span>
+                    </template>
+                </Column>
+
+                <Column header="Date Added" field="date_added" sortable>
+                    <template #body="slotProps">
+                        <span class="text-slate-600 dark:text-slate-400 text-sm">{{
+                            formatDate(slotProps.data.date_added) }}</span>
                     </template>
                 </Column>
 
                 <Column header="Source" field="source">
                     <template #body="slotProps">
-                        {{ slotProps.data.details.source|| '--' }}
+                        <span class="text-slate-600 dark:text-slate-400">{{ slotProps.data.details.source || '--'
+                            }}</span>
                     </template>
                 </Column>
 
-                <!-- Actions -->
-                <Column header="Actions">
+                <Column header="Actions" :exportable="false">
                     <template #body="slotProps">
-                        <div class="card flex justify-center">
-                            <Button
-                                type="button"
-                                icon="pi pi-ellipsis-v"
-                                @click="
-                                    toggleActionMenu(slotProps.data, $event)
-                                "
-                                aria-haspopup="true"
-                                severity="contrast"
-                                size="small"
-                                aria-controls="action_menu"
-                            />
-                            <Menu
-                                ref="menu"
-                                :id="'action_menu_' + slotProps.data.id"
-                                :model="[
-                                    {
-                                        label: 'View',
-                                        icon: 'pi pi-arrow-up-right',
-                                        command: () =>
-                                            viewItem(selectedItem?.id),
-                                    },
-                                    {
-                                        label: 'Edit',
-                                        icon: 'pi pi-pencil',
-
-                                        command: () =>
-                                            editResource(selectedItem),
-                                    },
-                                    {
-                                        label: 'Delete',
-                                        icon: 'pi pi-trash',
-
-                                        command: () =>
-                                            handleResourceDelete(selectedItem),
-                                    },
-                                ]"
-                                :popup="true"
-                            />
-                        </div>
+                        <Button type="button" severity="secondary" icon="pi pi-ellipsis-v"
+                            @click="toggle($event, slotProps.data)" aria-haspopup="true" aria-controls="overlay_menu" />
+                        <Menu ref="menu" id="overlay_menu" :model="items" :popup="true" />
                     </template>
                 </Column>
             </DataTable>
+
+
+            <Paginator v-if="resources.items?.data?.length > 0" :rows="resources.items.per_page"
+                :totalRecords="resources.items.total"
+                :first="(resources.items.current_page - 1) * resources.items.per_page" @page="onPageChange"
+                @update:rows="onRowChange" :rowsPerPageOptions="[10, 20, 50]" class="mt-4" />
         </div>
 
-        <NoRecords v-else />
-
-        <div v-if="resources.items?.data?.length > 0">
-            <Paginator
-                :totalRecords="resources.items?.total"
-                :rows="resources.items?.per_page"
-                :first="
-                    (resources.items?.current_page - 1) *
-                    resources.items?.per_page
-                "
-                @page="onPageChange"
-                @update:rows="onRowChange"
-                :rowsPerPageOptions="[10, 20, 50]"
-            >
-            </Paginator>
-        </div>
     </div>
     <Modal :show="modal.open" @close="closeModal">
-        <NewResource
-            v-if="modal.component === 'NewResource'"
-            @close="closeModal"
-            :category="category"
-            @addResource="addResource"
-            :loading="resources.loading"
-            newResource="true"
-            dataEdit="null"
-        />
-        <NewResource
-            v-if="modal.component === 'UpdateResource'"
-            @close="closeModal"
-            :category="category"
-            @addResource="addResource"
-            :dataEdit="edit_form"
-            newResource="false"
-            @updateResource="updateResource"
-            :loading="resources.loading"
-        />
+        <NewResource v-if="modal.component === 'NewResource'" @close="closeModal" :category="category"
+            @addResource="addResource" :loading="resources.loading" newResource="true" dataEdit="null" />
+        <NewResource v-if="modal.component === 'UpdateResource'" @close="closeModal" :category="category"
+            @addResource="addResource" :dataEdit="edit_form" newResource="false" @updateResource="updateResource"
+            :loading="resources.loading" />
 
-        <NewCategory
-            v-if="modal.component === 'NewCategory'"
-            @close="closeModal"
-            @newCategory="newCategory"
-        />
+        <NewCategory v-if="modal.component === 'NewCategory'" @close="closeModal" @newCategory="newCategory" />
     </Modal>
 
-    <Drawer
-        v-model:visible="drawer.open"
-        :header="
+    <Drawer v-model:visible="drawer.open" :header="
             drawer.component == 'NewResource'
                 ? 'Add New Resource'
                 : 'Update Resource'
-        "
-        position="right"
-        class="!w-full md:!w-[60rem]"
-    >
-        <NewResource
-            v-if="drawer.component === 'NewResource'"
-            @close="closeModal"
-            :category="category"
-            @addResource="addResource"
-            :loading="resources.loading"
-            newResource="true"
-            dataEdit="null"
-        />
-        <NewResource
-            v-if="drawer.component === 'UpdateResource'"
-            @close="closeModal"
-            :category="category"
-            @addResource="addResource"
-            :dataEdit="edit_form"
-            newResource="false"
-            @updateResource="updateResource"
-            :loading="resources.loading"
-        />
+        " position="right" class="!w-full md:!w-[60rem]">
+        <NewResource v-if="drawer.component === 'NewResource'" @close="closeModal" :category="category"
+            @addResource="addResource" :loading="resources.loading" newResource="true" dataEdit="null" />
+        <NewResource v-if="drawer.component === 'UpdateResource'" @close="closeModal" :category="category"
+            @addResource="addResource" :dataEdit="edit_form" newResource="false" @updateResource="updateResource"
+            :loading="resources.loading" />
     </Drawer>
 </template>
 

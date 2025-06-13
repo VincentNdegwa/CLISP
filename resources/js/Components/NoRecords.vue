@@ -1,6 +1,6 @@
 <template>
     <div
-        class="flex flex-col items-center justify-center py-12 bg-white rounded-lg"
+        class="flex flex-col items-center justify-center py-12 bg-slate-50 dark:bg-transparent dark:text-slate-50 rounded-lg"
     >
         <div class="text-rose-500 text-5xl mb-4">
             <!-- You can replace this with an icon if desired -->

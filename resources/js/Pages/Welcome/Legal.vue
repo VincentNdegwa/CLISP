@@ -34,7 +34,7 @@ watch(() => props.activeTab, (newTab) => {
   <div>
     <Head :title="`CLISP | ${activeTab === 'terms' ? 'Terms & Conditions' : activeTab === 'privacy' ? 'Privacy Policy' : 'Refund Policy'}`" />
     
-    <div class="bg-white dark:bg-slate-900 min-h-screen">
+    <div class="bg-slate-50 dark:bg-slate-900 min-h-screen">
       <!-- Header with navigation tabs -->
       <div class="border-b border-slate-200 dark:border-slate-700">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8">

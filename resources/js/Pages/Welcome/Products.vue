@@ -120,14 +120,6 @@ const products = ref([
     color: 'from-purple-500 to-violet-400'
   },
   {
-    id: 4,
-    title: 'Marketplace',
-    description: 'Buy, sell, or rent inventory items directly through our secure marketplace designed specifically for local businesses.',
-    icon: 'pi pi-shopping-cart',
-    features: ['Secure transactions', 'Verified businesses', 'Rating system', 'Negotiation tools'],
-    color: 'from-amber-500 to-yellow-400'
-  },
-  {
     id: 5,
     title: 'Mobile Application',
     description: 'Access all CLISP features on the go with our intuitive mobile application for iOS and Android devices.',

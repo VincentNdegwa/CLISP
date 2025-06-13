@@ -1,5 +1,5 @@
 <template>
-    <div class="p-2">
+    <div class="p-2 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-50">
         <h1 class="text-2xl font-extrabold border-b">
             Receive Items From Intiator
         </h1>
@@ -37,10 +37,10 @@
                     <Column field="quantity" header="Quantity"></Column>
                     <Column header="Quantity to Ship">
                         <template #body="itemSlotProps">
-                            <input
+                            <InputNumber
+                                :inputId="`quantity_ship_${itemSlotProps.data.item.id}`"
                                 type="number"
                                 readonly
-                                class="border rounded-md border-slate-700 min-w-[100px]"
                                 v-model="itemSlotProps.data.quantity_ship"
                                 :min="1"
                                 :max="itemSlotProps.data.quantity"
@@ -53,16 +53,15 @@
                     <div class="flex flex-col md:flex-row gap-2">
                         <Button
                             class="flex-1"
-                            label="Cancel"
-                            severity="danger"
-                            @click="$emit('close')"
+                            label="Receive"
+                            @click="receiveItems"
                             size="large"
                         />
                         <Button
                             class="flex-1"
-                            label="Receive"
-                            @click="receiveItems"
-                            severity="contrast"
+                            label="Cancel"
+                            severity="danger"
+                            @click="$emit('close')"
                             size="large"
                         />
                     </div>
@@ -76,6 +75,7 @@
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
 import Button from "primevue/button";
+import InputNumber from "primevue/inputnumber";
 
 export default {
     props: {
@@ -110,6 +110,7 @@ export default {
         DataTable,
         Column,
         Button,
+        InputNumber
     },
 };
 </script>

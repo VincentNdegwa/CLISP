@@ -6,6 +6,16 @@ import ApplicationLogo from "@/Components/ApplicationLogo.vue";
 import { router } from "@inertiajs/vue3";
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 
+// Accept isDarkMode prop from parent
+const props = defineProps({
+    isDarkMode: {
+        type: Boolean,
+        default: false
+    }
+});
+
+const emit = defineEmits(['toggle-dark-mode']);
+
 const isHeaderVisible = ref(false);
 const isScrolled = ref(false);
 
@@ -30,6 +40,11 @@ const openRegister = () => {
 
 const openLogin = () => {
     router.visit("login", { method: "get" });
+};
+
+// Function to toggle dark mode
+const toggleDarkMode = () => {
+    emit('toggle-dark-mode');
 };
 
 onMounted(() => {
@@ -85,8 +100,22 @@ onBeforeUnmount(() => {
                 </ul>
             </nav>
 
-            <!-- Auth buttons -->
-            <div class="hidden md:flex space-x-4">
+            <!-- Auth buttons and theme toggle -->
+            <div class="hidden md:flex items-center space-x-4">
+                <!-- Theme toggle button -->
+                <button 
+                    @click="toggleDarkMode" 
+                    class="w-10 h-10 rounded-full bg-slate-800/70 backdrop-blur-sm flex items-center justify-center hover:bg-slate-700 transition-colors border border-slate-700/30"
+                    aria-label="Toggle dark mode"
+                >
+                    <svg v-if="isDarkMode" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                    </svg>
+                </button>
+                
                 <PrimaryButton @click="openLogin" class="border border-white/20 backdrop-blur-sm hover:bg-white/10 transition-all">
                     Login
                 </PrimaryButton>
@@ -118,6 +147,20 @@ onBeforeUnmount(() => {
                 </ul>
             </nav>
             <div class="flex flex-col space-y-3">
+                <!-- Theme toggle button for mobile -->
+                <button 
+                    @click="toggleDarkMode" 
+                    class="flex items-center justify-center py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors"
+                >
+                    <svg v-if="isDarkMode" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-300 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-200 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                    </svg>
+                    {{ isDarkMode ? 'Light Mode' : 'Dark Mode' }}
+                </button>
+                
                 <PrimaryRoseButton @click="openRegister" class="w-full">
                     Register
                 </PrimaryRoseButton>

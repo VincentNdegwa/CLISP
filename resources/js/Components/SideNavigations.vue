@@ -251,7 +251,7 @@ export default {
                 :key="index"
                 :class="[
                     'w-full h-fit p-3 mt-1 cursor-pointer transition-none ease-linear duration-1000',
-                    item.open ? 'bg-gray-100' : '',
+                    item.open ? '' : '',
                 ]"
             >
                 <div class="h-full w-full flex flex-col items-start">

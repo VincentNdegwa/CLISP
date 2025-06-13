@@ -1,7 +1,8 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import GuestLayout from '@/Layouts/GuestLayout.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
+import PrimaryRoseButton from '@/Components/PrimaryRoseButton.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 
 const props = defineProps({
@@ -11,9 +12,15 @@ const props = defineProps({
 });
 
 const form = useForm({});
+const isLoading = ref(false);
 
 const submit = () => {
-    form.post(route('verification.send'));
+    isLoading.value = true;
+    form.post(route('verification.send'), {
+        onFinish: () => {
+            isLoading.value = false;
+        },
+    });
 };
 
 const verificationLinkSent = computed(() => props.status === 'verification-link-sent');
@@ -21,30 +28,47 @@ const verificationLinkSent = computed(() => props.status === 'verification-link-
 
 <template>
     <GuestLayout>
+        <template #header>Verify Your Email</template>
+        
         <Head title="Email Verification" />
 
-        <div class="mb-4 text-sm text-gray-600">
-            Thanks for signing up! Before getting started, could you verify your email address by clicking on the link
-            we just emailed to you? If you didn't receive the email, we will gladly send you another.
+        <div class="mb-6 text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
+            Thanks for signing up! Before getting started, please verify your email address by clicking on the link
+            we just emailed to you. If you didn't receive the email, we can send you another one.
         </div>
 
-        <div class="mb-4 font-medium text-sm text-green-600" v-if="verificationLinkSent">
-            A new verification link has been sent to the email address you provided during registration.
+        <div v-if="verificationLinkSent" class="mb-6 p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
+            <p class="text-sm text-green-500 font-medium">A new verification link has been sent to your email address.</p>
         </div>
 
         <form @submit.prevent="submit">
-            <div class="mt-4 flex items-center justify-between">
-                <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
-                    Resend Verification Email
-                </PrimaryButton>
+            <div class="space-y-5">
+                <!-- Resend Button -->
+                <div>
+                    <PrimaryRoseButton
+                        class="w-full py-3 justify-center shadow-lg shadow-rose-500/20 hover:shadow-rose-500/40 transition-all"
+                        :class="{ 'opacity-75': form.processing }"
+                        :disabled="form.processing || isLoading"
+                    >
+                        <svg v-if="isLoading" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        {{ isLoading ? 'Sending...' : 'Resend Verification Email' }}
+                    </PrimaryRoseButton>
+                </div>
 
-                <Link
-                    :href="route('logout')"
-                    method="post"
-                    as="button"
-                    class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                    >Log Out</Link
-                >
+                <!-- Logout Link -->
+                <div class="text-center">
+                    <Link
+                        :href="route('logout')"
+                        method="post"
+                        as="button"
+                        class="text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 text-sm transition-colors"
+                    >
+                        Log Out
+                    </Link>
+                </div>
             </div>
         </form>
     </GuestLayout>

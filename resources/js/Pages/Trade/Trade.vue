@@ -2,23 +2,16 @@
 import { ref, onMounted, watch } from "vue";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import { Head } from "@inertiajs/vue3";
-import PrimaryButton from "@/Components/PrimaryButton.vue";
-import TextInput from "@/Components/TextInput.vue";
 import { useTransactionStore } from "@/Store/TransactionStore";
-import TableDisplay from "@/Layouts/TableDisplay.vue";
-import TransactionDisplay from "./TransactionDisplay.vue";
 import Modal from "@/Components/Modal.vue";
 import NewTransactionForm from "@/Components/NewTransactionForm.vue";
 import { useUserStore } from "@/Store/UserStore";
 import { useMyBusiness } from "@/Store/MyBusiness";
 import { useCustomerStore } from "@/Store/Customer";
 import { useResourceStore } from "@/Store/Resource";
-
-import Paginator from "primevue/paginator";
-import Select from "primevue/select";
+import ModularTransactionTable from "@/Components/ModularTransactionTable.vue";
+import AlertNotification from "@/Components/AlertNotification.vue";
 import PaymentProcess from "../Payment/PaymentProcess.vue";
-import PayPalComponent from "../Payment/PayPalComponent.vue";
-import { data } from "autoprefixer";
 import SellerCheckout from "../Payment/SellerCheckout.vue";
 import { usePaymentMethods } from "@/Store/PaymentMethods";
 
@@ -36,16 +29,11 @@ export default {
     components: {
         AuthenticatedLayout,
         Head,
-        PrimaryButton,
-        TextInput,
-        TableDisplay,
-        TransactionDisplay,
         Modal,
         NewTransactionForm,
-        Paginator,
-        Select,
+        ModularTransactionTable,
+        AlertNotification,
         PaymentProcess,
-        PayPalComponent,
         SellerCheckout,
     },
 
@@ -55,8 +43,9 @@ export default {
         const myBusinessStore = useMyBusiness();
         const customerStore = useCustomerStore();
         const resourceStore = useResourceStore();
+        const paymentMethodsStore = usePaymentMethods();
         const InitiatorBusiness = businessStore.business;
-        const isDropdownOpen = ref(false);
+        
         const filterParams = ref({
             incoming: "all",
             isB2B: props.isB2B,
@@ -66,7 +55,6 @@ export default {
             search: "",
             status: null,
         });
-        const paymentMethodsStore = usePaymentMethods();
 
         onMounted(async () => {
             myBusinessStore.fetchActiveConnection();
@@ -74,18 +62,6 @@ export default {
             resourceStore.fetchResources();
             await paymentMethodsStore.fetchPaymentMethods();
         });
-
-        const toggleDropdown = () => {
-            isDropdownOpen.value = !isDropdownOpen.value;
-        };
-
-        const handleFilter = (filterValue) => {
-            filterParams.value.incoming = filterValue.value;
-            transactionStore.getTransaction(filterParams.value);
-            isDropdownOpen.value = false;
-        };
-
-        const openCreateNewPurchase = () => {};
 
         watch(
             filterParams,
@@ -95,59 +71,66 @@ export default {
             { deep: true }
         );
 
+        const handleFilterChange = (filters) => {
+            if ((filters.status !== undefined) && filters.status !== null) {
+                filterParams.value.status = filters.status;
+            }
+            if ((filters.incoming !== undefined) && filters.incoming !== null) {
+                filterParams.value.incoming = filters.incoming;
+            }
+        };
+
+        const handleSearch = (query) => {
+            filterParams.value.search = query;
+        };
+
+        const handlePageChange = (event) => {
+            filterParams.value.page = event.page + 1; // PrimeVue Paginator is zero-based
+            filterParams.value.items_count = event.rows;
+        };
+
+        const clearFilters = () => {
+            filterParams.value.incoming = "all";
+            filterParams.value.search = "";
+            filterParams.value.status = null;
+        };
+
         const changeType = (transactionType) => {
             filterParams.value.type = transactionType;
-        };
-        const navigatePage = (count) => {
-            filterParams.value.page = count;
-        };
-        const changeRowCount = (rowCount) => {
-            filterParams.value.items_count = rowCount;
         };
 
         const transactionData = (id) => {
             transactionStore.getSingleTransaction(id);
         };
+
         const deleteTransaction = async (id) => {
             await transactionStore.deleteTransaction(id);
         };
+
         const payTransaction = async (params) => {
             await transactionStore.payTransaction(params);
         };
 
         return {
-            isDropdownOpen,
-            toggleDropdown,
-            handleFilter,
-            openCreateNewPurchase,
             transactionStore,
             InitiatorBusiness,
-            changeType,
             myBusinessStore,
             customerStore,
             resourceStore,
             filterParams,
-            navigatePage,
+            paymentMethodsStore,
+            handleFilterChange,
+            handleSearch,
+            handlePageChange,
+            clearFilters,
+            changeType,
             transactionData,
             deleteTransaction,
-            changeRowCount,
             payTransaction,
-            paymentMethodsStore,
         };
     },
     data() {
         return {
-            tableHeaders: [
-                "Trend",
-                "Initiator Business Name",
-                this.isB2B
-                    ? "Receiver Business Name"
-                    : "Receiver Customer Name",
-                "Transaction Status",
-                "Total Amount",
-                "Created Date",
-                "Actions",
-            ],
             modal: {
                 open: false,
                 maxWidth: "4xl",
@@ -158,21 +141,6 @@ export default {
                 message: "",
                 status: "error",
             },
-            statuses: [
-                { label: "All", value: "all" },
-                { label: "Pending", value: "pending" },
-                { label: "Approved", value: "approved" },
-                { label: "Paid", value: "paid" },
-                { label: "Dispatched", value: "dispatched" },
-                { label: "Completed", value: "completed" },
-                { label: "Canceled", value: "canceled" },
-                { label: "Returned", value: "returned" },
-            ],
-            transaction_types: [
-                { label: "All", value: "all" },
-                { label: "Incomming", value: "incoming" },
-                { label: "Outgoing", value: "outgoing" },
-            ],
             paymentProcess: {
                 start: false,
                 data: null,
@@ -193,45 +161,23 @@ export default {
             this.modal.open = false;
             this.modal.component = "";
         },
-        startUpdate(id) {
-            this.transactionData(id);
+        handleUpdate(transaction) {
+            this.transactionData(transaction.id);
             this.openModal("UpdateTransaction");
         },
-        startDelete(id) {
-            this.deleteTransaction(id);
+        handleDelete(transaction) {
+            this.deleteTransaction(transaction.id);
         },
-        searchStatus(value) {
-            this.filterParams.status = value.value;
+        handleView(transaction) {
+            window.location.href = `/transaction/view/${transaction.id}`;
         },
-        searchIncoming(value) {
-            this.filterParams.incoming = value.value;
+        handleApprove(transaction) {
+            this.transactionStore.acceptTransaction(transaction.id, transaction.type);
         },
-        clearFilters() {
-            this.filterParams.incoming = "all";
-            this.filterParams.search = "";
-            this.filterParams.status = null;
+        handleCancel(transaction) {
+            this.transactionStore.rejectTransaction(transaction.id, "User chose to cancel this transaction");
         },
-        handleClickOutside(event) {
-            const dropdown = this.$refs.dropdown;
-            if (dropdown && !dropdown.contains(event.target)) {
-                this.isDropdownOpen = false;
-                this.removeClickOutsideListener();
-            }
-        },
-        addClickOutsideListener() {
-            document.addEventListener("click", this.handleClickOutside);
-        },
-        removeClickOutsideListener() {
-            document.removeEventListener("click", this.handleClickOutside);
-        },
-        onPageChange(event) {
-            const newPage = event.page + 1; // PrimeVue Paginator is zero-based
-            this.navigatePage(newPage);
-        },
-        onRowChange(row) {
-            this.changeRowCount(row);
-        },
-        startPayTransaction(transaction) {
+        handlePayment(transaction) {
             this.paymentProcess.start = true;
             this.paymentProcess.data = {
                 transactionId: transaction.id,
@@ -251,9 +197,26 @@ export default {
 
             this.openModal("PaymentProcess", "6xl");
         },
-        startRecordPayment(transaction) {
+        handleRecordPayment(transaction) {
             this.selectedTransaction = transaction;
             this.openModal("SellerCheckout");
+        },
+        // Generic handler for new transaction
+        handleNewTransaction() {
+            this.openModal("NewTransaction");
+        },
+        // Specific handlers for different transaction types
+        handleNewPurchase() {
+            this.openModal("NewTransaction");
+        },
+        handleNewSale() {
+            this.openModal("NewTransaction");
+        },
+        handleNewBorrowing() {
+            this.openModal("NewTransaction");
+        },
+        handleNewLease() {
+            this.openModal("NewTransaction");
         },
         handleSuccessPayment(data) {
             try {
@@ -287,7 +250,6 @@ export default {
         },
     },
     mounted() {
-        this.addClickOutsideListener();
         this.changeType(this.transactionType);
     },
     computed: {
@@ -367,99 +329,38 @@ export default {
         />
     </Modal>
     <AuthenticatedLayout>
-        <div class="flex justify-between items-center mt-1">
-            <div class="flex items-center md:gap-6 gap-2">
-                <h1 class="text-slate-900 text-xl font-semibold capitalize">
-                    {{ transactionType }}
-                </h1>
-                <!-- Filter and Search -->
-                <div class="flex items-center" ref="dropdown">
-                    <div class="dropdown">
-                        <div
-                            tabindex="0"
-                            role="button"
-                            class="btn m-1 bg-slate-900 text-white"
-                            @click="toggleDropdown"
-                        >
-                            Filters <i class="bi bi-funnel"></i>
-                        </div>
-                        <ul
-                            tabindex="0"
-                            v-if="isDropdownOpen"
-                            class="dropdown-content flex flex-col gap-2 bg-white text-slate-900 rounded-t-none rounded-b-md z-[100] min-w-52 p-2 shadow"
-                        >
-                            <li class="flex flex-col">
-                                <span>Transaction Status</span>
-                                <Select
-                                    @change="toggleDropdown"
-                                    :options="statuses"
-                                    v-model="filterParams.status"
-                                    optionLabel="label"
-                                    optionValue="value"
-                                    placeholder="Select Status"
-                                    class="w-full"
-                                />
-                            </li>
-
-                            <li class="flex flex-col">
-                                <span>Transaction Type</span>
-                                <Select
-                                    @change="toggleDropdown"
-                                    :options="transaction_types"
-                                    v-model="filterParams.incoming"
-                                    optionLabel="label"
-                                    optionValue="value"
-                                    placeholder="Select Status"
-                                    class="w-full"
-                                />
-                            </li>
-                        </ul>
-                    </div>
-
-                    <PrimaryButton
-                        @click="clearFilters"
-                        class="flex gap-1 bg-slate-900"
-                    >
-                        <span>Clear Filters</span> <i class="bi bi-x-lg"></i>
-                    </PrimaryButton>
-                </div>
-            </div>
-            <div class="flex items-center">
-                <PrimaryButton
-                    @click="() => openModal('NewTransaction')"
-                    class="bg-slate-900 text-white"
-                >
-                    New {{ transactionType }}
-                </PrimaryButton>
-            </div>
-        </div>
-
-        <div class="h-[75vh] overflow-auto hide-overflow">
-            <TransactionDisplay
-                :transactionStore="transactionStore"
-                :tableHeaders="tableHeaders"
-                :isB2B="isB2B"
-                @startUpdate="startUpdate"
-                @startDelete="startDelete"
-                @payTransaction="startPayTransaction"
-                @recordPayment="startRecordPayment"
-            />
-        </div>
-        <div v-if="transactionStore.transactions?.data?.length > 0">
-            <Paginator
-                :totalRecords="transactionStore.transactions?.total"
-                :rows="transactionStore.transactions?.per_page"
-                :first="
-                    (transactionStore.transactions?.current_page - 1) *
-                    transactionStore.transactions?.per_page
-                "
-                @page="onPageChange"
-                @update:rows="onRowChange"
-                :rowsPerPageOptions="[10, 20, 50]"
-            >
-            </Paginator>
-        </div>
+        <ModularTransactionTable
+            :transactions="transactionStore.transactions"
+            :loading="transactionStore.loading"
+            :isB2B="isB2B"
+            :transactionType="transactionType"
+            @update="handleUpdate"
+            @delete="handleDelete"
+            @view="handleView"
+            @approve="handleApprove"
+            @cancel="handleCancel"
+            @pay="handlePayment"
+            @record-payment="handleRecordPayment"
+            @filter-change="handleFilterChange"
+            @search="handleSearch"
+            @page-change="handlePageChange"
+            @clear-filters="clearFilters"
+            @new-transaction="handleNewTransaction"
+            @new-purchase="handleNewPurchase"
+            @new-sale="handleNewSale"
+            @new-borrowing="handleNewBorrowing"
+            @new-lease="handleNewLease"
+        />
+        
     </AuthenticatedLayout>
 </template>
 
-<style scoped></style>
+<style scoped>
+.hide-overflow::-webkit-scrollbar {
+    display: none;
+}
+.hide-overflow {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+</style>
