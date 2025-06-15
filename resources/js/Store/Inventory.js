@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import axios from 'axios';
+import { useUserStore } from './UserStore';
 
 export const useInventoryStore = defineStore('inventory', {
     state: () => ({
@@ -8,13 +9,23 @@ export const useInventoryStore = defineStore('inventory', {
         error: null,
         success: null,
         lowStockItems: null,
-        inventorySummary: null
+        inventorySummary: null,
+        adjustmentReasons: [], 
+        loadingReasons: false,
     }),
     
     actions: {
         async fetchInventory(params) {
+            const userStore = useUserStore();
+            const businessId = userStore.business;
+
+            if (!businessId) {
+                this.error = "Business ID not found.";
+                return;
+            }
             this.loading = true;
             this.error = null;
+            params.business_id = businessId;
             
             try {
                 const response = await axios.get('/api/inventory', { params });
@@ -229,7 +240,41 @@ export const useInventoryStore = defineStore('inventory', {
             }
         },
         
-        // Helper methods for status text and class
+        // New action to fetch adjustment reasons
+        async fetchAdjustmentReasons() {
+            const userStore = useUserStore();
+            const businessId = userStore.business;
+
+            if (!businessId) {
+                this.error = "Business ID not found.";
+                return;
+            }
+            this.loadingReasons = true;
+            this.error = null;
+            
+            try {
+                const response = await axios.get(
+                    "/api/stock-adjustment-reasons",
+                    {
+                        params: {
+                            business_id: businessId,
+                            rows: 100,
+                        },
+                    }
+                );
+                
+                let reasons = response.data.data || [];
+                this.adjustmentReasons = reasons;
+                return reasons;
+            } catch (error) {
+                this.error = error.response?.data?.message || 'Error fetching adjustment reasons';
+                console.error('Error fetching adjustment reasons:', error);
+                return [];
+            } finally {
+                this.loadingReasons = false;
+            }
+        },
+        
         getStatusText(status) {
             const statusMap = {
                 0: 'In Stock',
@@ -259,5 +304,10 @@ export const useInventoryStore = defineStore('inventory', {
             this.error = null;
             this.success = null;
         }
+    },
+    
+    getters: {
+        // You can add getters here if needed
+        getAdjustmentReasons: (state) => state.adjustmentReasons,
     }
 });

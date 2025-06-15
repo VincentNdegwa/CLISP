@@ -120,7 +120,7 @@ Route::middleware(['auth', 'verified', 'check.business'])->group(function () {
             })->name('inventory.low-stock');
             
             Route::get('/movements', function () {
-                return Inertia::render('Inventory/Inventory/Movements');
+                return Inertia::render('Inventory/Movements/Index');
             })->name('inventory.movements');
         });
 
@@ -204,6 +204,9 @@ Route::middleware(['auth', 'verified', 'check.business'])->group(function () {
         Route::get('bin-locations', function () {
             return Inertia::render('Warehouse/BinLocation/Index');
         })->name('bin-locations');
+        Route::get('zones', function () {
+            return Inertia::render('Warehouse/WarehouseZone/Index');
+        })->name('zones');
     });
     Route::prefix('logistics')->name('logistics.')->group(function () {
         Route::get('shipments', function () {

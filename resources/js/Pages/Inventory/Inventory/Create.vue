@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed } from "vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import InputLabel from "@/Components/InputLabel.vue";
 import TextInput from "@/Components/TextInput.vue";
@@ -7,50 +7,61 @@ import InputError from "@/Components/InputError.vue";
 import Select from "primevue/select";
 import Textarea from "primevue/textarea";
 import FormLayout from "@/Layouts/FormLayout.vue";
-import { useResourceStore } from '@/Store/Resource';
-import { useWarehouseStore } from '@/Store/Warehouse';
-import { useBinLocationStore } from '@/Store/BinLocation';
+import { useResourceStore } from "@/Store/Resource";
+import { useWarehouseStore } from "@/Store/Warehouse";
+import { useBinLocationStore } from "@/Store/BinLocation";
+import { useInventoryStore } from "@/Store/Inventory";
+import PrimaryRoseButton from "@/Components/PrimaryRoseButton.vue";
 
 const props = defineProps({
     newInventory: {
         type: Boolean,
-        default: true
+        default: true,
     },
     data: {
         type: Object,
-        default: null
-    }
+        default: null,
+    },
 });
 
 const resourceStore = useResourceStore();
 const warehouseStore = useWarehouseStore();
 const binLocationStore = useBinLocationStore();
+const inventoryStore = useInventoryStore();
 
-const emit = defineEmits(['close', 'newInventory', 'updateInventory']);
+// Changed emit to only include close and success
+const emit = defineEmits(["close", "success"]);
 
 const inventory = ref({
-    business_id: localStorage.getItem('business_id'),
+    business_id: localStorage.getItem("business_id"),
     item_id: null,
     warehouse_id: null,
     bin_location_id: null,
-    batch_number: '',
+    batch_number: "",
     quantity: 0,
     reorder_point: 0,
     expiry_date: null,
     cost_price: 0,
-    notes: '',
-    status: 0 // Default to In Stock
+    notes: "",
+    status: 0, // Default to In Stock
 });
 
-// Computed property to manage overall loading state
-const loading = computed(() => {
-    return resourceStore.loading || warehouseStore.loading || binLocationStore.loading;
-});
-
+const submitted = ref(false);
+const formLoading = ref(false);
 const items = ref([]);
 const warehouses = ref([]);
 const binLocations = ref([]);
 const errors = ref({});
+
+// Computed property to manage overall loading state
+const loading = computed(() => {
+    return (
+        resourceStore.loading ||
+        warehouseStore.loading ||
+        binLocationStore.loading ||
+        formLoading.value
+    );
+});
 
 // Populate data if editing
 onMounted(async () => {
@@ -61,18 +72,20 @@ onMounted(async () => {
             item_id: props.data.item_id,
             warehouse_id: props.data.warehouse_id,
             bin_location_id: props.data.bin_location_id,
-            batch_number: props.data.batch_number || '',
+            batch_number: props.data.batch_number || "",
             quantity: props.data.quantity || 0,
             reorder_point: props.data.reorder_point || 0,
-            expiry_date: props.data.expiry_date ? new Date(props.data.expiry_date) : null,
-            notes: props.data.notes || '',
-            status: props.data.status
+            expiry_date: props.data.expiry_date
+                ? new Date(props.data.expiry_date)
+                : null,
+            notes: props.data.notes || "",
+            status: props.data.status,
         };
     }
-    
+
     await fetchItems();
     await fetchWarehouses();
-    
+
     if (inventory.value.warehouse_id) {
         await fetchBinLocations(inventory.value.warehouse_id);
     }
@@ -81,51 +94,51 @@ onMounted(async () => {
 const fetchItems = async () => {
     try {
         await resourceStore.fetchResources({
-            rows: 100
+            rows: 100,
         });
-        
+
         if (resourceStore.error) {
             errors.value.item_id = resourceStore.error;
             return;
         }
         items.value = resourceStore.items.data || [];
     } catch (error) {
-        errors.value.item_id = 'Error fetching items';
-        console.error('Error fetching items:', error);
+        errors.value.item_id = "Error fetching items";
+        console.error("Error fetching items:", error);
     }
 };
 
 const fetchWarehouses = async () => {
     try {
         await warehouseStore.fetchWarehouses({
-            rows: 100
+            rows: 100,
         });
-        
+
         if (warehouseStore.error) {
             errors.value.warehouse_id = warehouseStore.error;
             return;
         }
         warehouses.value = warehouseStore.warehouses.data || [];
     } catch (error) {
-        errors.value.warehouse_id = 'Error fetching warehouses';
-        console.error('Error fetching warehouses:', error);
+        errors.value.warehouse_id = "Error fetching warehouses";
+        console.error("Error fetching warehouses:", error);
     }
 };
 
 const fetchBinLocations = async (warehouseId) => {
     try {
         await binLocationStore.getBinLocationsByWarehouse(warehouseId, {
-            rows: 100
+            rows: 100,
         });
-        
+
         if (binLocationStore.error) {
             errors.value.bin_location_id = binLocationStore.error;
             return;
         }
         binLocations.value = binLocationStore.binLocations.data || [];
     } catch (error) {
-        errors.value.bin_location_id = 'Error fetching bin locations';
-        console.error('Error fetching bin locations:', error);
+        errors.value.bin_location_id = "Error fetching bin locations";
+        console.error("Error fetching bin locations:", error);
     }
 };
 
@@ -136,38 +149,97 @@ const handleWarehouseChange = async () => {
     }
 };
 
-const saveInventory = () => {
-    if (props.newInventory) {
-        emit('newInventory', inventory.value);
-    } else {
-        emit('updateInventory', inventory.value);
+const validateForm = () => {
+    submitted.value = true;
+    errors.value = {};
+
+    if (!inventory.value.item_id) {
+        errors.value.item_id = "Item is required";
+    }
+
+    if (!inventory.value.warehouse_id) {
+        errors.value.warehouse_id = "Warehouse is required";
+    }
+
+    if (!inventory.value.bin_location_id) {
+        errors.value.bin_location_id = "Bin location is required";
+    }
+
+    if (inventory.value.quantity < 0) {
+        errors.value.quantity = "Quantity must be 0 or greater";
+    }
+
+    if (inventory.value.reorder_point < 0) {
+        errors.value.reorder_point = "Reorder point must be 0 or greater";
+    }
+
+    return Object.keys(errors.value).length === 0;
+};
+
+// Modified to handle API calls directly
+const saveInventory = async () => {
+    if (!validateForm()) {
+        return;
+    }
+
+    formLoading.value = true;
+    try {
+        let result;
+
+        if (props.newInventory) {
+            result = await inventoryStore.addInventoryItem(inventory.value);
+            if (result && !inventoryStore.error) {
+                inventoryStore.success = "Inventory added successfully";
+                emit("success", "created", result);
+                emit("close");
+            }
+        } else {
+            result = await inventoryStore.updateInventoryItem(inventory.value);
+            if (result && !inventoryStore.error) {
+                inventoryStore.success = "Inventory updated successfully";
+                emit("success", "updated", result);
+                emit("close");
+            }
+        }
+    } catch (error) {
+        console.error("Error saving inventory:", error);
+        inventoryStore.error = props.newInventory
+            ? "Failed to add inventory"
+            : "Failed to update inventory";
+    } finally {
+        formLoading.value = false;
     }
 };
 
 const isFormValid = computed(() => {
-    return inventory.value.item_id && 
-           inventory.value.warehouse_id && 
-           inventory.value.bin_location_id && 
-           inventory.value.quantity >= 0;
+    return (
+        inventory.value.item_id &&
+        inventory.value.warehouse_id &&
+        inventory.value.bin_location_id &&
+        inventory.value.quantity >= 0
+    );
 });
 
 const title = computed(() => {
-    return props.newInventory ? 'Add New Inventory' : 'Edit Inventory';
+    return props.newInventory ? "Add New Inventory" : "Edit Inventory";
 });
 
 const statusOptions = [
-    { label: 'In Stock', value: 0 },
-    { label: 'Low Stock', value: 1 },
-    { label: 'Out of Stock', value: 2 },
-    { label: 'Reserved', value: 3 },
-    { label: 'Damaged', value: 4 },
-    { label: 'Expired', value: 5 }
+    { label: "In Stock", value: 0 },
+    { label: "Low Stock", value: 1 },
+    { label: "Out of Stock", value: 2 },
+    { label: "Reserved", value: 3 },
+    { label: "Damaged", value: 4 },
+    { label: "Expired", value: 5 },
 ];
 
-// Clear any store errors when component is unmounted
 onMounted(() => {
+    // resourceStore.clearErrors();
+    warehouseStore.clearErrors();
+    binLocationStore.clearErrors();
+
     return () => {
-        resourceStore.clearErrors();
+        // resourceStore.clearErrors();
         warehouseStore.clearErrors();
         binLocationStore.clearErrors();
     };
@@ -175,11 +247,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <FormLayout>
-        <template #header>
-            <h2 class="text-xl font-bold mb-4">{{ title }}</h2>
-        </template>
-
+    <FormLayout :title="title">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <!-- Item -->
             <div>
@@ -192,9 +260,15 @@ onMounted(() => {
                     placeholder="Select Item"
                     class="w-full"
                     :disabled="!newInventory"
-                    :loading="loading"
+                    :loading="resourceStore.loading"
                 />
-                <InputError :message="errors.item_id" />
+                <InputError
+                    :message="
+                        submitted && !inventory.item_id
+                            ? 'Item is required'
+                            : errors.item_id
+                    "
+                />
             </div>
 
             <!-- Warehouse -->
@@ -209,9 +283,15 @@ onMounted(() => {
                     class="w-full"
                     :disabled="!newInventory"
                     @change="handleWarehouseChange"
-                    :loading="loading"
+                    :loading="warehouseStore.loading"
                 />
-                <InputError :message="errors.warehouse_id" />
+                <InputError
+                    :message="
+                        submitted && !inventory.warehouse_id
+                            ? 'Warehouse is required'
+                            : errors.warehouse_id
+                    "
+                />
             </div>
 
             <!-- Bin Location -->
@@ -224,10 +304,16 @@ onMounted(() => {
                     optionValue="id"
                     placeholder="Select Bin Location"
                     class="w-full"
-                    :disabled="!newInventory"
-                    :loading="loading"
+                    :disabled="!inventory.warehouse_id || !newInventory"
+                    :loading="binLocationStore.loading"
                 />
-                <InputError :message="errors.bin_location_id" />
+                <InputError
+                    :message="
+                        submitted && !inventory.bin_location_id
+                            ? 'Bin location is required'
+                            : errors.bin_location_id
+                    "
+                />
             </div>
 
             <!-- Batch Number -->
@@ -252,7 +338,13 @@ onMounted(() => {
                     step="1"
                     class="w-full"
                 />
-                <InputError :message="errors.quantity" />
+                <InputError
+                    :message="
+                        submitted && inventory.quantity < 0
+                            ? 'Quantity must be 0 or greater'
+                            : errors.quantity
+                    "
+                />
             </div>
 
             <!-- Reorder Point -->
@@ -265,7 +357,13 @@ onMounted(() => {
                     step="1"
                     class="w-full"
                 />
-                <InputError :message="errors.reorder_point" />
+                <InputError
+                    :message="
+                        submitted && inventory.reorder_point < 0
+                            ? 'Reorder point must be 0 or greater'
+                            : errors.reorder_point
+                    "
+                />
             </div>
 
             <!-- Expiry Date -->
@@ -297,32 +395,33 @@ onMounted(() => {
         <!-- Notes -->
         <div class="mb-4">
             <InputLabel value="Notes" />
-            <Textarea
-                v-model="inventory.notes"
-                rows="3"
-                class="w-full"
-            />
+            <Textarea v-model="inventory.notes" rows="3" class="w-full" />
             <InputError :message="errors.notes" />
         </div>
 
         <div class="flex justify-end gap-2 mt-4">
             <PrimaryButton
                 @click="$emit('close')"
+                :disabled="formLoading"
                 type="button"
-                variant="secondary"
                 class="mr-2"
             >
-                Cancel
+            Cancel
             </PrimaryButton>
-            
-            <PrimaryButton
-                @click="saveInventory"
-                :disabled="!isFormValid || loading"
-                :loading="loading"
+            <PrimaryRoseButton
+                @click="save"
+                :disabled="!isFormValid || formLoading"
+                :loading="formLoading || props.loading"
                 type="button"
             >
-                Save
-            </PrimaryButton>
+                {{
+                    formLoading
+                        ? "Saving..."
+                        : props.newInventory
+                        ? "Add Inventory"
+                        : "Update Inventory"
+                }}
+            </PrimaryRoseButton>
         </div>
     </FormLayout>
 </template>

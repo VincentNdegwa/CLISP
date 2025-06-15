@@ -2,16 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use Inertia\Inertia;
 use App\Models\Inventory;
-use App\Models\InventoryBatch;
 use App\Models\Warehouse;
 use App\Models\BinLocation;
-use App\Models\WarehouseZone;
-use App\Models\StockMovement;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Illuminate\Support\Facades\Auth;
+use App\Models\StockMovement;
+use App\Models\WarehouseZone;
+use App\Models\InventoryBatch;
+use App\Models\StockAdjustment;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class InventoryController extends Controller
 {
@@ -19,6 +20,7 @@ class InventoryController extends Controller
     {
         return Inertia::render('Inventory/Resources/Index');
     }
+    
     public function inventory(){
         return Inertia::render('Inventory/Inventory/Index');
     }
@@ -64,7 +66,6 @@ class InventoryController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'business_id' => 'required|string|exists:business,business_id',
             'item_id' => 'required|exists:resource_item,id',
             'warehouse_id' => 'required|exists:warehouses,id',
             'bin_location_id' => 'required|exists:bin_locations,id',
@@ -75,11 +76,12 @@ class InventoryController extends Controller
 
         try {
             DB::beginTransaction();
+            $warehouse = Warehouse::findOrFail($request->warehouse_id);
+            $request->merge(['business_id' => $warehouse->business_id]);
 
-            // Check if inventory already exists for this item and location
-            $inventory = Inventory::where('business_id', $request->business_id)
+            $inventory = Inventory::where('business_id', $warehouse->business_id)
                 ->where('item_id', $request->item_id)
-                ->where('warehouse_id', $request->warehouse_id)
+                ->where('warehouse_id', $warehouse->id)
                 ->where('bin_location_id', $request->bin_location_id)
                 ->first();
 
@@ -98,9 +100,9 @@ class InventoryController extends Controller
 
             // Create stock movement record
             StockMovement::create([
-                'business_id' => $request->business_id,
+                'business_id' => $warehouse->business_id,
                 'item_id' => $request->item_id,
-                'warehouse_id' => $request->warehouse_id,
+                'warehouse_id' => $warehouse->id,
                 'bin_location_id' => $request->bin_location_id,
                 'batch_id' => $request->batch_id ?? null,
                 'quantity' => $request->quantity,
@@ -229,5 +231,93 @@ class InventoryController extends Controller
         $lowStockItems = $query->paginate($request->input('rows', 20));
 
         return response()->json($lowStockItems);
+    }
+
+    public function adjustQuantity($id, Request $request)
+    {
+        $validated = $request->validate([
+            'quantity' => 'required|numeric|min:0.01',
+            'adjustment_type' => 'required|in:increase,decrease',
+            'reason_id' => 'required|exists:stock_adjustment_reasons,id',
+            'notes' => 'nullable|string|max:1000',
+        ]);
+        
+        try {
+            DB::beginTransaction();
+            
+            $inventory = Inventory::findOrFail($id);
+            
+            $currentQuantity = $inventory->quantity;
+            $adjustmentAmount = $validated['quantity'];
+            
+            if ($validated['adjustment_type'] === 'increase') {
+                $newQuantity = $currentQuantity + $adjustmentAmount;
+            } else {
+                $newQuantity = max(0, $currentQuantity - $adjustmentAmount);
+                
+                if ($adjustmentAmount > $currentQuantity) {
+                    return response()->json([
+                        'message' => 'Cannot subtract more than the current inventory quantity',
+                        'errors' => ['quantity' => ['Not enough quantity available']]
+                    ], 422);
+                }
+            }
+            
+            $inventory->quantity = $newQuantity;
+            
+            if ($newQuantity <= 0) {
+                $inventory->status = Inventory::STATUS_OUT_OF_STOCK;
+            } elseif ($newQuantity <= $inventory->reorder_point) {
+                $inventory->status = Inventory::STATUS_LOW_STOCK;
+            } else {
+                $inventory->status = Inventory::STATUS_IN_STOCK;
+            }
+            
+            $inventory->save();
+            
+            StockAdjustment::create([
+                'inventory_id' => $inventory->id,
+                'business_id' => $inventory->business_id,
+                'user_id' => Auth::user()->id,
+                'adjustment_type' => $validated['adjustment_type'],
+                'quantity' => $validated['quantity'],
+                'previous_quantity' => $currentQuantity,
+                'new_quantity' => $newQuantity,
+                'reason_id' => $validated['reason_id'],
+                'notes' => $validated['notes'] ?? null,
+                'date' => now(),
+            ]);
+            
+            StockMovement::create([
+                'business_id' => $inventory->business_id,
+                'item_id' => $inventory->item_id,
+                'warehouse_id' => $inventory->warehouse_id,
+                'bin_location_id' => $inventory->bin_location_id,
+                'batch_id' => null,
+                'quantity' => $validated['adjustment_type'] === 'increase' ? $adjustmentAmount : -$adjustmentAmount,
+                'movement_type' => 'adjustment',
+                'reference_type' => 'stock_adjustment',
+                'reference_id' => $inventory->id,
+                'notes' => $validated['notes'] ?? 'Inventory quantity adjustment',
+                'created_by' => Auth::user()->id,
+            ]);
+            
+            DB::commit();
+            
+            $inventory->load(['item', 'warehouse', 'binLocation']);
+            
+            return response()->json([
+                'message' => 'Inventory quantity adjusted successfully',
+                'inventory' => $inventory
+            ]);
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+                
+            return response()->json([
+                'message' => 'Failed to adjust inventory quantity',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }

@@ -10,7 +10,6 @@ class PurchaseOrder extends Model
 {
     use HasFactory, SoftDeletes;
 
-    // Status constants
     const STATUS_DRAFT = 0;
     const STATUS_SUBMITTED = 1;
     const STATUS_APPROVED = 2;
@@ -20,7 +19,6 @@ class PurchaseOrder extends Model
     const STATUS_CANCELLED = 6;
     const STATUS_ON_HOLD = 7;
 
-    // Status text mapping
     public static $statusText = [
         self::STATUS_DRAFT => 'Draft',
         self::STATUS_SUBMITTED => 'Submitted',
@@ -32,7 +30,6 @@ class PurchaseOrder extends Model
         self::STATUS_ON_HOLD => 'On Hold',
     ];
 
-    // Status CSS class mapping
     public static $statusClass = [
         self::STATUS_DRAFT => 'bg-gray-100 text-gray-800',
         self::STATUS_SUBMITTED => 'bg-blue-100 text-blue-800',

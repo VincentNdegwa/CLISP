@@ -8,6 +8,7 @@ import InputError from "@/Components/InputError.vue";
 import Textarea from "primevue/textarea";
 import Checkbox from 'primevue/checkbox';
 import FormLayout from "@/Layouts/FormLayout.vue";
+import PrimaryRoseButton from '@/Components/PrimaryRoseButton.vue';
 
 const props = defineProps({
     newWarehouse: {
@@ -24,7 +25,7 @@ const props = defineProps({
     }
 });
 
-const emit = defineEmits(['close', 'newWarehouse', 'updateWarehouse']);
+const emit = defineEmits(['close', 'success']);
 
 const warehouseStore = useWarehouseStore();
 const warehouse = ref({
@@ -41,6 +42,7 @@ const warehouse = ref({
 });
 const submitted = ref(false);
 const errors = ref({});
+const formLoading = ref(false);
 
 const initForm = () => {
     if (props.data) {
@@ -67,7 +69,7 @@ const cancel = () => {
     emit('close');
 };
 
-const save = () => {
+const save = async () => {
     submitted.value = true;
     errors.value = {};
     
@@ -96,10 +98,34 @@ const save = () => {
         return;
     }
 
-    if (props.newWarehouse) {
-        emit('newWarehouse', warehouse.value);
-    } else {
-        emit('updateWarehouse', warehouse.value);
+    formLoading.value = true;
+    try {
+        let result;
+        
+        if (props.newWarehouse) {
+            // Create new warehouse
+            result = await warehouseStore.createWarehouse(warehouse.value);
+            if (result) {
+                warehouseStore.success = "Warehouse created successfully";
+                emit('success', 'created', result);
+                emit('close');
+            }
+        } else {
+            // Update existing warehouse
+            result = await warehouseStore.updateWarehouse(warehouse.value);
+            if (result) {
+                warehouseStore.success = "Warehouse updated successfully";
+                emit('success', 'updated', result);
+                emit('close');
+            }
+        }
+    } catch (error) {
+        console.error("Error saving warehouse:", error);
+        warehouseStore.error = props.newWarehouse 
+            ? "Failed to create warehouse" 
+            : "Failed to update warehouse";
+    } finally {
+        formLoading.value = false;
     }
 };
 
@@ -121,8 +147,6 @@ const title = props.newWarehouse ? 'Add Warehouse' : 'Edit Warehouse';
 
 <template>
     <FormLayout :title="title" >
-
-        
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <!-- Name Field -->
             <div>
@@ -131,7 +155,7 @@ const title = props.newWarehouse ? 'Add Warehouse' : 'Edit Warehouse';
                     v-model="warehouse.name"
                     type="text"
                     class="w-full"
-                    :disabled="loading"
+                    :disabled="formLoading || props.loading"
                     autofocus
                 />
                 <InputError :message="submitted && !warehouse.name ? 'Name is required' : errors.name" />
@@ -144,7 +168,7 @@ const title = props.newWarehouse ? 'Add Warehouse' : 'Edit Warehouse';
                     v-model="warehouse.address"
                     type="text"
                     class="w-full"
-                    :disabled="loading"
+                    :disabled="formLoading || props.loading"
                 />
                 <InputError :message="submitted && !warehouse.address ? 'Address is required' : errors.address" />
             </div>
@@ -156,7 +180,7 @@ const title = props.newWarehouse ? 'Add Warehouse' : 'Edit Warehouse';
                     v-model="warehouse.city"
                     type="text"
                     class="w-full"
-                    :disabled="loading"
+                    :disabled="formLoading || props.loading"
                 />
                 <InputError :message="submitted && !warehouse.city ? 'City is required' : errors.city" />
             </div>
@@ -168,7 +192,7 @@ const title = props.newWarehouse ? 'Add Warehouse' : 'Edit Warehouse';
                     v-model="warehouse.state"
                     type="text"
                     class="w-full"
-                    :disabled="loading"
+                    :disabled="formLoading || props.loading"
                 />
                 <InputError :message="submitted && !warehouse.state ? 'State is required' : errors.state" />
             </div>
@@ -180,7 +204,7 @@ const title = props.newWarehouse ? 'Add Warehouse' : 'Edit Warehouse';
                     v-model="warehouse.postal_code"
                     type="text"
                     class="w-full"
-                    :disabled="loading"
+                    :disabled="formLoading || props.loading"
                 />
                 <InputError :message="submitted && !warehouse.postal_code ? 'Postal code is required' : errors.postal_code" />
             </div>
@@ -192,7 +216,7 @@ const title = props.newWarehouse ? 'Add Warehouse' : 'Edit Warehouse';
                     v-model="warehouse.country"
                     type="text"
                     class="w-full"
-                    :disabled="loading"
+                    :disabled="formLoading || props.loading"
                 />
                 <InputError :message="submitted && !warehouse.country ? 'Country is required' : errors.country" />
             </div>
@@ -204,7 +228,7 @@ const title = props.newWarehouse ? 'Add Warehouse' : 'Edit Warehouse';
                     v-model="warehouse.phone"
                     type="tel"
                     class="w-full"
-                    :disabled="loading"
+                    :disabled="formLoading || props.loading"
                 />
                 <InputError :message="errors.phone" />
             </div>
@@ -216,7 +240,7 @@ const title = props.newWarehouse ? 'Add Warehouse' : 'Edit Warehouse';
                     v-model="warehouse.email"
                     type="email"
                     class="w-full"
-                    :disabled="loading"
+                    :disabled="formLoading || props.loading"
                 />
                 <InputError :message="errors.email" />
             </div>
@@ -227,7 +251,7 @@ const title = props.newWarehouse ? 'Add Warehouse' : 'Edit Warehouse';
                     v-model="warehouse.code"
                     type="text"
                     class="w-full"
-                    :disabled="loading"
+                    :disabled="formLoading || props.loading"
                 />
                 <InputError :message="errors.code" />
             </div>
@@ -240,7 +264,7 @@ const title = props.newWarehouse ? 'Add Warehouse' : 'Edit Warehouse';
                 v-model="warehouse.notes"
                 rows="3"
                 class="w-full"
-                :disabled="loading"
+                :disabled="formLoading || props.loading"
                 autoResize
             />
             <InputError :message="errors.notes" />
@@ -251,7 +275,7 @@ const title = props.newWarehouse ? 'Add Warehouse' : 'Edit Warehouse';
             <Checkbox
                 v-model="warehouse.is_active"
                 :binary="true"
-                :disabled="loading"
+                :disabled="formLoading || props.loading"
             />
             <span class="ml-2">Active</span>
         </div>
@@ -259,7 +283,7 @@ const title = props.newWarehouse ? 'Add Warehouse' : 'Edit Warehouse';
         <div class="flex justify-end gap-2 mt-6">
             <PrimaryButton
                 @click="cancel"
-                :disabled="loading"
+                :disabled="formLoading || props.loading"
                 type="button"
                 variant="secondary"
                 class="mr-2"
@@ -267,14 +291,14 @@ const title = props.newWarehouse ? 'Add Warehouse' : 'Edit Warehouse';
                 Cancel
             </PrimaryButton>
             
-            <PrimaryButton
+            <PrimaryRoseButton
                 @click="save"
-                :disabled="loading"
-                :loading="loading"
+                :disabled="formLoading || props.loading"
+                :loading="formLoading || props.loading"
                 type="button"
             >
-                Save
-            </PrimaryButton>
+                {{  props.loading || formLoading ? 'Saving...' : (props.newWarehouse ? 'Create Warehouse' : 'Update Warehouse') }}
+            </PrimaryRoseButton>
         </div>
     </FormLayout>
 </template>

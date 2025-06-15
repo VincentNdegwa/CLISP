@@ -4,12 +4,15 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import { useInventoryStore } from "@/Store/Inventory";
 import { Head } from "@inertiajs/vue3";
 import NewInventory from "./Create.vue";
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import TableSkeleton from "@/Components/TableSkeleton.vue";
 import ConfirmationModal from "@/Components/ConfirmationModal.vue";
 import AlertNotification from "@/Components/AlertNotification.vue";
 import ModularDataTable from "@/Components/ModularDataTable.vue";
-import {useResourceStore} from "@/Store/Resource"
+import { useResourceStore } from "@/Store/Resource";
+import { useWarehouseStore } from "@/Store/Warehouse";
+import { useBinLocationStore } from "@/Store/BinLocation";
+import AdjustQuantity from "./AdjustQuantity.vue";
 
 export default {
     components: {
@@ -21,6 +24,7 @@ export default {
         ConfirmationModal,
         AlertNotification,
         ModularDataTable,
+        AdjustQuantity,
     },
     setup() {
         const params = ref({
@@ -29,22 +33,12 @@ export default {
         });
 
         const inventory = useInventoryStore();
-        const resource = useResourceStore();
+        const resourceStore = useResourceStore();
+        const warehouseStore = useWarehouseStore();
+        const binLocationStore = useBinLocationStore();
+        
+        // Fetch initial inventory data
         inventory.fetchInventory(params.value);
-
-        const inventoryAdd = async (inventoryItem) => {
-            await inventory.addInventoryItem(inventoryItem);
-            if (inventory.success) {
-                closeModal();
-            }
-        };
-
-        const inventoryUpdate = async (inventoryItem) => {
-            await inventory.updateInventoryItem(inventoryItem);
-            if (inventory.success) {
-                closeModal();
-            }
-        };
 
         const inventoryDelete = async (id) => {
             await inventory.deleteInventoryItem(id);
@@ -75,18 +69,42 @@ export default {
         const onRowChange = (rows) => {
             params.value.rows = rows;
         };
+        
+        const handleInventorySuccess = (action, result) => {
+            console.log(`Inventory ${action} successfully:`, result);
+            inventory.fetchInventory(params.value);
+        };
+        
+        // Methods to fetch warehouses and bin locations using stores
+        const fetchWarehouses = async () => {
+            return await warehouseStore.fetchWarehouses({
+                business_id: localStorage.getItem('business_id'),
+                rows: 100
+            });
+        };
+        
+        const fetchBinLocations = async () => {
+            return await binLocationStore.fetchBinLocations({
+                business_id: localStorage.getItem('business_id'),
+                rows: 100
+            });
+        };
 
         return {
             inventory,
+            resourceStore,
+            warehouseStore,
+            binLocationStore,
             modal,
             openNewInventoryForm,
             closeModal,
-            inventoryAdd,
-            inventoryUpdate,
             inventoryDelete,
             params,
             paginateInventory,
             onRowChange,
+            handleInventorySuccess,
+            fetchWarehouses,
+            fetchBinLocations,
         };
     },
     data() {
@@ -104,12 +122,7 @@ export default {
             columns: [
                 { 
                     header: "Item", 
-                    field: "item.name", 
-                    sortable: true 
-                },
-                { 
-                    header: "SKU", 
-                    field: "item.sku", 
+                    field: "item.item_name", 
                     sortable: true 
                 },
                 { 
@@ -120,11 +133,6 @@ export default {
                 { 
                     header: "Bin Location", 
                     field: "bin_location.name", 
-                    sortable: true 
-                },
-                { 
-                    header: "Batch #", 
-                    field: "batch_number", 
                     sortable: true 
                 },
                 { 
@@ -165,7 +173,7 @@ export default {
                 },
             ],
             
-            // Filters
+            // Filters updated to use store methods
             filters: [
                 {
                     label: "Status",
@@ -188,15 +196,18 @@ export default {
                     options: [], // Will be populated dynamically
                     loadOptions: async () => {
                         try {
-                            const response = await axios.get('/api/warehouses', {
-                                params: {
-                                    business_id: localStorage.getItem('business_id'),
-                                    rows: 100
-                                }
-                            });
+                            await this.fetchWarehouses();
+                            
+                            if (this.warehouseStore.error) {
+                                console.error('Error loading warehouses:', this.warehouseStore.error);
+                                return [{ label: "All Warehouses", value: null }];
+                            }
+                            
+                            const warehouses = this.warehouseStore.warehouses?.data || [];
+                            
                             return [
                                 { label: "All Warehouses", value: null },
-                                ...response.data.data.map(warehouse => ({
+                                ...warehouses.map(warehouse => ({
                                     label: warehouse.name,
                                     value: warehouse.id
                                 }))
@@ -205,7 +216,8 @@ export default {
                             console.error('Error loading warehouses:', error);
                             return [{ label: "All Warehouses", value: null }];
                         }
-                    }
+                    },
+                    loading: computed(() => this.warehouseStore?.loading)
                 },
                 {
                     label: "Bin Location",
@@ -214,15 +226,18 @@ export default {
                     options: [], // Will be populated dynamically
                     loadOptions: async () => {
                         try {
-                            const response = await axios.get('/api/bin-locations', {
-                                params: {
-                                    business_id: localStorage.getItem('business_id'),
-                                    rows: 100
-                                }
-                            });
+                            await this.fetchBinLocations();
+                            
+                            if (this.binLocationStore.error) {
+                                console.error('Error loading bin locations:', this.binLocationStore.error);
+                                return [{ label: "All Locations", value: null }];
+                            }
+                            
+                            const binLocations = this.binLocationStore.binLocations?.data || [];
+                            
                             return [
                                 { label: "All Locations", value: null },
-                                ...response.data.data.map(location => ({
+                                ...binLocations.map(location => ({
                                     label: location.name,
                                     value: location.id
                                 }))
@@ -231,7 +246,8 @@ export default {
                             console.error('Error loading bin locations:', error);
                             return [{ label: "All Locations", value: null }];
                         }
-                    }
+                    },
+                    loading: computed(() => this.binLocationStore?.loading)
                 },
             ],
             
@@ -252,11 +268,11 @@ export default {
                     icon: "pi pi-sliders-h",
                     command: (data) => this.openAdjustQuantity(data),
                 },
-                {
-                    label: "Move",
-                    icon: "pi pi-arrows-h",
-                    command: (data) => this.openMoveInventory(data),
-                },
+                // {
+                //     label: "Move",
+                //     icon: "pi pi-arrows-h",
+                //     command: (data) => this.openMoveInventory(data),
+                // },
                 {
                     label: "Delete",
                     icon: "pi pi-trash",
@@ -286,15 +302,11 @@ export default {
     },
     methods: {
         viewInventory(data) {
-            // Navigate to inventory details page
             this.$inertia.visit(`/inventory/${data.id}`);
         },
         openEditInventory(data) {
             this.openNewInventoryForm("UpdateInventory");
             this.inventory_data = data;
-        },
-        updateInventory(data) {
-            this.inventoryUpdate(data);
         },
         openAdjustQuantity(data) {
             this.openNewInventoryForm("AdjustQuantity");
@@ -351,8 +363,15 @@ export default {
         },
         handleRowsChange(rows) {
             this.onRowChange(rows);
+        },
+        handleInventorySuccess(action, result) {
+            this.$options.setup().handleInventorySuccess(action, result);
         }
     },
+    mounted() {
+        this.fetchWarehouses();
+        this.fetchBinLocations();
+    }
 };
 </script>
 
@@ -408,34 +427,29 @@ export default {
             <NewInventory
                 v-if="modal.component === 'NewInventory'"
                 @close="closeModal"
-                @newInventory="inventoryAdd"
+                @success="handleInventorySuccess"
                 newInventory="true"
-                data="null"
-                :loading="inventory.loading"
             />
             <NewInventory
                 v-if="modal.component === 'UpdateInventory'"
                 @close="closeModal"
-                @newInventory="inventoryAdd"
+                @success="handleInventorySuccess"
                 newInventory="false"
                 :data="inventory_data"
-                :loading="inventory.loading"
-                @updateInventory="updateInventory"
             />
             <AdjustQuantity
                 v-if="modal.component === 'AdjustQuantity'"
                 @close="closeModal"
+                @success="handleInventorySuccess"
                 :data="inventory_data"
-                :loading="inventory.loading"
-                @updateInventory="updateInventory"
             />
-            <MoveInventory
+            <!-- <Movements
                 v-if="modal.component === 'MoveInventory'"
                 @close="closeModal"
+                @success="handleInventorySuccess"
                 :data="inventory_data"
-                :loading="inventory.loading"
-                @updateInventory="updateInventory"
-            />
+            /> -->
         </Modal>
+
     </AuthenticatedLayout>
 </template>

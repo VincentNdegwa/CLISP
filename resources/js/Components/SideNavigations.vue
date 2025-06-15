@@ -50,7 +50,12 @@ export default {
                             name: "Bin Locations",
                             route: "warehouse.bin-locations",
                             icon: "bi bi-box-seam",
-                        }
+                        },
+                        {
+                            name: "Zones",
+                            route: "warehouse.zones",
+                            icon: "bi bi-grid-3x3-gap",
+                        },
                     ],
                 },
                 {
@@ -73,6 +78,11 @@ export default {
                             route: "inventory.categories",
                             icon: "bi bi-tags",
                         },
+                        {
+                            name: "Movements",
+                            route: 'inventory.movements',
+                            icon: "bi bi-tags",
+                        }
                     ],
                 },
                 {

@@ -1,4 +1,6 @@
 <template>
+    <Head title="Warehouses" />
+
     <AppLayout title="Warehouses">
         <div class="">
             <ModularDataTable
@@ -43,8 +45,7 @@
                 :data="selectedWarehouse"
                 :loading="loading"
                 @close="closeModal"
-                @newWarehouse="onWarehouseCreated"
-                @updateWarehouse="onWarehouseUpdated"
+                @success="handleWarehouseSuccess"
             />
         </Modal>
 
@@ -87,6 +88,7 @@ import Modal from "@/Components/Modal.vue";
 import ModularDataTable from "@/Components/ModularDataTable.vue";
 import WarehouseForm from "./Create.vue";
 import AlertNotification from "@/Components/AlertNotification.vue";
+import { Head } from "@inertiajs/vue3";
 
 export default {
     components: {
@@ -96,7 +98,8 @@ export default {
         Modal,
         ModularDataTable,
         WarehouseForm,
-        AlertNotification
+        AlertNotification,
+        Head
     },
     setup() {
         const warehouseStore = useWarehouseStore();
@@ -195,38 +198,9 @@ export default {
             }
         };
 
-        const onWarehouseCreated = async (warehouse) => {
-            loading.value = true;
-            try {
-                const result = await warehouseStore.createWarehouse(warehouse);
-                
-                if (result) {
-                    closeModal();
-                    loadWarehouses();
-                }
-            } catch (error) {
-                console.error("Error creating warehouse:", error);
-                warehouseStore.error = "Failed to create warehouse";
-            } finally {
-                loading.value = false;
-            }
-        };
-
-        const onWarehouseUpdated = async (warehouse) => {
-            loading.value = true;
-            try {
-                const result = await warehouseStore.updateWarehouse(warehouse);
-                
-                if (result) {
-                    closeModal();
-                    loadWarehouses();
-                }
-            } catch (error) {
-                console.error("Error updating warehouse:", error);
-                warehouseStore.error = "Failed to update warehouse";
-            } finally {
-                loading.value = false;
-            }
+        const handleWarehouseSuccess = (action, warehouse) => {
+            console.log(`Warehouse ${action} successfully:`, warehouse);
+            loadWarehouses();
         };
 
         const handlePageChange = (event) => {
@@ -246,6 +220,9 @@ export default {
         };
 
         onMounted(() => {
+            // Clear any previous messages
+            warehouseStore.clearErrors();
+            warehouseStore.clearSuccess();
             loadWarehouses();
         });
 
@@ -265,8 +242,7 @@ export default {
             openDeleteDialog,
             closeDeleteDialog,
             confirmDelete,
-            onWarehouseCreated,
-            onWarehouseUpdated,
+            handleWarehouseSuccess,
             handlePageChange,
             handleRowsChange,
             handleSearch
@@ -415,11 +391,8 @@ export default {
         confirmDelete() {
             this.$options.setup().confirmDelete();
         },
-        onWarehouseCreated(warehouse) {
-            this.$options.setup().onWarehouseCreated(warehouse);
-        },
-        onWarehouseUpdated(warehouse) {
-            this.$options.setup().onWarehouseUpdated(warehouse);
+        handleWarehouseSuccess(action, warehouse) {
+            this.loadWarehouses();
         },
         handleRowAction({ action, row }) {
             if (action.label === "Edit") {

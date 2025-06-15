@@ -75,7 +75,6 @@ export const useWarehouseStore = defineStore("warehouse_store", {
                 return;
             }
 
-            // Add business_id to the warehouse data
             warehouse.business_id = businessId;
 
             this.loading = true;

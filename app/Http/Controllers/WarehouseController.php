@@ -158,4 +158,5 @@ class WarehouseController extends Controller
             'message' => 'Warehouse deleted successfully'
         ]);
     }
+    
 }

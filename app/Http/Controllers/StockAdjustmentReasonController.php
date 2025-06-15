@@ -8,12 +8,7 @@ use Illuminate\Support\Facades\Validator;
 
 class StockAdjustmentReasonController extends Controller
 {
-    /**
-     * Display a listing of stock adjustment reasons.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
+  
     public function index(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -29,10 +24,8 @@ class StockAdjustmentReasonController extends Controller
 
         $query = StockAdjustmentReason::query();
 
-        // Filter by business_id
-        $query->where('business_id', $request->business_id);
+        $query->forBusiness($request->business_id);
 
-        // Search functionality
         if ($request->has('search') && !empty($request->search)) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -41,22 +34,18 @@ class StockAdjustmentReasonController extends Controller
             });
         }
 
-        // Order by name
         $query->orderBy('name');
-
-        // Pagination
-        $perPage = $request->rows ?? 20;
-        $reasons = $query->paginate($perPage);
+        
+        if ($request->has('rows')) {
+            $reasons = $query->paginate($request->rows);
+        } else {
+            $reasons = $query->get();
+        }
 
         return response()->json($reasons);
     }
 
-    /**
-     * Store a newly created stock adjustment reason in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
+  
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -79,12 +68,7 @@ class StockAdjustmentReasonController extends Controller
         ], 201);
     }
 
-    /**
-     * Display the specified stock adjustment reason.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
+ 
     public function show($id)
     {
         $reason = StockAdjustmentReason::findOrFail($id);
@@ -92,13 +76,6 @@ class StockAdjustmentReasonController extends Controller
         return response()->json($reason);
     }
 
-    /**
-     * Update the specified stock adjustment reason in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function update(Request $request, $id)
     {
         $reason = StockAdjustmentReason::findOrFail($id);
@@ -122,17 +99,11 @@ class StockAdjustmentReasonController extends Controller
         ]);
     }
 
-    /**
-     * Remove the specified stock adjustment reason from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
+ 
     public function destroy($id)
     {
         $reason = StockAdjustmentReason::findOrFail($id);
         
-        // Check if reason is used in any stock movements before deleting
         if ($reason->stockMovements()->count() > 0) {
             return response()->json([
                 'message' => 'Cannot delete reason that is used in stock movements'
