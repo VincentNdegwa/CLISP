@@ -43,6 +43,12 @@ class WarehouseController extends Controller
 
     public function store(Request $request)
     {
+        if (!$request->filled('code')) {
+            $request->merge([
+                'code' => $this->generateUniqueWarehouseCode($request->business_id)
+            ]);
+        }
+
         $validator = Validator::make($request->all(), [
             'business_id' => 'required|exists:business,business_id',
             'name' => 'required|string|max:255',
@@ -53,6 +59,7 @@ class WarehouseController extends Controller
             'country' => 'required|string|max:100',
             'phone' => 'sometimes|nullable|string|max:20',
             'email' => 'sometimes|nullable|email|max:255',
+            'code' => 'required|string|max:50|unique:warehouses,code',
             'is_active' => 'sometimes|boolean',
             'notes' => 'sometimes|nullable|string',
         ]);
@@ -69,6 +76,27 @@ class WarehouseController extends Controller
         ], 201);
     }
 
+    private function generateUniqueWarehouseCode($businessId)
+    {
+        $prefix = 'WH';
+        $businessPrefix = substr($businessId, 0, 3);
+        
+        $timestamp = now()->format('ymd');
+        
+        $count = Warehouse::where('business_id', $businessId)->count() + 1;
+        
+        $formattedCount = str_pad($count, 3, '0', STR_PAD_LEFT);
+        
+        $code = $prefix . '-' . $businessPrefix . '-' . $timestamp . '-' . $formattedCount;
+        
+        while (Warehouse::where('code', $code)->exists()) {
+            $count++;
+            $formattedCount = str_pad($count, 3, '0', STR_PAD_LEFT);
+            $code = $prefix . '-' . $businessPrefix . '-' . $timestamp . '-' . $formattedCount;
+        }
+        
+        return $code;
+    }
  
     public function show($id)
     {
@@ -112,7 +140,6 @@ class WarehouseController extends Controller
     {
         $warehouse = Warehouse::findOrFail($id);
         
-        // Check if warehouse has any inventory or bin locations before deleting
         if ($warehouse->inventories()->count() > 0) {
             return response()->json([
                 'message' => 'Cannot delete warehouse with existing inventory items'

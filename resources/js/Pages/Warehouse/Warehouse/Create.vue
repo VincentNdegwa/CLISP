@@ -55,6 +55,7 @@ const initForm = () => {
             country: '',
             phone: '',
             email: '',
+            code: '',
             is_active: true,
             notes: ''
         };
@@ -218,6 +219,17 @@ const title = props.newWarehouse ? 'Add Warehouse' : 'Edit Warehouse';
                     :disabled="loading"
                 />
                 <InputError :message="errors.email" />
+            </div>
+            <!-- Code Field -->
+            <div>
+                <InputLabel value="Code" />
+                <TextInput
+                    v-model="warehouse.code"
+                    type="text"
+                    class="w-full"
+                    :disabled="loading"
+                />
+                <InputError :message="errors.code" />
             </div>
         </div>
         

@@ -133,7 +133,6 @@ const title = props.newBinLocation ? 'Add Bin Location' : 'Edit Bin Location';
                     v-model="binLocation.name"
                     type="text"
                     class="w-full"
-                    :disabled="loading"
                     autofocus
                 />
                 <InputError :message="submitted && !binLocation.name ? 'Name is required' : errors.name" />
@@ -146,7 +145,6 @@ const title = props.newBinLocation ? 'Add Bin Location' : 'Edit Bin Location';
                     v-model="binLocation.code"
                     type="text"
                     class="w-full"
-                    :disabled="loading"
                 />
                 <InputError :message="errors.code" />
             </div>
@@ -161,7 +159,7 @@ const title = props.newBinLocation ? 'Add Bin Location' : 'Edit Bin Location';
                     optionValue="id"
                     placeholder="Select Warehouse"
                     class="w-full"
-                    :disabled="loading"
+                    :loading="loading"
                 />
                 <InputError :message="submitted && !binLocation.warehouse_id ? 'Warehouse is required' : errors.warehouse_id" />
             </div>
@@ -173,7 +171,6 @@ const title = props.newBinLocation ? 'Add Bin Location' : 'Edit Bin Location';
                     v-model="binLocation.description"
                     rows="3"
                     class="w-full"
-                    :disabled="loading"
                     autoResize
                 />
                 <InputError :message="errors.description" />
@@ -184,7 +181,6 @@ const title = props.newBinLocation ? 'Add Bin Location' : 'Edit Bin Location';
                 <Checkbox
                     v-model="binLocation.is_active"
                     :binary="true"
-                    :disabled="loading"
                 />
                 <span class="ml-2">Active</span>
             </div>

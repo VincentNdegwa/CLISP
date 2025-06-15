@@ -379,9 +379,9 @@ export default {
             // Start actions
             startActions: [
                 {
-                    label: "Add Bin Location",
+                    label: "Bin Location",
                     icon: "pi pi-plus",
-                    severity: "primary",
+                    severity: "secondary",
                     size: "small",
                     command: () => this.openNewBinLocation()
                 },

@@ -282,6 +282,11 @@ export default {
                     sortable: true
                 },
                 {
+                    header: 'Code',
+                    field: 'code',
+                    sortable: true,
+                },
+                {
                     header: "Address",
                     field: "address",
                     sortable: true
@@ -318,9 +323,9 @@ export default {
             // Start actions
             startActions: [
                 {
-                    label: "Add Warehouse",
+                    label: "Warehouse",
                     icon: "pi pi-plus",
-                    severity: "primary",
+                    severity: "secondary",
                     size: "small",
                     command: () => this.openNewWarehouse()
                 },
