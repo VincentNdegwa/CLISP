@@ -1,15 +1,16 @@
 <script>
-import InputLabel from "@/Components/InputLabel.vue";
-import TextInput from "@/Components/TextInput.vue";
-import InputError from "@/Components/InputError.vue";
-import PrimaryButton from "@/Components/PrimaryButton.vue";
 import { useResourceCategoryStore } from "@/Store/ResourceCategory";
 import axios from "axios";
 import { onMounted } from "vue";
 import { VDateInput } from "vuetify/labs/VDateInput";
+import PrimaryButton from "@/Components/PrimaryButton.vue";
+import InputLabel from "@/Components/InputLabel.vue";
+import TextInput from "@/Components/TextInput.vue";
+import InputError from "@/Components/InputError.vue";
 import Select from "primevue/select";
 import Textarea from "primevue/textarea";
 import FileUpload from "primevue/fileupload";
+import FormLayout from "@/Layouts/FormLayout.vue";
 
 export default {
     props: ["dataEdit", "newResource", "loading", "category"],
@@ -45,9 +46,9 @@ export default {
             },
             formData,
             taxTypes: [
-                { name: 'Inclusive', value: 'Inclusive' },
-                { name: 'Exclusive', value: 'Exclusive' },
-            ]
+                { name: "Inclusive", value: "Inclusive" },
+                { name: "Exclusive", value: "Exclusive" },
+            ],
         };
     },
     methods: {
@@ -99,7 +100,8 @@ export default {
         VDateInput,
         Select,
         Textarea,
-        FileUpload
+        FileUpload,
+        FormLayout,
     },
     watch: {
         dataEdit: {
@@ -152,7 +154,7 @@ export default {
 </script>
 
 <template>
-    <div class="max-w-4xl mx-auto dark:bg-slate-800/70 dark:backdrop-blur-sm bg-slate-50 rounded-lg shadow-lg p-6 border border-slate-200 dark:border-white/10">
+    <FormLayout>
         <form @submit.prevent="submitForm" class="space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Item Name -->
@@ -314,14 +316,14 @@ export default {
             <!-- Photos -->
             <div>
                 <InputLabel value="Photos" />
-                <div class="bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg p-2">
+                <div
+                    class="bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg p-2"
+                >
                     <input
                         @change="addResourceImage"
                         type="file"
                         id="photos"
-                        class="w-full text-sm text-slate-500 dark:text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0
-                            file:text-sm file:font-medium file:bg-rose-50 file:text-rose-600 dark:file:bg-rose-900/30 dark:file:text-rose-400
-                            hover:file:bg-rose-100 dark:hover:file:bg-rose-900/40"
+                        class="w-full text-sm text-slate-500 dark:text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-rose-50 file:text-rose-600 dark:file:bg-rose-900/30 dark:file:text-rose-400 hover:file:bg-rose-100 dark:hover:file:bg-rose-900/40"
                     />
                 </div>
             </div>
@@ -337,5 +339,5 @@ export default {
                 </PrimaryButton>
             </div>
         </form>
-    </div>
+    </FormLayout>
 </template>

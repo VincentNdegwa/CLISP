@@ -19,23 +19,6 @@ export default {
                     subItems: null,
                 },
                 {
-                    name: "Inventory",
-                    icon: "bi bi-box-seam",
-                    open: localStorage.getItem("Inventory") === "true",
-                    subItems: [
-                        {
-                            name: "Resources",
-                            route: "inventory.resources",
-                            icon: "bi bi-archive",
-                        },
-                        {
-                            name: "Categories",
-                            route: "inventory.categories",
-                            icon: "bi bi-tags",
-                        },
-                    ],
-                },
-                {
                     name: "Business",
                     icon: "bi bi-briefcase",
                     open: localStorage.getItem("Business") === "true",
@@ -49,6 +32,46 @@ export default {
                             name: "Connections",
                             route: "business.connection",
                             icon: "bi bi-people-fill",
+                        },
+                    ],
+                },
+                {
+                    name: "Warehouse",
+                    route: "warehouse.warehouses",
+                    open: localStorage.getItem("Warehouse") === "true",
+                    icon: "bi bi-building",
+                    subItems: [
+                        {
+                            name: "Warehouses",
+                            route: "warehouse.warehouses",
+                            icon: "bi bi-building",
+                        },
+                        {
+                            name: "Bin Locations",
+                            route: "warehouse.bin-locations",
+                            icon: "bi bi-box-seam",
+                        }
+                    ],
+                },
+                {
+                    name: "Inventory",
+                    icon: "bi bi-box-seam",
+                    open: localStorage.getItem("Inventory") === "true",
+                    subItems: [
+                        {
+                            name: "Resources",
+                            route: "inventory.resources",
+                            icon: "bi bi-archive",
+                        },
+                        {
+                            name: "Inventory",
+                            route: "inventory.inventories",
+                            icon: "bi bi-box",
+                        },
+                        {
+                            name: "Categories",
+                            route: "inventory.categories",
+                            icon: "bi bi-tags",
                         },
                     ],
                 },
@@ -250,7 +273,7 @@ export default {
                 v-for="(item, index) in navItems"
                 :key="index"
                 :class="[
-                    'w-full h-fit p-3 mt-1 cursor-pointer transition-none ease-linear duration-1000',
+                    'w-full h-fit p-2 mt-1 cursor-pointer transition-none ease-linear duration-1000',
                     item.open ? '' : '',
                 ]"
             >
@@ -289,22 +312,22 @@ export default {
 
                 <div
                     v-if="item.subItems && item.open"
-                    class="w-full flex flex-col gap-1 items-center"
+                    class="w-full flex mt-1 flex-col items-center"
                 >
                     <Link
                         v-for="(subItem, subIndex) in item.subItems"
                         :href="route(subItem.route)"
                         :key="subIndex"
                         :class="[
-                            'w-full h-fit pl-6 p-2 cursor-pointer',
+                            'w-full h-fit cursor-pointer',
                             isActiveSubNav(subItem)
-                                ? 'bg-rose-50 text-rose-500'
+                                ? 'bg-rose-50 dark:bg-slate-500/10 text-rose-500'
                                 : '',
                         ]"
                     >
-                        <div class="p-0 h-full w-full">
+                        <div class="h-full ml-6 p-2 w-full">
                             <div class="text-sm flex flex-row gap-4">
-                                <i :class="subItem.icon"></i>
+                                <!-- <i :class="subItem.icon"></i> -->
                                 <div>{{ subItem.name }}</div>
                             </div>
                         </div>

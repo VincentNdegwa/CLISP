@@ -6,8 +6,8 @@ import { currencyConvertor } from "@/Store/CurrencyConvertStore";
 import ModularDataTable from "@/Components/ModularDataTable.vue";
 import Modal from "@/Components/Modal.vue";
 import ConfirmationModal from "@/Components/ConfirmationModal.vue";
-import NewResource from "./NewResource.vue";
-import NewCategory from "./NewCategory.vue";
+import NewResource from "./Create.vue";
+import NewCategory from "../Category/Create.vue";
 import Drawer from "primevue/drawer";
 
 export default {

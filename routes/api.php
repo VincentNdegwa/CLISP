@@ -1,25 +1,33 @@
 <?php
 
-use App\Http\Controllers\BusinessConnectionController;
-use App\Http\Controllers\BusinessController;
-use App\Http\Controllers\BusinessPaymentsController;
-use App\Http\Controllers\BusinessSubscriptionController;
-use App\Http\Controllers\CustomerController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\FileSystemController;
-use App\Http\Controllers\LogisticController;
-use App\Http\Controllers\Paddle\CustomWebhookController;
-use App\Http\Controllers\Paddle\PaddleDisplayController;
-use App\Http\Controllers\PaymentsController;
+use App\Models\Business;
+use App\Models\ResourceItem;
+use App\Models\BusinessConnection;
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PayPalController;
-use App\Http\Controllers\ResourceCategoryController;
+use App\Http\Controllers\BusinessController;
+use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\LogisticController;
+use App\Http\Controllers\PaymentsController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\InventoryController;
+use App\Http\Controllers\FileSystemController;
+use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\ResourceItemController;
 use App\Http\Controllers\SubscriptionController;
-use App\Http\Controllers\TransactionController;
-use App\Models\Business;
-use App\Models\BusinessConnection;
-use App\Models\ResourceItem;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\BusinessPaymentsController;
+use App\Http\Controllers\ResourceCategoryController;
+use App\Http\Controllers\BusinessConnectionController;
+use App\Http\Controllers\BusinessSubscriptionController;
+use App\Http\Controllers\Paddle\CustomWebhookController;
+use App\Http\Controllers\Paddle\PaddleDisplayController;
+use App\Http\Controllers\ShipmentController;
+use App\Http\Controllers\WarehouseController;
+use App\Http\Controllers\BinLocationController;
+use App\Http\Controllers\CarrierController;
+use App\Http\Controllers\StockMovementController;
+use App\Http\Controllers\StockAdjustmentReasonController;
+use App\Http\Controllers\StockMovementReasonController;
 
 Route::prefix('business')->group(function () {
     Route::post('/create', [BusinessController::class, 'Create'])->name('business.create');
@@ -74,6 +82,40 @@ Route::prefix("business")->group(function () {
     Route::post('/terminate-connection', [BusinessConnectionController::class, "terminateConnection"]);
     Route::get("/get-active-connection/{business_id}", [BusinessConnectionController::class, "getActiveConnections"]);
 });
+
+Route::resource('inventory', InventoryController::class);
+
+// Shipment routes
+Route::resource('shipments', ShipmentController::class);
+Route::post('shipments/{id}/mark-shipped', [ShipmentController::class, 'markAsShipped']);
+Route::post('shipments/{id}/mark-delivered', [ShipmentController::class, 'markAsDelivered']);
+
+// Warehouse routes
+Route::resource('warehouses', WarehouseController::class);
+
+// Bin Location routes
+Route::resource('bin-locations', BinLocationController::class);
+Route::get('bin-locations/by-warehouse/{warehouse_id}', [BinLocationController::class, 'getByWarehouse']);
+
+// Carrier routes
+Route::resource('carriers', CarrierController::class);
+
+// Stock Movement routes
+Route::resource('stock-movements', StockMovementController::class);
+Route::get('stock-movements/by-inventory/{inventory_id}', [StockMovementController::class, 'getByInventory']);
+
+// Additional inventory routes
+Route::post('inventory/{id}/adjust-quantity', [InventoryController::class, 'adjustQuantity']);
+Route::post('inventory/{id}/move', [InventoryController::class, 'moveInventory']);
+Route::get('inventory/low-stock', [InventoryController::class, 'getLowStock']);
+Route::get('inventory/summary', [InventoryController::class, 'getSummary']);
+
+// Stock adjustment reasons
+Route::resource('stock-adjustment-reasons', StockAdjustmentReasonController::class);
+
+// Stock movement reasons
+Route::resource('stock-movement-reasons', StockMovementReasonController::class);
+
 Route::prefix("customers")->group(function () {
     Route::post('/create-customer', [CustomerController::class, "create"]);
     Route::get('/business-customers/{business_id}', [CustomerController::class, "getBusinessCustomers"]);
@@ -102,13 +144,11 @@ Route::prefix('transactions/{business_id}')->group(function () {
     Route::post('/logistics/reject-items', [LogisticController::class, 'rejectItems']);
 });
 
-
 Route::prefix('{business_id}/billing')->group(function () {
     Route::get('/', [BusinessSubscriptionController::class, 'getBilling']);
     Route::get('/transaction', [BusinessSubscriptionController::class, 'getBillingTransactions']);
     Route::post('/cancel-subscription', [BusinessSubscriptionController::class, 'cancelSubscription']);
 });
-
 
 Route::prefix("payments")->group(function () {
     Route::post("/record-payment", [PaymentsController::class, 'createPayment']);

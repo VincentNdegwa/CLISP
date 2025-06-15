@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('resource_category', function (Blueprint $table) {
             $table->id();
-            $table->string('business_id');
+            $table->unsignedBigInteger('business_id');
             $table->string('name');
             $table->string('description')->nullable();
             $table->timestamps();

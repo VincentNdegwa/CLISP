@@ -3,7 +3,7 @@ import Modal from "@/Components/Modal.vue";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import { useResourceCategoryStore } from "@/Store/ResourceCategory";
 import { Head } from "@inertiajs/vue3";
-import NewCategory from "./NewCategory.vue";
+import NewCategory from "./Create.vue";
 import { ref, computed } from "vue";
 import TableSkeleton from "@/Components/TableSkeleton.vue";
 import ConfirmationModal from "@/Components/ConfirmationModal.vue";
@@ -218,10 +218,8 @@ export default {
             status="success"
         />
 
-        <TableSkeleton v-if="categories.loading && !categories.items?.data" />
 
         <ModularDataTable
-            v-else
             :value="tableData"
             :loading="categories.loading"
             dataKey="id"

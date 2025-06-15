@@ -4,6 +4,7 @@ import PrimaryButton from "@/Components/PrimaryButton.vue";
 import TextInput from "@/Components/TextInput.vue";
 import InputError from "@/Components/InputError.vue";
 import TextAreaInput from "@/Components/TextAreaInput.vue"
+import FormLayout from "@/Layouts/FormLayout.vue";
 export default {
     props: ["newCategory", "data", "loading"],
     data() {
@@ -29,7 +30,8 @@ export default {
         PrimaryButton,
         TextInput,
         InputError,
-        TextAreaInput
+        TextAreaInput,
+        FormLayout
     },
     mounted() {
         if (this.newCategory === "false") {
@@ -40,12 +42,8 @@ export default {
 </script>
 
 <template>
-    <div
-        class="max-w-2xl p-6 mx-auto bg-slate-50 dark:bg-slate-800 dark:backdrop-blur-sm rounded-lg">
-        <h2 class="text-2xl font-semibold text-slate-900 dark:text-slate-50 mb-6">
-            {{ newCategory == "false" ? "Update Category" : "New Category" }}
-        </h2>
-
+    <FormLayout :title="newCategory == 'false' ? 'Update Category' : 'New Category'">
+      
         <form @submit.prevent="submitForm" class="space-y-6 w-full">
             <!-- Category Name -->
             <div>
@@ -78,5 +76,6 @@ export default {
                 </PrimaryButton>
             </div>
         </form>
-    </div>
+
+    </FormLayout>
 </template>

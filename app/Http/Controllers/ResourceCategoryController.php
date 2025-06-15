@@ -14,7 +14,7 @@ class ResourceCategoryController extends Controller
 
     public function view()
     {
-        return Inertia::render("Inventory/ResourceCategory", []);
+        return Inertia::render("Inventory/Category/Index", []);
     }
     public function create(Request $request, $business_id)
     {
@@ -105,7 +105,7 @@ class ResourceCategoryController extends Controller
     {
 
 
-        return Inertia::render('Inventory/ViewResource', [
+        return Inertia::render('Inventory/Resources/Show', [
             'itemId' => $id
         ]);
     }

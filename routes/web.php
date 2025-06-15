@@ -9,6 +9,8 @@ use App\Http\Controllers\Paddle\PaddleDisplayController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ResourceCategoryController;
 use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\ShipmentController;
+use App\Http\Controllers\WarehouseController;
 use App\Models\Business;
 use App\Models\BusinessUser;
 use App\Models\SubscriptionPlan;
@@ -107,9 +109,19 @@ Route::middleware(['auth', 'verified', 'check.business'])->group(function () {
 
     Route::prefix('/')->group(function () {
         Route::prefix("inventory")->group(function () {
-            Route::get('/resources', [InventoryController::class, 'view'])->name('inventory.resources');
+            Route::get('/inventories', [InventoryController::class, 'inventory'])->name('inventory.inventories');
+            Route::get('/resources', [InventoryController::class, 'resources'])->name('inventory.resources');
+
             Route::get('/resources/{id}', [ResourceCategoryController::class, 'openItem'])->name('inventory.item.view');
             Route::get('/categories', [ResourceCategoryController::class, 'view'])->name('inventory.categories');
+            
+            Route::get('/low-stock', function () {
+                return Inertia::render('Inventory/Inventory/LowStock');
+            })->name('inventory.low-stock');
+            
+            Route::get('/movements', function () {
+                return Inertia::render('Inventory/Inventory/Movements');
+            })->name('inventory.movements');
         });
 
         Route::prefix("business")->group(function () {
@@ -184,10 +196,23 @@ Route::middleware(['auth', 'verified', 'check.business'])->group(function () {
         })->name('my-customers');
     });
 
+    Route::prefix('warehouse')->name('warehouse.')->group(function () {
+        Route::get('warehouses', function () {
+            return Inertia::render('Warehouse/Warehouse/Index');
+        })->name('warehouses');
+
+        Route::get('bin-locations', function () {
+            return Inertia::render('Warehouse/BinLocation/Index');
+        })->name('bin-locations');
+    });
     Route::prefix('logistics')->name('logistics.')->group(function () {
-        Route::get('shipmets', function () {
+        Route::get('shipments', function () {
             return Inertia::render('Logistics/Shipments');
         })->name('shipments');
+    
+        Route::get('carriers', function () {
+            return Inertia::render('Logistics/Carriers');
+        })->name('carriers');
     });
 
     Route::get('settings', function () {
