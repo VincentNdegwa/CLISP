@@ -26,6 +26,12 @@ export default {
         ModularDataTable,
         AdjustQuantity,
     },
+    props: {
+        statuses: {
+            type: Array,
+            default: () => [],
+        },
+    },
     setup() {
         const params = ref({
             page: 1,
@@ -179,15 +185,7 @@ export default {
                     label: "Status",
                     field: "status",
                     type: "dropdown",
-                    options: [
-                        { label: "All", value: null },
-                        { label: "In Stock", value: 0 },
-                        { label: "Low Stock", value: 1 },
-                        { label: "Out of Stock", value: 2 },
-                        { label: "Reserved", value: 3 },
-                        { label: "Damaged", value: 4 },
-                        { label: "Expired", value: 5 },
-                    ],
+                    options: this.statuses,
                 },
                 {
                     label: "Warehouse",
@@ -428,12 +426,14 @@ export default {
                 v-if="modal.component === 'NewInventory'"
                 @close="closeModal"
                 @success="handleInventorySuccess"
+                :status="statuses"
                 newInventory="true"
             />
             <NewInventory
                 v-if="modal.component === 'UpdateInventory'"
                 @close="closeModal"
                 @success="handleInventorySuccess"
+                :status="statuses"
                 newInventory="false"
                 :data="inventory_data"
             />

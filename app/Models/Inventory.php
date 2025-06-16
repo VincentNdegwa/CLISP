@@ -48,10 +48,6 @@ class Inventory extends Model
         'reorder_point',
         'business_id',
         'status',
-        'batch_number',
-        'reorder_quantity',
-        'expiry_date',
-        'cost_price',
         'notes',
     ];
 
@@ -60,8 +56,6 @@ class Inventory extends Model
         'reorder_point' => 'decimal:2',
         'min_stock_level' => 'decimal:2',
         'max_stock_level' => 'decimal:2',
-        'cost_price' => 'decimal:2',
-        'expiry_date' => 'date',
         'status' => 'integer',
     ];
 

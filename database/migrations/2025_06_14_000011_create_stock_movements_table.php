@@ -16,6 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('business_id');
             $table->foreign('business_id')->references('business_id')->on('business');
             $table->foreignId('item_id')->constrained('resource_item')->onDelete('cascade');
+            $table->foreignId('inventory_id')->nullable()->constrained('inventories')->onDelete('set null');
             $table->foreignId('batch_id')->nullable()->constrained('inventory_batches')->onDelete('set null');
             $table->foreignId('from_warehouse_id')->nullable()->constrained('warehouses')->onDelete('set null');
             $table->foreignId('from_bin_location_id')->nullable()->constrained('bin_locations')->onDelete('set null');
@@ -38,7 +39,7 @@ return new class extends Migration
             // Indexes for faster lookups
             $table->index(['reference_type', 'reference_id']);
             $table->index('movement_type');
-            $table->index(['item_id', 'batch_id']);
+            $table->index(['item_id', 'inventory_id', 'batch_id']);
         });
     }
 

@@ -13,8 +13,10 @@ return new class extends Migration
     {
         Schema::create('stock_adjustments', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('item_id');
             $table->unsignedBigInteger('inventory_id');
             $table->unsignedBigInteger('business_id');
+            $table->unsignedBigInteger('batch_id')->nullable();
             $table->unsignedBigInteger('user_id');
             $table->enum('adjustment_type', ['increase', 'decrease']);
             $table->decimal('quantity', 10, 2);
@@ -24,17 +26,16 @@ return new class extends Migration
             $table->text('notes')->nullable();
             $table->timestamp('date');
             $table->string('reference')->nullable();
-            $table->unsignedBigInteger('batch_id')->nullable(); // Optional reference to specific inventory batch
             $table->timestamps();
             $table->softDeletes();
             
             // Foreign key constraints
+            $table->foreign('item_id')->references('id')->on('resource_item');
             $table->foreign('inventory_id')->references('id')->on('inventories');
             $table->foreign('user_id')->references('id')->on('users');
             $table->foreign('reason_id')->references('id')->on('stock_adjustment_reasons');
             $table->foreign('batch_id')->references('id')->on('inventory_batches');
             
-            // Indexes for faster lookups
             $table->index('business_id');
             $table->index('adjustment_type');
             $table->index('date');

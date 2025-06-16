@@ -1,10 +1,11 @@
 <script setup>
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import InputLabel from "@/Components/InputLabel.vue";
 import TextInput from "@/Components/TextInput.vue";
 import InputError from "@/Components/InputError.vue";
 import Select from "primevue/select";
+import InputNumber from "primevue/inputnumber";
 import Textarea from "primevue/textarea";
 import FormLayout from "@/Layouts/FormLayout.vue";
 import { useResourceStore } from "@/Store/Resource";
@@ -22,6 +23,10 @@ const props = defineProps({
         type: Object,
         default: null,
     },
+    status: {
+        type: Array,
+        default: () => [],
+    }
 });
 
 const resourceStore = useResourceStore();
@@ -29,21 +34,17 @@ const warehouseStore = useWarehouseStore();
 const binLocationStore = useBinLocationStore();
 const inventoryStore = useInventoryStore();
 
-// Changed emit to only include close and success
 const emit = defineEmits(["close", "success"]);
 
 const inventory = ref({
-    business_id: localStorage.getItem("business_id"),
     item_id: null,
     warehouse_id: null,
     bin_location_id: null,
-    batch_number: "",
     quantity: 0,
-    reorder_point: 0,
-    expiry_date: null,
-    cost_price: 0,
-    notes: "",
-    status: 0, // Default to In Stock
+    min_stock_level: null,
+    max_stock_level: null,
+    reorder_point: null,
+    status: 0, 
 });
 
 const submitted = ref(false);
@@ -72,14 +73,11 @@ onMounted(async () => {
             item_id: props.data.item_id,
             warehouse_id: props.data.warehouse_id,
             bin_location_id: props.data.bin_location_id,
-            batch_number: props.data.batch_number || "",
-            quantity: props.data.quantity || 0,
-            reorder_point: props.data.reorder_point || 0,
-            expiry_date: props.data.expiry_date
-                ? new Date(props.data.expiry_date)
-                : null,
-            notes: props.data.notes || "",
-            status: props.data.status,
+            quantity: parseFloat(props.data.quantity) || 0,
+            min_stock_level: props.data.min_stock_level !== null ? parseFloat(props.data.min_stock_level) : null,
+            max_stock_level: props.data.max_stock_level !== null ? parseFloat(props.data.max_stock_level) : null,
+            reorder_point: props.data.reorder_point !== null ? parseFloat(props.data.reorder_point) : null,
+            status: props.data.status || 'active',
         };
     }
 
@@ -101,7 +99,7 @@ const fetchItems = async () => {
             errors.value.item_id = resourceStore.error;
             return;
         }
-        items.value = resourceStore.items.data || [];
+        items.value = resourceStore.items?.data || [];
     } catch (error) {
         errors.value.item_id = "Error fetching items";
         console.error("Error fetching items:", error);
@@ -118,7 +116,7 @@ const fetchWarehouses = async () => {
             errors.value.warehouse_id = warehouseStore.error;
             return;
         }
-        warehouses.value = warehouseStore.warehouses.data || [];
+        warehouses.value = warehouseStore.warehouses?.data || [];
     } catch (error) {
         errors.value.warehouse_id = "Error fetching warehouses";
         console.error("Error fetching warehouses:", error);
@@ -135,7 +133,7 @@ const fetchBinLocations = async (warehouseId) => {
             errors.value.bin_location_id = binLocationStore.error;
             return;
         }
-        binLocations.value = binLocationStore.binLocations.data || [];
+        binLocations.value = binLocationStore.binLocations?.data || [];
     } catch (error) {
         errors.value.bin_location_id = "Error fetching bin locations";
         console.error("Error fetching bin locations:", error);
@@ -165,18 +163,35 @@ const validateForm = () => {
         errors.value.bin_location_id = "Bin location is required";
     }
 
-    if (inventory.value.quantity < 0) {
+    if (typeof inventory.value.quantity !== 'number' || inventory.value.quantity < 0) {
         errors.value.quantity = "Quantity must be 0 or greater";
     }
 
-    if (inventory.value.reorder_point < 0) {
+    if (inventory.value.min_stock_level !== null && inventory.value.min_stock_level < 0) {
+        errors.value.min_stock_level = "Minimum stock level must be 0 or greater";
+    }
+
+    if (inventory.value.max_stock_level !== null && inventory.value.max_stock_level < 0) {
+        errors.value.max_stock_level = "Maximum stock level must be 0 or greater";
+    }
+
+    if (inventory.value.reorder_point !== null && inventory.value.reorder_point < 0) {
         errors.value.reorder_point = "Reorder point must be 0 or greater";
+    }
+
+    if (inventory.value.min_stock_level !== null && 
+        inventory.value.max_stock_level !== null && 
+        inventory.value.min_stock_level > inventory.value.max_stock_level) {
+        errors.value.max_stock_level = "Maximum stock level must be greater than minimum stock level";
+    }
+
+    if (!(inventory.value.status>=0)) {
+        errors.value.status = "Status is required";
     }
 
     return Object.keys(errors.value).length === 0;
 };
 
-// Modified to handle API calls directly
 const saveInventory = async () => {
     if (!validateForm()) {
         return;
@@ -216,7 +231,9 @@ const isFormValid = computed(() => {
         inventory.value.item_id &&
         inventory.value.warehouse_id &&
         inventory.value.bin_location_id &&
-        inventory.value.quantity >= 0
+        inventory.value.quantity >= 0 &&
+        inventory.value.status>=0 &&
+        !formLoading.value
     );
 });
 
@@ -224,22 +241,16 @@ const title = computed(() => {
     return props.newInventory ? "Add New Inventory" : "Edit Inventory";
 });
 
-const statusOptions = [
-    { label: "In Stock", value: 0 },
-    { label: "Low Stock", value: 1 },
-    { label: "Out of Stock", value: 2 },
-    { label: "Reserved", value: 3 },
-    { label: "Damaged", value: 4 },
-    { label: "Expired", value: 5 },
-];
+const statusOptions = computed(() => {
+    return props.status.filter(option => option.value != null);
+})
 
 onMounted(() => {
-    // resourceStore.clearErrors();
+    // Clear errors from stores
     warehouseStore.clearErrors();
     binLocationStore.clearErrors();
 
     return () => {
-        // resourceStore.clearErrors();
         warehouseStore.clearErrors();
         binLocationStore.clearErrors();
     };
@@ -316,70 +327,75 @@ onMounted(() => {
                 />
             </div>
 
-            <!-- Batch Number -->
-            <div>
-                <InputLabel value="Batch Number" />
-                <TextInput
-                    v-model="inventory.batch_number"
-                    type="text"
-                    class="w-full"
-                    :disabled="!newInventory"
-                />
-                <InputError :message="errors.batch_number" />
-            </div>
-
             <!-- Quantity -->
             <div>
                 <InputLabel value="Quantity" required="true" />
-                <TextInput
+                <InputNumber
                     v-model="inventory.quantity"
-                    type="number"
-                    min="0"
-                    step="1"
+                    :min="0"
+                    :step="1"
                     class="w-full"
+                    :minFractionDigits="2"
+                    :maxFractionDigits="2"
+                    showButtons
                 />
                 <InputError
                     :message="
-                        submitted && inventory.quantity < 0
+                        submitted && (inventory.quantity === null || inventory.quantity < 0)
                             ? 'Quantity must be 0 or greater'
                             : errors.quantity
                     "
                 />
             </div>
 
+            <!-- Min Stock Level -->
+            <div>
+                <InputLabel value="Minimum Stock Level" />
+                <InputNumber
+                    v-model="inventory.min_stock_level"
+                    :min="0"
+                    :step="1"
+                    class="w-full"
+                    :minFractionDigits="2"
+                    :maxFractionDigits="2"
+                    showButtons
+                />
+                <InputError :message="errors.min_stock_level" />
+            </div>
+
+            <!-- Max Stock Level -->
+            <div>
+                <InputLabel value="Maximum Stock Level" />
+                <InputNumber
+                    v-model="inventory.max_stock_level"
+                    :min="0"
+                    :step="1"
+                    class="w-full"
+                    :minFractionDigits="2"
+                    :maxFractionDigits="2"
+                    showButtons
+                />
+                <InputError :message="errors.max_stock_level" />
+            </div>
+
             <!-- Reorder Point -->
             <div>
                 <InputLabel value="Reorder Point" />
-                <TextInput
+                <InputNumber
                     v-model="inventory.reorder_point"
-                    type="number"
-                    min="0"
-                    step="1"
+                    :min="0"
+                    :step="1"
                     class="w-full"
+                    :minFractionDigits="2"
+                    :maxFractionDigits="2"
+                    showButtons
                 />
-                <InputError
-                    :message="
-                        submitted && inventory.reorder_point < 0
-                            ? 'Reorder point must be 0 or greater'
-                            : errors.reorder_point
-                    "
-                />
-            </div>
-
-            <!-- Expiry Date -->
-            <div>
-                <InputLabel value="Expiry Date" />
-                <TextInput
-                    v-model="inventory.expiry_date"
-                    type="date"
-                    class="w-full"
-                />
-                <InputError :message="errors.expiry_date" />
+                <InputError :message="errors.reorder_point" />
             </div>
 
             <!-- Status -->
             <div>
-                <InputLabel value="Status" />
+                <InputLabel value="Status" required="true" />
                 <Select
                     v-model="inventory.status"
                     :options="statusOptions"
@@ -388,15 +404,14 @@ onMounted(() => {
                     placeholder="Select Status"
                     class="w-full"
                 />
-                <InputError :message="errors.status" />
+                <InputError
+                    :message=" errors.status"
+                />
             </div>
         </div>
 
-        <!-- Notes -->
-        <div class="mb-4">
-            <InputLabel value="Notes" />
-            <Textarea v-model="inventory.notes" rows="3" class="w-full" />
-            <InputError :message="errors.notes" />
+        <div v-if="inventoryStore.error" class="p-3 bg-red-50 text-red-700 rounded mb-4">
+            {{ inventoryStore.error }}
         </div>
 
         <div class="flex justify-end gap-2 mt-4">
@@ -406,12 +421,12 @@ onMounted(() => {
                 type="button"
                 class="mr-2"
             >
-            Cancel
+                Cancel
             </PrimaryButton>
             <PrimaryRoseButton
-                @click="save"
+                @click="saveInventory"
                 :disabled="!isFormValid || formLoading"
-                :loading="formLoading || props.loading"
+                :loading="formLoading"
                 type="button"
             >
                 {{

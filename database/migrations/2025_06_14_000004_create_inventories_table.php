@@ -1,8 +1,9 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
+use App\Models\Inventory;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
 
 return new class extends Migration
 {
@@ -21,7 +22,7 @@ return new class extends Migration
             $table->decimal('max_stock_level', 12, 2)->nullable();
             $table->decimal('reorder_point', 12, 2)->nullable();
             $table->unsignedBigInteger('business_id');
-            $table->string('status')->default('active'); // active, inactive, discontinued
+            $table->string('status')->default(Inventory::STATUS_IN_STOCK);
             $table->timestamps();
             $table->softDeletes();
             

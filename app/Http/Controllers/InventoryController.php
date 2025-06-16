@@ -11,18 +11,41 @@ use App\Models\StockMovement;
 use App\Models\WarehouseZone;
 use App\Models\InventoryBatch;
 use App\Models\StockAdjustment;
+use App\Services\InventoryManager;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
 class InventoryController extends Controller
 {
+    protected $inventoryManager;
+
+    public function __construct(InventoryManager $inventoryManager)
+    {
+        $this->inventoryManager = $inventoryManager;
+    }
+    
     public function resources()
     {
         return Inertia::render('Inventory/Resources/Index');
     }
     
     public function inventory(){
-        return Inertia::render('Inventory/Inventory/Index');
+        $statusText = Inventory::$statusText;
+        $statusClasses = Inventory::$statusClass;
+        $statusOptions = [
+            ['label' => 'All', 'value' => null]
+        ];
+
+        foreach (Inventory::$statusText as $value => $label) {
+            $statusOptions[] = [
+                'label' => $label,
+                'value' => $value
+            ];
+        }
+        return Inertia::render('Inventory/Inventory/Index',[
+            'statuses' => $statusOptions,
+            'statusClasses' => $statusClasses,
+        ]);
     }
 
     public function index(Request $request)
@@ -65,73 +88,55 @@ class InventoryController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'item_id' => 'required|exists:resource_item,id',
             'warehouse_id' => 'required|exists:warehouses,id',
             'bin_location_id' => 'required|exists:bin_locations,id',
             'quantity' => 'required|numeric|min:0',
             'reorder_point' => 'nullable|numeric|min:0',
-            'reorder_quantity' => 'nullable|numeric|min:0',
+            'min_stock_level' => 'nullable|numeric|min:0',
+            'max_stock_level' => 'nullable|numeric|min:0',
+            'notes' => 'nullable|string|max:1000',
         ]);
 
-        try {
-            DB::beginTransaction();
-            $warehouse = Warehouse::findOrFail($request->warehouse_id);
-            $request->merge(['business_id' => $warehouse->business_id]);
+        $warehouse = Warehouse::findOrFail($validated['warehouse_id']);
+        
+        $inventoryData = [
+            'item_id' => $validated['item_id'],
+            'warehouse_id' => $validated['warehouse_id'],
+            'bin_location_id' => $validated['bin_location_id'],
+            'quantity' => $validated['quantity'],
+            'business_id' => $warehouse->business_id,
+            'reorder_point' => $validated['reorder_point'] ?? null,
+            'min_stock_level' => $validated['min_stock_level'] ?? null,
+            'max_stock_level' => $validated['max_stock_level'] ?? null,
+            'notes' => $validated['notes'] ?? 'Initial inventory setup',
+            'user_id' => Auth::id(),
+        ];
 
-            $inventory = Inventory::where('business_id', $warehouse->business_id)
-                ->where('item_id', $request->item_id)
-                ->where('warehouse_id', $warehouse->id)
-                ->where('bin_location_id', $request->bin_location_id)
-                ->first();
+        $result = $this->inventoryManager->createOrUpdateInventory($inventoryData);
 
-            if ($inventory) {
-                // Update existing inventory
-                $oldQuantity = $inventory->quantity;
-                $inventory->quantity += $request->quantity;
-                $inventory->reorder_point = $request->reorder_point ?? $inventory->reorder_point;
-                $inventory->reorder_quantity = $request->reorder_quantity ?? $inventory->reorder_quantity;
-                $inventory->save();
-            } else {
-                // Create new inventory
-                $inventory = Inventory::create($request->all());
-                $oldQuantity = 0;
-            }
-
-            // Create stock movement record
-            StockMovement::create([
-                'business_id' => $warehouse->business_id,
-                'item_id' => $request->item_id,
-                'warehouse_id' => $warehouse->id,
-                'bin_location_id' => $request->bin_location_id,
-                'batch_id' => $request->batch_id ?? null,
-                'quantity' => $request->quantity,
-                'movement_type' => 'adjustment',
-                'reference_type' => 'inventory_adjustment',
-                'reference_id' => $inventory->id,
-                'notes' => $request->notes ?? 'Initial inventory setup',
-                'created_by' => Auth::id(),
-            ]);
-
-            DB::commit();
-
+        if (!$result['status']) {
             return response()->json([
-                'message' => 'Inventory created successfully',
-                'inventory' => $inventory
-            ], 201);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json(['message' => 'Error creating inventory: ' . $e->getMessage()], 500);
+                'message' => $result['message'],
+                'errors' => ['general' => [$result['error'] ?? 'Unknown error']]
+            ], 500);
         }
+
+        return response()->json([
+            'message' => $result['message'],
+            'inventory' => $result['inventory']
+        ], $result['is_new'] ? 201 : 200);
     }
 
     public function update(Request $request, $id)
     {
         $request->validate([
             'quantity' => 'sometimes|numeric|min:0',
-            'reorder_point' => 'nullable|numeric|min:0',
-            'reorder_quantity' => 'nullable|numeric|min:0',
             'bin_location_id' => 'sometimes|exists:bin_locations,id',
+            'reorder_point' => 'nullable|numeric|min:0',
+            'min_stock_level' => 'nullable|numeric|min:0',
+            'max_stock_level' => 'nullable|numeric|min:0',
         ]);
 
         try {
@@ -150,10 +155,12 @@ class InventoryController extends Controller
                 $inventory->reorder_point = $request->reorder_point;
             }
 
-            if ($request->has('reorder_quantity')) {
-                $inventory->reorder_quantity = $request->reorder_quantity;
+            if ($request->has('min_stock_level')) {
+                $inventory->min_stock_level = $request->min_stock_level;
             }
-
+            if ($request->has('max_stock_level')) {
+                $inventory->max_stock_level = $request->max_stock_level;
+            }
             if ($request->has('bin_location_id')) {
                 $inventory->bin_location_id = $request->bin_location_id;
             }
@@ -240,84 +247,115 @@ class InventoryController extends Controller
             'adjustment_type' => 'required|in:increase,decrease',
             'reason_id' => 'required|exists:stock_adjustment_reasons,id',
             'notes' => 'nullable|string|max:1000',
+            'batch_id' => 'nullable|exists:inventory_batches,id',
         ]);
-        
-        try {
-            DB::beginTransaction();
-            
-            $inventory = Inventory::findOrFail($id);
-            
-            $currentQuantity = $inventory->quantity;
-            $adjustmentAmount = $validated['quantity'];
-            
-            if ($validated['adjustment_type'] === 'increase') {
-                $newQuantity = $currentQuantity + $adjustmentAmount;
-            } else {
-                $newQuantity = max(0, $currentQuantity - $adjustmentAmount);
-                
-                if ($adjustmentAmount > $currentQuantity) {
-                    return response()->json([
-                        'message' => 'Cannot subtract more than the current inventory quantity',
-                        'errors' => ['quantity' => ['Not enough quantity available']]
-                    ], 422);
-                }
-            }
-            
-            $inventory->quantity = $newQuantity;
-            
-            if ($newQuantity <= 0) {
-                $inventory->status = Inventory::STATUS_OUT_OF_STOCK;
-            } elseif ($newQuantity <= $inventory->reorder_point) {
-                $inventory->status = Inventory::STATUS_LOW_STOCK;
-            } else {
-                $inventory->status = Inventory::STATUS_IN_STOCK;
-            }
-            
-            $inventory->save();
-            
-            StockAdjustment::create([
-                'inventory_id' => $inventory->id,
-                'business_id' => $inventory->business_id,
-                'user_id' => Auth::user()->id,
-                'adjustment_type' => $validated['adjustment_type'],
-                'quantity' => $validated['quantity'],
-                'previous_quantity' => $currentQuantity,
-                'new_quantity' => $newQuantity,
-                'reason_id' => $validated['reason_id'],
-                'notes' => $validated['notes'] ?? null,
-                'date' => now(),
-            ]);
-            
-            StockMovement::create([
-                'business_id' => $inventory->business_id,
-                'item_id' => $inventory->item_id,
-                'warehouse_id' => $inventory->warehouse_id,
-                'bin_location_id' => $inventory->bin_location_id,
-                'batch_id' => null,
-                'quantity' => $validated['adjustment_type'] === 'increase' ? $adjustmentAmount : -$adjustmentAmount,
-                'movement_type' => 'adjustment',
-                'reference_type' => 'stock_adjustment',
-                'reference_id' => $inventory->id,
-                'notes' => $validated['notes'] ?? 'Inventory quantity adjustment',
-                'created_by' => Auth::user()->id,
-            ]);
-            
-            DB::commit();
-            
-            $inventory->load(['item', 'warehouse', 'binLocation']);
-            
+
+        $inventory = Inventory::findOrFail($id);
+
+        $adjustmentData = [
+            'inventory_id' => $id,
+            'adjustment_type' => $validated['adjustment_type'],
+            'quantity' => $validated['quantity'],
+            'reference_type' => 'stock_adjustment',
+            'reference_id' => null,
+            'reason_id' => $validated['reason_id'],
+            'notes' => $validated['notes'] ?? null,
+            'batch_id' => $validated['batch_id'] ?? null,
+            'user_id' => Auth::id(),
+        ];
+
+        $result = $this->inventoryManager->adjustQuantity($adjustmentData);
+
+        if (!$result['status']) {
             return response()->json([
-                'message' => 'Inventory quantity adjusted successfully',
-                'inventory' => $inventory
-            ]);
-            
-        } catch (\Exception $e) {
-            DB::rollBack();
-                
-            return response()->json([
-                'message' => 'Failed to adjust inventory quantity',
-                'error' => $e->getMessage()
-            ], 500);
+                'message' => $result['message'],
+                'errors' => $result['errors'] ?? ['general' => [$result['error'] ?? 'Unknown error']]
+            ], 422);
         }
+
+        return response()->json([
+            'message' => $result['message'],
+            'inventory' => $result['inventory']
+        ]);
+    }
+
+    public function transferStock(Request $request)
+    {
+        $validated = $request->validate([
+            'source_inventory_id' => 'required|exists:inventories,id',
+            'destination_inventory_id' => 'nullable|exists:inventories,id',
+            'destination_warehouse_id' => 'required_without:destination_inventory_id|exists:warehouses,id',
+            'destination_bin_location_id' => 'nullable|exists:bin_locations,id',
+            'quantity' => 'required|numeric|min:0.01',
+            'notes' => 'nullable|string|max:1000',
+            'batch_id' => 'nullable|exists:inventory_batches,id',
+        ]);
+
+        $transferData = [
+            'source_inventory_id' => $validated['source_inventory_id'],
+            'destination_inventory_id' => $validated['destination_inventory_id'] ?? null,
+            'destination_warehouse_id' => $validated['destination_warehouse_id'] ?? null,
+            'destination_bin_location_id' => $validated['destination_bin_location_id'] ?? null,
+            'quantity' => $validated['quantity'],
+            'notes' => $validated['notes'] ?? 'Stock transfer',
+            'batch_id' => $validated['batch_id'] ?? null,
+            'user_id' => Auth::id(),
+            'reference_type' => 'manual_transfer',
+            'reference_id' => null,
+        ];
+
+        $result = $this->inventoryManager->transferStock($transferData);
+
+        if (!$result['status']) {
+            return response()->json([
+                'message' => $result['message'],
+                'errors' => $result['errors'] ?? ['general' => [$result['error'] ?? 'Unknown error']]
+            ], 422);
+        }
+
+        return response()->json([
+            'message' => $result['message'],
+            'transfer' => $result['transfer']
+        ]);
+    }
+
+    public function processBatch($inventoryId, Request $request)
+    {
+        $validated = $request->validate([
+            'operation' => 'required|in:create,adjust,expire,damage',
+            'quantity' => 'required_if:operation,create,adjust|numeric|min:0',
+            'batch_id' => 'required_unless:operation,create|exists:inventory_batches,id',
+            'batch_data' => 'sometimes|array',
+            'damaged_quantity' => 'required_if:operation,damage|numeric|min:0.01',
+            'reason_id' => 'nullable|exists:stock_adjustment_reasons,id',
+            'adjust_inventory' => 'sometimes|boolean',
+        ]);
+
+        $batchData = [
+            'inventory_id' => $inventoryId,
+            'operation' => $validated['operation'],
+            'quantity' => $validated['quantity'] ?? 0,
+            'batch_id' => $validated['batch_id'] ?? null,
+            'batch_data' => $validated['batch_data'] ?? [],
+            'damaged_quantity' => $validated['damaged_quantity'] ?? null,
+            'reason_id' => $validated['reason_id'] ?? null,
+            'adjust_inventory' => $validated['adjust_inventory'] ?? true,
+            'user_id' => Auth::id(),
+        ];
+
+        $result = $this->inventoryManager->processBatchOperation($batchData);
+
+        if (!$result['status']) {
+            return response()->json([
+                'message' => $result['message'],
+                'errors' => $result['errors'] ?? ['general' => [$result['error'] ?? 'Unknown error']]
+            ], 422);
+        }
+
+        return response()->json([
+            'message' => $result['message'],
+            'batch' => $result['batch'],
+            'inventory' => $result['inventory']
+        ]);
     }
 }

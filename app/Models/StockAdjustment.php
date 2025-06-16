@@ -11,6 +11,7 @@ class StockAdjustment extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
+        'item_id',
         'inventory_id',
         'business_id',
         'user_id',
@@ -31,6 +32,9 @@ class StockAdjustment extends Model
         'previous_quantity' => 'decimal:2',
         'new_quantity' => 'decimal:2',
     ];
+    public function item(){
+        return $this->belongsTo(ResourceItem::class, 'item_id');
+    }
 
     public function inventory()
     {

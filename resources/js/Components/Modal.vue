@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, onUnmounted, watch } from "vue";
+import { computed, onMounted, onUnmounted, watch, ref } from "vue";
 
 const props = defineProps({
     show: {
@@ -14,9 +14,36 @@ const props = defineProps({
         type: Boolean,
         default: true,
     },
+    theme: {
+        type: String,
+        default: "primary", // primary, secondary, info, success, warning, danger
+    },
 });
 
 const emit = defineEmits(["close"]);
+const isDarkMode = ref(false);
+
+// Check for dark mode preference
+onMounted(() => {
+    isDarkMode.value = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    // Listen for changes in color scheme preference
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+        isDarkMode.value = event.matches;
+    });
+    
+    document.addEventListener("keydown", closeOnEscape);
+});
+
+onUnmounted(() => {
+    document.removeEventListener("keydown", closeOnEscape);
+    document.body.style.overflow = null;
+    
+    // Clean up event listener
+    if (window.matchMedia) {
+        window.matchMedia('(prefers-color-scheme: dark)').removeEventListener('change', () => {});
+    }
+});
 
 watch(
     () => props.show,
@@ -41,13 +68,6 @@ const closeOnEscape = (e) => {
     }
 };
 
-onMounted(() => document.addEventListener("keydown", closeOnEscape));
-
-onUnmounted(() => {
-    document.removeEventListener("keydown", closeOnEscape);
-    document.body.style.overflow = null;
-});
-
 const maxWidthClass = computed(() => {
     return {
         sm: "sm:max-w-sm",
@@ -64,6 +84,21 @@ const maxWidthClass = computed(() => {
         "9xl": "sm:max-w-9xl",
     }[props.maxWidth];
 });
+
+const modalThemeClass = computed(() => {
+    if (isDarkMode.value) {
+        return 'bg-gray-800 text-gray-100 border border-gray-700 shadow-xl';
+    }
+    
+    // Light mode themes
+    return 'bg-gray-50 text-gray-800 shadow-xl';
+});
+
+const overlayClass = computed(() => {
+    return isDarkMode.value
+        ? 'bg-black opacity-80'
+        : 'bg-gray-600 opacity-75';
+});
 </script>
 
 <template>
@@ -71,7 +106,7 @@ const maxWidthClass = computed(() => {
         <Transition leave-active-class="duration-200">
             <div
                 v-show="show"
-                class="absolute inset-0 overflow-y-auto px-4 py-6 sm:px-0 z-50"
+                class="fixed inset-0 overflow-y-auto px-4 py-6 sm:px-0 z-50"
                 scroll-region
             >
                 <Transition
@@ -87,7 +122,10 @@ const maxWidthClass = computed(() => {
                         class="fixed inset-0 transform transition-all"
                         @click="close"
                     >
-                        <div class="absolute inset-0 bg-gray-500 opacity-75" />
+                        <div 
+                            class="absolute inset-0" 
+                            :class="overlayClass" 
+                        />
                     </div>
                 </Transition>
 
@@ -101,8 +139,8 @@ const maxWidthClass = computed(() => {
                 >
                     <div
                         v-show="show"
-                        class="mb-6 bg-white rounded-lg overflow-hidden shadow-xl transform transition-all sm:w-full sm:mx-auto"
-                        :class="maxWidthClass"
+                        class="mb-6 rounded-lg overflow-hidden transform transition-all sm:w-full sm:mx-auto"
+                        :class="[maxWidthClass, modalThemeClass]"
                     >
                         <slot v-if="show" />
                     </div>
@@ -111,3 +149,10 @@ const maxWidthClass = computed(() => {
         </Transition>
     </Teleport>
 </template>
+
+<style scoped>
+/* Optional: Add some additional styling for the modal */
+.dark-mode-transition {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+</style>
