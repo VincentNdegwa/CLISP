@@ -23,12 +23,12 @@ class InventoryController extends Controller
     {
         $this->inventoryManager = $inventoryManager;
     }
-    
+
     public function resources()
     {
         return Inertia::render('Inventory/Resources/Index');
     }
-    
+
     public function inventory(){
         $statusText = Inventory::$statusText;
         $statusClasses = Inventory::$statusClass;
@@ -77,6 +77,12 @@ class InventoryController extends Controller
 
         return response()->json($inventories);
     }
+    public function view(Request $request, $id)
+    {
+        return Inertia::render('Inventory/Inventory/Show', [
+            'inventoryId'=> $id
+        ]);
+    }
 
     public function show($id)
     {
@@ -100,7 +106,7 @@ class InventoryController extends Controller
         ]);
 
         $warehouse = Warehouse::findOrFail($validated['warehouse_id']);
-        
+
         $inventoryData = [
             'item_id' => $validated['item_id'],
             'warehouse_id' => $validated['warehouse_id'],
@@ -321,16 +327,38 @@ class InventoryController extends Controller
 
     public function processBatch($inventoryId, Request $request)
     {
-        $validated = $request->validate([
-            'operation' => 'required|in:create,adjust,expire,damage',
-            'quantity' => 'required_if:operation,create,adjust|numeric|min:0',
-            'batch_id' => 'required_unless:operation,create|exists:inventory_batches,id',
-            'batch_data' => 'sometimes|array',
-            'damaged_quantity' => 'required_if:operation,damage|numeric|min:0.01',
-            'reason_id' => 'nullable|exists:stock_adjustment_reasons,id',
-            'adjust_inventory' => 'sometimes|boolean',
-        ]);
+        $operation = $request->input('operation');
 
+        $rules = [
+            'operation' => 'required|in:create,adjust,expire,damage',
+            'adjust_inventory' => 'sometimes|boolean',
+            'notes' => 'nullable|string',
+        ];
+
+        if ($operation === 'create') {
+            $rules['quantity'] = 'required|numeric|min:0';
+            $rules['batch_data'] = 'required|array';
+            $rules['batch_data.batch_number'] = 'required|string';
+            $rules['reason_id'] = 'required|exists:stock_adjustment_reasons,id';
+        }
+        elseif ($operation === 'adjust') {
+            $rules['batch_id'] = 'required|exists:inventory_batches,id';
+            $rules['quantity'] = 'required|numeric|min:0';
+            $rules['reason_id'] = 'required|exists:stock_adjustment_reasons,id';
+        }
+        elseif ($operation === 'expire') {
+            $rules['batch_id'] = 'required|exists:inventory_batches,id';
+            $rules['reason_id'] = 'required|exists:stock_adjustment_reasons,id';
+        }
+        elseif ($operation === 'damage') {
+            $rules['batch_id'] = 'required|exists:inventory_batches,id';
+            $rules['damaged_quantity'] = 'required|numeric|min:0.01';
+            $rules['reason_id'] = 'required|exists:stock_adjustment_reasons,id';
+        }
+
+        $validated = $request->validate($rules);
+
+        // Rest of your code remains the same
         $batchData = [
             'inventory_id' => $inventoryId,
             'operation' => $validated['operation'],

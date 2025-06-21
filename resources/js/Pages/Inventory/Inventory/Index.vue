@@ -13,6 +13,7 @@ import { useResourceStore } from "@/Store/Resource";
 import { useWarehouseStore } from "@/Store/Warehouse";
 import { useBinLocationStore } from "@/Store/BinLocation";
 import AdjustQuantity from "./AdjustQuantity.vue";
+import BatchManagement from "./BatchManagement.vue";
 
 export default {
     components: {
@@ -25,6 +26,7 @@ export default {
         AlertNotification,
         ModularDataTable,
         AdjustQuantity,
+        BatchManagement,
     },
     props: {
         statuses: {
@@ -266,11 +268,11 @@ export default {
                     icon: "pi pi-sliders-h",
                     command: (data) => this.openAdjustQuantity(data),
                 },
-                // {
-                //     label: "Move",
-                //     icon: "pi pi-arrows-h",
-                //     command: (data) => this.openMoveInventory(data),
-                // },
+                {
+                    label: "Batch",
+                    icon: "pi pi-arrows-h",
+                    command: (data) => this.openBatch(data),
+                },
                 {
                     label: "Delete",
                     icon: "pi pi-trash",
@@ -308,6 +310,10 @@ export default {
         },
         openAdjustQuantity(data) {
             this.openNewInventoryForm("AdjustQuantity");
+            this.inventory_data = data;
+        },
+        openBatch(data) {
+            this.openNewInventoryForm("Batch");
             this.inventory_data = data;
         },
         openMoveInventory(data) {
@@ -443,12 +449,12 @@ export default {
                 @success="handleInventorySuccess"
                 :data="inventory_data"
             />
-            <!-- <Movements
-                v-if="modal.component === 'MoveInventory'"
+            <BatchManagement
+                v-if="modal.component === 'Batch'"
                 @close="closeModal"
                 @success="handleInventorySuccess"
                 :data="inventory_data"
-            /> -->
+            />
         </Modal>
 
     </AuthenticatedLayout>

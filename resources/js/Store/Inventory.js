@@ -78,11 +78,11 @@ export const useInventoryStore = defineStore('inventory', {
                 const response = await axios.post('/api/inventory', inventoryItem);
                 this.success = 'Inventory item created successfully';
                 
-                // Refresh the inventory list
-                await this.fetchInventory({
-                    page: 1,
-                    rows: 20
-                });
+                // // Refresh the inventory list
+                // await this.fetchInventory({
+                //     page: 1,
+                //     rows: 20
+                // });
                 
                 return response.data.inventory;
             } catch (error) {
@@ -104,10 +104,10 @@ export const useInventoryStore = defineStore('inventory', {
                 this.success = 'Inventory item updated successfully';
                 
                 // Refresh the inventory list
-                await this.fetchInventory({
-                    page: this.items?.current_page || 1,
-                    rows: this.items?.per_page || 20
-                });
+                // await this.fetchInventory({
+                //     page: this.items?.current_page || 1,
+                //     rows: this.items?.per_page || 20
+                // });
                 
                 return response.data.inventory;
             } catch (error) {
@@ -129,10 +129,10 @@ export const useInventoryStore = defineStore('inventory', {
                 this.success = 'Inventory item deleted successfully';
                 
                 // Refresh the inventory list
-                await this.fetchInventory({
-                    page: this.items?.current_page || 1,
-                    rows: this.items?.per_page || 20
-                });
+                // await this.fetchInventory({
+                //     page: this.items?.current_page || 1,
+                //     rows: this.items?.per_page || 20
+                // });
                 
                 return true;
             } catch (error) {
@@ -154,10 +154,10 @@ export const useInventoryStore = defineStore('inventory', {
                 this.success = 'Inventory quantity adjusted successfully';
                 
                 // Refresh the inventory list
-                await this.fetchInventory({
-                    page: this.items?.current_page || 1,
-                    rows: this.items?.per_page || 20
-                });
+                // await this.fetchInventory({
+                //     page: this.items?.current_page || 1,
+                //     rows: this.items?.per_page || 20
+                // });
                 
                 return response.data.inventory;
             } catch (error) {
@@ -179,10 +179,10 @@ export const useInventoryStore = defineStore('inventory', {
                 this.success = 'Inventory moved successfully';
                 
                 // Refresh the inventory list
-                await this.fetchInventory({
-                    page: this.items?.current_page || 1,
-                    rows: this.items?.per_page || 20
-                });
+                // await this.fetchInventory({
+                //     page: this.items?.current_page || 1,
+                //     rows: this.items?.per_page || 20
+                // });
                 
                 return response.data.inventory;
             } catch (error) {
@@ -297,6 +297,61 @@ export const useInventoryStore = defineStore('inventory', {
                 5: 'bg-purple-100 text-purple-800'
             };
             return classMap[status] || 'bg-gray-100 text-gray-800';
+        },
+        
+        async processBatch(inventoryId, batchData) {
+                    this.loading = true;
+                    this.error = null;
+                    this.success = null;
+            
+            try {
+                const response = await axios.post(`/api/inventory/${inventoryId}/process-batch`, batchData);
+                this.success = 'Batch operation completed successfully';
+                
+                // await this.fetchInventory({
+                //     page: this.items?.current_page || 1,
+                //     rows: this.items?.per_page || 20
+                // });
+                
+                return response.data;
+            } catch (error) {
+                this.error = error.response?.data?.message || 'Error processing batch operation';
+                console.error('Error processing batch operation:', error);
+                return null;
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        async fetchInventoryBatches(inventoryId) {
+            this.loading = true;
+            this.error = null;
+            
+            try {
+                const response = await axios.get(`/api/inventory/${inventoryId}`);
+                return response.data.batches || [];
+            } catch (error) {
+                this.error = error.response?.data?.message || 'Error fetching inventory batches';
+                console.error('Error fetching inventory batches:', error);
+                return [];
+            } finally {
+                this.loading = false;
+            }
+        },
+        async getInventoryBatches(inventoryId) {
+            this.loading = true;
+            this.error = null;
+            
+            try {
+                const response = await axios.get(`/api/inventory/${inventoryId}/batches`);
+                return response.data;
+            } catch (error) {
+                this.error = error.response?.data?.message || 'Error fetching inventory batches';
+                console.error('Error fetching inventory batches:', error);
+                return null;
+            } finally {
+                this.loading = false;
+            }
         },
         
         // Clear messages

@@ -23,12 +23,12 @@ class StockMovement extends Model
         'reference_type', // purchase_order, sales_order, stock_transfer, stock_adjustment, etc.
         'reference_id',
         'notes',
-        'performed_by',
-        'movement_date',
+        'approved_by',
+        'approved_at',
     ];
 
     protected $casts = [
-        'movement_date' => 'datetime',
+        'approved_at' => 'datetime',
     ];
 
     public function business()
