@@ -155,50 +155,54 @@
             </template>
           </Card>
 
-          <!-- Recent stock movements card -->
-          <Card class="p-2" >
-            <template #header>
-              <div class="flex justify-between items-center w-full">
-                <div>
-                  <h3 class="text-xl font-medium">Recent Stock Movements</h3>
-                  <p class="text-sm text-slate-500 dark:text-slate-400">Latest inventory transactions</p>
-                </div>
+        <!-- Stock Adjustments card -->
+        <Card class="p-2">
+          <template #header>
+            <div class="flex justify-between items-center w-full">
+              <div>
+                <h3 class="text-xl font-medium">Stock Adjustments</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400">Latest inventory transactions</p>
               </div>
-            </template>
+            </div>
+          </template>
 
-            <template #content>
-              <div v-if="inventory.stock_movements && inventory.stock_movements.length > 0">
-                <DataTable :value="inventory.stock_movements" stripedRows responsiveLayout="scroll">
-                  <Column field="created_at" header="Date">
-                    <template #body="{ data }">{{ formatDate(data.created_at) }}</template>
-                  </Column>
-                  <Column field="movement_type" header="Type">
-                    <template #body="{ data }">
-                      <Tag :severity="getMovementTypeSeverity(data.movement_type)" :value="getMovementTypeText(data.movement_type)" />
-                    </template>
-                  </Column>
-                  <Column field="quantity" header="Quantity">
-                    <template #body="{ data }">
-                      <span :class="{'text-green-600 dark:text-green-400': data.movement_type === 'in', 'text-red-600 dark:text-red-400': data.movement_type === 'out'}">
-                        {{ data.movement_type === 'in' ? '+' : '-' }}{{ data.quantity }}
-                      </span>
-                    </template>
-                  </Column>
-                  <Column field="reference_type" header="Reference">
-                    <template #body="{ data }">{{ data.reference_type || 'N/A' }}</template>
-                  </Column>
-                  <Column field="notes" header="Notes">
-                    <template #body="{ data }">{{ data.notes || 'N/A' }}</template>
-                  </Column>
-                </DataTable>
-              </div>
-              <div v-else class="text-center py-6">
-                <i class="pi pi-history text-4xl text-slate-300 dark:text-slate-600 mb-2"></i>
-                <p class="text-slate-500 dark:text-slate-400">No stock movements recorded</p>
-                <p class="text-sm text-slate-400 dark:text-slate-500 mt-1">Stock movements will appear here as inventory changes occur</p>
-              </div>
-            </template>
-          </Card>
+          <template #content>
+            <div v-if="inventory.stock_adjustments && inventory.stock_adjustments.length > 0">
+              <DataTable :value="inventory.stock_adjustments" stripedRows responsiveLayout="scroll">
+                <Column field="created_at" header="Date">
+                  <template #body="{ data }">{{ formatDate(data.date || data.created_at) }}</template>
+                </Column>
+                <Column field="adjustment_type" header="Type">
+                  <template #body="{ data }">
+                    <Tag :severity="getAdjustmentTypeSeverity(data.adjustment_type)" :value="getAdjustmentTypeText(data.adjustment_type)" />
+                  </template>
+                </Column>
+                <Column field="quantity" header="Quantity">
+                  <template #body="{ data }">
+                    <span :class="{
+                      'text-green-600 dark:text-green-400': data.adjustment_type === 'increase',
+                      'text-red-600 dark:text-red-400': data.adjustment_type === 'decrease'
+                    }">
+                      {{ data.adjustment_type === 'increase' ? '+' : '-' }}{{ data.quantity }}
+                    </span>
+                  </template>
+                </Column>
+                <Column field="reference" header="Reference">
+                  <template #body="{ data }">{{ data.reference || 'N/A' }}</template>
+                </Column>
+                <Column field="notes" header="Notes">
+                  <template #body="{ data }">{{ data.notes || 'N/A' }}</template>
+                </Column>
+              </DataTable>
+            </div>
+            <div v-else class="text-center py-6">
+              <i class="pi pi-history text-4xl text-slate-300 dark:text-slate-600 mb-2"></i>
+              <p class="text-slate-500 dark:text-slate-400">No stock adjustments recorded</p>
+              <p class="text-sm text-slate-400 dark:text-slate-500 mt-1">Adjustments will appear here as inventory changes occur</p>
+            </div>
+          </template>
+        </Card>
+
         </div>
 
         <!-- Not found state -->
@@ -433,23 +437,22 @@ const getBatchStatusSeverity = (status) => {
   }
 };
 
-// Get movement type text and severity
-const getMovementTypeText = (type) => {
+const getAdjustmentTypeText = (type) => {
   const typeMap = {
-    'in': 'In',
-    'out': 'Out',
-    'adjustment': 'Adjustment',
-    'transfer': 'Transfer',
+    'increase': 'Increase',
+    'decrease': 'Decrease',
+    'transfer_in': 'Transfer In',
+    'transfer_out': 'Transfer Out',
   };
-  return typeMap[type] || type;
+  return typeMap[type] || (type ? type.charAt(0).toUpperCase() + type.slice(1) : 'Unknown');
 };
 
-const getMovementTypeSeverity = (type) => {
+const getAdjustmentTypeSeverity = (type) => {
   const severityMap = {
-    'in': 'success',
-    'out': 'danger',
-    'adjustment': 'info',
-    'transfer': 'help',
+    'increase': 'success',
+    'decrease': 'danger',
+    'transfer_in': 'info',
+    'transfer_out': 'warning',
   };
   return severityMap[type] || 'secondary';
 };

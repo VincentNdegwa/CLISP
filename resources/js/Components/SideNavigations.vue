@@ -78,11 +78,11 @@ export default {
                             route: "inventory.categories",
                             icon: "bi bi-tags",
                         },
-                        {
-                            name: "Movements",
-                            route: 'inventory.movements',
-                            icon: "bi bi-tags",
-                        }
+                        // {
+                        //     name: "Movements",
+                        //     route: 'inventory.movements',
+                        //     icon: "bi bi-tags",
+                        // }
                     ],
                 },
                 {
