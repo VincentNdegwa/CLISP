@@ -131,6 +131,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('inventory/low-stock', [InventoryController::class, 'getLowStock']);
     Route::get('inventory/summary', [InventoryController::class, 'getSummary']);
     Route::post('inventory/{inventoryId}/process-batch', [InventoryController::class, 'processBatch']);
+    Route::get('inventory/{inventoryId}/batches', [InventoryController::class, 'getBatches']);
 
     // Stock adjustment reasons
     Route::resource('stock-adjustment-reasons', StockAdjustmentReasonController::class);

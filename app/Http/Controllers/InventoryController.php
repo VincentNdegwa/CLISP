@@ -86,7 +86,7 @@ class InventoryController extends Controller
 
     public function show($id)
     {
-        $inventory = Inventory::with(['item', 'warehouse', 'binLocation', 'batches'])
+        $inventory = Inventory::with(['item', 'warehouse', 'binLocation', 'batches','stockAdjustments'])
             ->findOrFail($id);
 
         return response()->json($inventory);
@@ -385,5 +385,21 @@ class InventoryController extends Controller
             'batch' => $result['batch'],
             'inventory' => $result['inventory']
         ]);
+    }
+
+    public function getBatches($inventoryId)
+    {
+        try {
+            $batches = InventoryBatch::where('inventory_id', $inventoryId)
+                ->with(['inventory', 'supplier', 'purchaseOrder'])
+                ->get();
+
+            return response()->json($batches);
+        }catch (\Exception $exception){
+            return response()->json([
+                'message' => 'Error fetching batches: ' . $exception->getMessage(),
+                'errors' => ['general' => [$exception->getMessage()]]
+            ], 500);
+        }
     }
 }

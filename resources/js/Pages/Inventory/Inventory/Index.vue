@@ -302,7 +302,7 @@ export default {
     },
     methods: {
         viewInventory(data) {
-            this.$inertia.visit(`/inventory/${data.id}`);
+            this.$inertia.visit(route('inventory.view', { id: data.id }));
         },
         openEditInventory(data) {
             this.openNewInventoryForm("UpdateInventory");

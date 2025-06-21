@@ -41,8 +41,6 @@ class InventoryManager
             // Find the inventory record
             $inventory = Inventory::findOrFail($inventoryId);
             $item = $inventory->item;
-
-            // Store current quantity before adjustment
             $currentQuantity = $inventory->quantity;
 
             // Calculate new quantity
@@ -50,6 +48,7 @@ class InventoryManager
                 $newQuantity = $currentQuantity + $quantity;
             } else {
                 // Check if we have enough quantity to decrease
+                Log::info("Current quantity: $currentQuantity, Quantity to subtract: $quantity");
                 if ($quantity > $currentQuantity) {
                     DB::rollBack();
                     return [
@@ -362,6 +361,8 @@ class InventoryManager
                             'notes' => "Batch {$batch->batch_number} quantity adjusted",
                             'user_id' => $userId,
                             'batch_id' => $batch->id,
+                            'reason_id' => $reasonId
+
                         ]);
 
                         if (!$adjustResult['status']) {
@@ -394,6 +395,8 @@ class InventoryManager
                             'notes' => "Batch {$batch->batch_number} expired",
                             'user_id' => $userId,
                             'batch_id' => $batch->id,
+                            'reason_id' => $reasonId
+
                         ]);
 
                         if (!$adjustResult['status']) {
