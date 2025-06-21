@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Warehouse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Inertia\Inertia;
 
 class WarehouseController extends Controller
 {
@@ -39,6 +40,12 @@ class WarehouseController extends Controller
         $warehouses = $query->paginate($perPage);
 
         return response()->json($warehouses);
+    }
+
+    public function view(Request $request, $id){
+        return Inertia::render('Warehouse/Warehouse/Show',[
+            'warehouse_id'=>$id
+        ]);
     }
 
     public function store(Request $request)
@@ -80,29 +87,37 @@ class WarehouseController extends Controller
     {
         $prefix = 'WH';
         $businessPrefix = substr($businessId, 0, 3);
-        
+
         $timestamp = now()->format('ymd');
-        
+
         $count = Warehouse::where('business_id', $businessId)->count() + 1;
-        
+
         $formattedCount = str_pad($count, 3, '0', STR_PAD_LEFT);
-        
+
         $code = $prefix . '-' . $businessPrefix . '-' . $timestamp . '-' . $formattedCount;
-        
+
         while (Warehouse::where('code', $code)->exists()) {
             $count++;
             $formattedCount = str_pad($count, 3, '0', STR_PAD_LEFT);
             $code = $prefix . '-' . $businessPrefix . '-' . $timestamp . '-' . $formattedCount;
         }
-        
+
         return $code;
     }
- 
+
     public function show($id)
     {
-        $warehouse = Warehouse::findOrFail($id);
-        
-        return response()->json($warehouse);
+        try {
+            $warehouse = Warehouse::where('id', $id)
+                ->with('business', 'binLocations', 'zones')
+                ->first();
+            if (!$warehouse) {
+                return response()->json(['message' => 'Warehouse not found'], 404);
+            }
+            return response()->json($warehouse);
+        }catch (\Exception $exception){
+            return response()->json(['message' => 'Warehouse not found'], 404);
+        }
     }
 
 
@@ -135,11 +150,11 @@ class WarehouseController extends Controller
         ]);
     }
 
-  
+
     public function destroy($id)
     {
         $warehouse = Warehouse::findOrFail($id);
-        
+
         if ($warehouse->inventories()->count() > 0) {
             return response()->json([
                 'message' => 'Cannot delete warehouse with existing inventory items'
@@ -158,5 +173,5 @@ class WarehouseController extends Controller
             'message' => 'Warehouse deleted successfully'
         ]);
     }
-    
+
 }

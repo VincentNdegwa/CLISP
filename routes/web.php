@@ -201,6 +201,7 @@ Route::middleware(['auth', 'verified', 'check.business'])->group(function () {
         Route::get('warehouses', function () {
             return Inertia::render('Warehouse/Warehouse/Index');
         })->name('warehouses');
+        Route::get('warehouses/{id}', [WarehouseController::class, 'view'])->name('view');
 
         Route::get('bin-locations', function () {
             return Inertia::render('Warehouse/BinLocation/Index');

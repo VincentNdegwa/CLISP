@@ -113,7 +113,7 @@ export default {
             rows: 10,
             search: ""
         });
-        
+
         // Modal state
         const modal = ref({
             open: false,
@@ -128,7 +128,7 @@ export default {
                     rows: params.value.rows,
                     search: params.value.search
                 });
-                
+
                 warehouses.value = warehouseStore.warehouses.data || [];
             } catch (error) {
                 console.error("Error loading warehouses:", error);
@@ -143,7 +143,7 @@ export default {
             isNewWarehouse.value = true;
             modal.value.component = "WarehouseForm";
             modal.value.open = true;
-            
+
             // Clear any previous messages
             warehouseStore.clearErrors();
             warehouseStore.clearSuccess();
@@ -154,7 +154,7 @@ export default {
             isNewWarehouse.value = false;
             modal.value.component = "WarehouseForm";
             modal.value.open = true;
-            
+
             // Clear any previous messages
             warehouseStore.clearErrors();
             warehouseStore.clearSuccess();
@@ -168,7 +168,7 @@ export default {
         const openDeleteDialog = (warehouse) => {
             selectedWarehouse.value = warehouse;
             deleteDialog.value = true;
-            
+
             // Clear any previous messages
             warehouseStore.clearErrors();
             warehouseStore.clearSuccess();
@@ -181,11 +181,11 @@ export default {
 
         const confirmDelete = async () => {
             if (!selectedWarehouse.value) return;
-            
+
             loading.value = true;
             try {
                 const success = await warehouseStore.deleteWarehouse(selectedWarehouse.value.id);
-                
+
                 if (success) {
                     closeDeleteDialog();
                     loadWarehouses();
@@ -288,8 +288,8 @@ export default {
                     sortable: true,
                     template: (value, row) => {
                         const status = value ? "Active" : "Inactive";
-                        const className = value 
-                            ? "bg-green-100 text-green-800" 
+                        const className = value
+                            ? "bg-green-100 text-green-800"
                             : "bg-red-100 text-red-800";
                         return `<span class="px-2 py-1 rounded-md text-xs font-medium ${className}">${status}</span>`;
                     }
@@ -317,6 +317,11 @@ export default {
             // Row actions
             rowActions: [
                 {
+                    label: "View",
+                    icon: "pi pi-eye",
+                    command: (data) => this.$inertia.visit(route('warehouse.view', { id: data.id }))
+                },
+                {
                     label: "Edit",
                     icon: "pi pi-pencil",
                     command: (data) => this.openEditWarehouse(data)
@@ -325,11 +330,6 @@ export default {
                     label: "Delete",
                     icon: "pi pi-trash",
                     command: (data) => this.openDeleteDialog(data)
-                },
-                {
-                    label: "View Bin Locations",
-                    icon: "pi pi-list",
-                    command: (data) => this.$router.push(`/bin-locations?warehouse_id=${data.id}`)
                 }
             ]
         };
@@ -357,7 +357,7 @@ export default {
             this.isNewWarehouse = true;
             this.modal.component = "WarehouseForm";
             this.modal.open = true;
-            
+
             // Clear any previous messages
             this.warehouseStore.clearErrors();
             this.warehouseStore.clearSuccess();
@@ -367,7 +367,7 @@ export default {
             this.isNewWarehouse = false;
             this.modal.component = "WarehouseForm";
             this.modal.open = true;
-            
+
             // Clear any previous messages
             this.warehouseStore.clearErrors();
             this.warehouseStore.clearSuccess();
@@ -379,7 +379,7 @@ export default {
         openDeleteDialog(data) {
             this.selectedWarehouse = data;
             this.deleteDialog = true;
-            
+
             // Clear any previous messages
             this.warehouseStore.clearErrors();
             this.warehouseStore.clearSuccess();
