@@ -126,14 +126,15 @@ class DashboardController extends Controller
             // Revenue Trends (Month Wise)
             $revenueTrends = TransactionItem::select(
                 DB::raw('DATE_FORMAT(transactions.created_at, "%M") as month'),
+                DB::raw('MONTH(transactions.created_at) as month_number'),
                 DB::raw('SUM(transaction_items.price * transaction_items.quantity) as total_revenue')
             )
                 ->join('transactions', 'transaction_items.transaction_id', '=', 'transactions.id')
                 ->where('transactions.initiator_id', $business_id)
                 ->whereIn('transactions.status', $statusToRevenue)
                 ->whereBetween('transactions.created_at', [Carbon::now()->startOfYear(), Carbon::now()->endOfYear()]) // Check within current year
-                ->groupBy('month')
-                ->orderBy(DB::raw('MONTH(transactions.created_at)'), 'asc')
+                ->groupBy('month', 'month_number')
+                ->orderBy('month_number', 'asc')
                 ->get();
 
 
