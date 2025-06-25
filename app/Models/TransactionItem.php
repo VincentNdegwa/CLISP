@@ -12,11 +12,12 @@ class TransactionItem extends Model
 
     protected $fillable = [
         'transaction_id',
-        "item_id",
+        'item_id',
+        'inventory_id',
+        'inventory_batch_id',
         'quantity',
         'price',
         'status',
-
     ];
 
     public function transaction()
@@ -27,5 +28,15 @@ class TransactionItem extends Model
     public function item()
     {
         return $this->belongsTo(ResourceItem::class, 'item_id');
+    }
+
+    public function inventory()
+    {
+        return $this->belongsTo(Inventory::class, 'inventory_id');
+    }
+    
+    public function inventoryBatch()
+    {
+        return $this->belongsTo(InventoryBatch::class, 'inventory_batch_id');
     }
 }

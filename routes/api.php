@@ -78,6 +78,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get("/list", [ResourceItemController::class, 'read']);
         Route::post("/update", [ResourceItemController::class, 'update']);
         Route::get('/resources/{id}', [ResourceItemController::class, 'getSingleResource']);
+        Route::get('/inventory/{id}', [ResourceItemController::class, 'getInventoryByResource']);
     });
     Route::delete("item/delete/{id}", [ResourceItemController::class, 'delete']);
     Route::delete("category/delete/{id}", [ResourceCategoryController::class, 'delete']);
