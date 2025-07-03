@@ -177,4 +177,102 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix("payments")->group(function () {
         Route::post("/record-payment", [PaymentsController::class, 'createPayment']);
     });
+
+
+    // Purchase Orders
+    Route::prefix('purchase-orders')->group(function () {
+        Route::get('/', [App\Http\Controllers\PurchaseOrderController::class, 'apiIndex']);
+        Route::post('/', [App\Http\Controllers\PurchaseOrderController::class, 'apiStore']);
+        Route::get('/{id}', [App\Http\Controllers\PurchaseOrderController::class, 'apiShow']);
+        Route::put('/{id}', [App\Http\Controllers\PurchaseOrderController::class, 'apiUpdate']);
+        Route::delete('/{id}', [App\Http\Controllers\PurchaseOrderController::class, 'apiDestroy']);
+        Route::post('/{id}/approve', [App\Http\Controllers\PurchaseOrderController::class, 'apiApprove']);
+        Route::post('/{id}/send', [App\Http\Controllers\PurchaseOrderController::class, 'apiSend']);
+        Route::post('/{id}/cancel', [App\Http\Controllers\PurchaseOrderController::class, 'apiCancel']);
+    });
+
+    // Suppliers
+    Route::prefix('suppliers')->group(function () {
+        Route::get('/', [App\Http\Controllers\SupplierController::class, 'apiIndex']);
+        Route::post('/', [App\Http\Controllers\SupplierController::class, 'apiStore']);
+        Route::get('/{id}', [App\Http\Controllers\SupplierController::class, 'apiShow']);
+        Route::put('/{id}', [App\Http\Controllers\SupplierController::class, 'apiUpdate']);
+        Route::delete('/{id}', [App\Http\Controllers\SupplierController::class, 'apiDestroy']);
+    });
+
+    // Goods Receipts
+    Route::prefix('goods-receipts')->group(function () {
+        Route::get('/', [App\Http\Controllers\GoodsReceiptController::class, 'apiIndex']);
+        Route::post('/', [App\Http\Controllers\GoodsReceiptController::class, 'apiStore']);
+        Route::get('/{id}', [App\Http\Controllers\GoodsReceiptController::class, 'apiShow']);
+        Route::post('/{id}/inspect', [App\Http\Controllers\GoodsReceiptController::class, 'apiInspectItems']);
+        Route::post('/{id}/complete', [App\Http\Controllers\GoodsReceiptController::class, 'apiComplete']);
+        Route::post('/{id}/create-inventory', [App\Http\Controllers\GoodsReceiptController::class, 'apiCreateInventory']);
+        Route::get('/purchase-order-items', [App\Http\Controllers\GoodsReceiptController::class, 'apiGetPurchaseOrderItems']);
+    });
+
+    // Sales Orders
+    Route::prefix('sales-orders')->group(function () {
+        Route::get('/', [App\Http\Controllers\SalesOrderController::class, 'apiIndex']);
+        Route::post('/', [App\Http\Controllers\SalesOrderController::class, 'apiStore']);
+        Route::get('/{id}', [App\Http\Controllers\SalesOrderController::class, 'apiShow']);
+        Route::put('/{id}', [App\Http\Controllers\SalesOrderController::class, 'apiUpdate']);
+        Route::delete('/{id}', [App\Http\Controllers\SalesOrderController::class, 'apiDestroy']);
+        Route::post('/{id}/confirm', [App\Http\Controllers\SalesOrderController::class, 'apiConfirm']);
+        Route::post('/{id}/process', [App\Http\Controllers\SalesOrderController::class, 'apiProcess']);
+        Route::post('/{id}/cancel', [App\Http\Controllers\SalesOrderController::class, 'apiCancel']);
+        Route::post('/{id}/allocate', [App\Http\Controllers\SalesOrderController::class, 'apiAllocateInventory']);
+    });
+
+    // Shipments
+    Route::prefix('shipments')->group(function () {
+        Route::get('/', [App\Http\Controllers\ShipmentController::class, 'apiIndex']);
+        Route::post('/', [App\Http\Controllers\ShipmentController::class, 'apiStore']);
+        Route::get('/{id}', [App\Http\Controllers\ShipmentController::class, 'apiShow']);
+        Route::put('/{id}', [App\Http\Controllers\ShipmentController::class, 'apiUpdate']);
+        Route::post('/{id}/ship', [App\Http\Controllers\ShipmentController::class, 'apiShip']);
+        Route::post('/{id}/deliver', [App\Http\Controllers\ShipmentController::class, 'apiDeliver']);
+    });
+
+    // Stock Movements
+    Route::prefix('stock-movements')->group(function () {
+        Route::get('/', [App\Http\Controllers\StockMovementController::class, 'apiIndex']);
+        Route::post('/', [App\Http\Controllers\StockMovementController::class, 'apiStore']);
+        Route::get('/{id}', [App\Http\Controllers\StockMovementController::class, 'apiShow']);
+    });
+
+    // Stock Counts
+    Route::prefix('stock-counts')->group(function () {
+        Route::get('/', [App\Http\Controllers\StockCountController::class, 'apiIndex']);
+        Route::post('/', [App\Http\Controllers\StockCountController::class, 'apiStore']);
+        Route::get('/{id}', [App\Http\Controllers\StockCountController::class, 'apiShow']);
+        Route::post('/{id}/update-counts', [App\Http\Controllers\StockCountController::class, 'apiUpdateCounts']);
+        Route::post('/{id}/verify', [App\Http\Controllers\StockCountController::class, 'apiVerify']);
+        Route::post('/{id}/adjust', [App\Http\Controllers\StockCountController::class, 'apiCreateAdjustment']);
+    });
+
+    // Inventory Adjustments
+    Route::prefix('inventory-adjustments')->group(function () {
+        Route::get('/', [App\Http\Controllers\InventoryAdjustmentController::class, 'apiIndex']);
+        Route::post('/', [App\Http\Controllers\InventoryAdjustmentController::class, 'apiStore']);
+        Route::get('/{id}', [App\Http\Controllers\InventoryAdjustmentController::class, 'apiShow']);
+        Route::put('/{id}', [App\Http\Controllers\InventoryAdjustmentController::class, 'apiUpdate']);
+        Route::delete('/{id}', [App\Http\Controllers\InventoryAdjustmentController::class, 'apiDestroy']);
+        Route::post('/{id}/approve', [App\Http\Controllers\InventoryAdjustmentController::class, 'apiApprove']);
+    });
+
+    // Inventory
+    Route::prefix('inventory')->group(function () {
+        Route::get('/', [App\Http\Controllers\InventoryController::class, 'apiIndex']);
+        Route::post('/', [App\Http\Controllers\InventoryController::class, 'apiStore']);
+        Route::get('/{id}', [App\Http\Controllers\InventoryController::class, 'apiShow']);
+        Route::put('/{id}', [App\Http\Controllers\InventoryController::class, 'apiUpdate']);
+        Route::delete('/{id}', [App\Http\Controllers\InventoryController::class, 'apiDestroy']);
+        Route::post('/{id}/adjust-quantity', [App\Http\Controllers\InventoryController::class, 'apiAdjustQuantity']);
+        Route::post('/{id}/move', [App\Http\Controllers\InventoryController::class, 'apiMoveInventory']);
+        Route::get('/low-stock', [App\Http\Controllers\InventoryController::class, 'apiGetLowStock']);
+        Route::get('/summary', [App\Http\Controllers\InventoryController::class, 'apiGetSummary']);
+        Route::post('/{inventoryId}/process-batch', [App\Http\Controllers\InventoryController::class, 'apiProcessBatch']);
+        Route::get('/{inventoryId}/batches', [App\Http\Controllers\InventoryController::class, 'getBatches']);
+    });
 });

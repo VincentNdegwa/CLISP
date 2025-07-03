@@ -64,7 +64,7 @@ Route::get('/choose-plan', function () {
         ->groupBy('product_id')
         ->map(function ($plans, $product_id) {
             return $plans->map(function ($plan) {
-                $plan->features = json_decode($plan->features);
+                $plan->features = is_string($plan->features) ? json_decode($plan->features) : $plan->features;
                 return $plan;
             });
         })
@@ -89,7 +89,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 Route::middleware(['auth', 'verified', 'check.business'])->group(function () {
-
     Route::get('/dashboard', function () {
         $user = Auth::user();
         $business_users = BusinessUser::where('user_id', $user->id)->with(['business', 'user'])->get();
@@ -107,88 +106,102 @@ Route::middleware(['auth', 'verified', 'check.business'])->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    Route::prefix('/')->group(function () {
-        Route::prefix("inventory")->group(function () {
-            Route::get('/inventories', [InventoryController::class, 'inventory'])->name('inventory.inventories');
-            Route::get('/inventory/{id}', [InventoryController::class, 'view'])->name('inventory.view');
-            Route::get('/resources', [InventoryController::class, 'resources'])->name('inventory.resources');
+    Route::prefix("business")->group(function () {
+        Route::get('/my-business', function () {
+            return Inertia::render('Business/MyBusiness');
+        })->name('business.my-business');
+        // Route::get('/my-business/{id}', [ResourceCategoryController::class, 'viewSingleBusiness'])->name('business.item.view');
+        Route::get('/connections', function () {
+            return Inertia::render('Business/BusinessConnection');
+        })->name('business.connection');
+    });
+    Route::prefix("inventory")->group(function () {
+        Route::get('/resources', [InventoryController::class, 'view'])->name('inventory.resources');
+        Route::get('/resources/{id}', [ResourceCategoryController::class, 'openItem'])->name('inventory.item.view');
+        Route::get('/categories', [ResourceCategoryController::class, 'view'])->name('inventory.categories');
+    });
 
-            Route::get('/resources/{id}', [ResourceCategoryController::class, 'openItem'])->name('inventory.item.view');
-            Route::get('/categories', [ResourceCategoryController::class, 'view'])->name('inventory.categories');
+    Route::prefix('transaction')->group(function () {
+        Route::get('/view/{transaction_id}', function ($id) {
+            return Inertia::render("Trade/ViewTransaction", [
+                'transactionId' => $id
+            ]);
+        })->name('transaction.view');
+        Route::get('/view-agreement/{transaction_id}', [TransactionController::class, 'previewAgreement']);
+        Route::get('/view-agreement/print/{transaction_id}', [TransactionController::class, 'printPreviewAgreement']);
+        Route::get('/download-agreement/{transaction_id}', [TransactionController::class, 'downloadAgreement']);
+        Route::get('/pdf-preview/{transaction_id}', [TransactionController::class, 'pdfPreviewAgreement']);
 
-            Route::get('/low-stock', function () {
-                return Inertia::render('Inventory/Inventory/LowStock');
-            })->name('inventory.low-stock');
+        Route::get('/view-receipt/print/{transaction_id}/{business_id}', [TransactionController::class, 'printPreviewReceipt']);
+    });
 
-            Route::get('/movements', function () {
-                return Inertia::render('Inventory/Movements/Index');
-            })->name('inventory.movements');
-        });
+    Route::prefix('purchasing')->name('purchasing.')->group(function () {
+        // Purchase Orders - Views Only
+        Route::get('/orders', [App\Http\Controllers\PurchaseOrderController::class, 'index'])->name('orders');
+        Route::get('/orders/create', [App\Http\Controllers\PurchaseOrderController::class, 'create'])->name('orders.create');
+        Route::get('/orders/{purchaseOrder}', [App\Http\Controllers\PurchaseOrderController::class, 'show'])->name('orders.show');
+        Route::get('/orders/{purchaseOrder}/edit', [App\Http\Controllers\PurchaseOrderController::class, 'edit'])->name('orders.edit');
 
-        Route::prefix("business")->group(function () {
-            Route::get('/my-business', function () {
-                return Inertia::render('Business/MyBusiness');
-            })->name('business.my-business');
-            // Route::get('/my-business/{id}', [ResourceCategoryController::class, 'viewSingleBusiness'])->name('business.item.view');
-            Route::get('/connections', function () {
-                return Inertia::render('Business/BusinessConnection');
-            })->name('business.connection');
-        });
+        // Suppliers - Views Only
+        Route::get('/suppliers', [App\Http\Controllers\SupplierController::class, 'index'])->name('suppliers');
+        Route::get('/suppliers/create', [App\Http\Controllers\SupplierController::class, 'create'])->name('suppliers.create');
+        Route::get('/suppliers/{supplier}', [App\Http\Controllers\SupplierController::class, 'show'])->name('suppliers.show');
+        Route::get('/suppliers/{supplier}/edit', [App\Http\Controllers\SupplierController::class, 'edit'])->name('suppliers.edit');
 
-        Route::prefix('trade-business')->name('b2b.')->group(function () {
-            Route::get('/purchase', function () {
-                return Inertia::render('Trade/Trade', [
-                    'transactionType' => 'purchase',
-                    'isB2B' => true
-                ]);
-            })->name('purchase');
-            Route::get('/leasing', function () {
-                return Inertia::render('Trade/Trade', [
-                    'transactionType' => 'leasing',
-                    'isB2B' => true
-                ]);
-            })->name('leasing');
-            Route::get('/borrowing', function () {
-                return Inertia::render('Trade/Trade', [
-                    'transactionType' => 'borrowing',
-                    'isB2B' => true
-                ]);
-            })->name('borrowing');
-        });
+        // Goods Receipts - Views Only
+        Route::get('/receipts', [App\Http\Controllers\GoodsReceiptController::class, 'index'])->name('receipts');
+        Route::get('/receipts/create', [App\Http\Controllers\GoodsReceiptController::class, 'create'])->name('receipts.create');
+        Route::get('/receipts/{goodsReceipt}', [App\Http\Controllers\GoodsReceiptController::class, 'show'])->name('receipts.show');
+    });
 
-        Route::prefix('trade-customer')->name('b2c.')->group(function () {
-            Route::get('/sale', function () {
-                return Inertia::render('Trade/Trade', [
-                    'transactionType' => 'sale',
-                    'isB2B' => false
-                ]);
-            })->name('sale');
-            Route::get('/leasing', function () {
-                return Inertia::render('Trade/Trade', [
-                    'transactionType' => 'leasing',
-                    'isB2B' => false
-                ]);
-            })->name('leasing');
-            Route::get('/borrowing', function () {
-                return Inertia::render('Trade/Trade', [
-                    'transactionType' => 'borrowing',
-                    'isB2B' => false
-                ]);
-            })->name('borrowing');
-        });
-        Route::prefix('transaction')->group(function () {
-            Route::get('/view/{transaction_id}', function ($id) {
-                return Inertia::render("Trade/ViewTransaction", [
-                    'transactionId' => $id
-                ]);
-            })->name('transaction.view');
-            Route::get('/view-agreement/{transaction_id}', [TransactionController::class, 'previewAgreement']);
-            Route::get('/view-agreement/print/{transaction_id}', [TransactionController::class, 'printPreviewAgreement']);
-            Route::get('/download-agreement/{transaction_id}', [TransactionController::class, 'downloadAgreement']);
-            Route::get('/pdf-preview/{transaction_id}', [TransactionController::class, 'pdfPreviewAgreement']);
+    Route::prefix('sales')->name('sales.')->group(function () {
+        // Sales Orders - Views Only
+        Route::get('/orders', [App\Http\Controllers\SalesOrderController::class, 'index'])->name('orders');
+        Route::get('/orders/create', [App\Http\Controllers\SalesOrderController::class, 'create'])->name('orders.create');
+        Route::get('/orders/{salesOrder}', [App\Http\Controllers\SalesOrderController::class, 'show'])->name('orders.show');
+        Route::get('/orders/{salesOrder}/edit', [App\Http\Controllers\SalesOrderController::class, 'edit'])->name('orders.edit');
 
-            Route::get('/view-receipt/print/{transaction_id}/{business_id}', [TransactionController::class, 'printPreviewReceipt']);
-        });
+        // Customers - Views Only
+        Route::get('/customers', [App\Http\Controllers\CustomerController::class, 'index'])->name('customers');
+        Route::get('/customers/create', [App\Http\Controllers\CustomerController::class, 'create'])->name('customers.create');
+        Route::get('/customers/{customer}', [App\Http\Controllers\CustomerController::class, 'show'])->name('customers.show');
+        Route::get('/customers/{customer}/edit', [App\Http\Controllers\CustomerController::class, 'edit'])->name('customers.edit');
+        
+        // Shipments - Views Only
+        Route::get('/shipments', [App\Http\Controllers\ShipmentController::class, 'salesIndex'])->name('shipments');
+        Route::get('/shipments/create', [App\Http\Controllers\ShipmentController::class, 'salesCreate'])->name('shipments.create');
+        Route::get('/shipments/{shipment}', [App\Http\Controllers\ShipmentController::class, 'salesShow'])->name('shipments.show');
+    });
+
+    Route::prefix('warehouse')->name('warehouse.')->group(function () {
+        // Goods Receipts - Views Only (already defined in purchasing)
+
+        // Shipments - Views Only
+        Route::get('/shipments', [App\Http\Controllers\ShipmentController::class, 'index'])->name('shipments');
+        Route::get('/shipments/create', [App\Http\Controllers\ShipmentController::class, 'create'])->name('shipments.create');
+        Route::get('/shipments/{shipment}', [App\Http\Controllers\ShipmentController::class, 'show'])->name('shipments.show');
+
+        // Stock Movements - Views Only
+        Route::get('/movements', [App\Http\Controllers\StockMovementController::class, 'index'])->name('movements');
+        Route::get('/movements/create', [App\Http\Controllers\StockMovementController::class, 'create'])->name('movements.create');
+        Route::get('/movements/{stockMovement}', [App\Http\Controllers\StockMovementController::class, 'show'])->name('movements.show');
+
+        // Stock Counts - Views Only
+        Route::get('/counts', [App\Http\Controllers\StockCountController::class, 'index'])->name('counts');
+        Route::get('/counts/create', [App\Http\Controllers\StockCountController::class, 'create'])->name('counts.create');
+        Route::get('/counts/{stockCount}', [App\Http\Controllers\StockCountController::class, 'show'])->name('counts.show');
+    });
+
+    Route::prefix('inventory')->name('inventory.')->group(function () {
+        Route::get('/', [App\Http\Controllers\InventoryController::class, 'index'])->name('index');
+        Route::get('/create', [App\Http\Controllers\InventoryController::class, 'create'])->name('create');
+        Route::get('/{inventory}', [App\Http\Controllers\InventoryController::class, 'show'])->name('show');
+        Route::get('/{inventory}/edit', [App\Http\Controllers\InventoryController::class, 'edit'])->name('edit');
+        
+        // Inventory Adjustments - Views Only
+        Route::get('/adjustments', [App\Http\Controllers\InventoryAdjustmentController::class, 'index'])->name('adjustments');
+        Route::get('/adjustments/create', [App\Http\Controllers\InventoryAdjustmentController::class, 'create'])->name('adjustments.create');
+        Route::get('/adjustments/{adjustment}', [App\Http\Controllers\InventoryAdjustmentController::class, 'show'])->name('adjustments.show');
     });
 
     Route::prefix('customer')->name('customer.')->group(function () {

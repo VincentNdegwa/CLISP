@@ -11,7 +11,73 @@ use Illuminate\Support\Facades\Validator;
 class StockMovementController extends Controller
 {
     /**
-     * Display a listing of stock movements.
+     * Display a listing of stock movements in the web UI.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Inertia\Response
+     */
+    public function webIndex(Request $request)
+    {
+        $business_id = $request->session()->get('business_id');
+        
+        $query = StockMovement::with([
+                'fromWarehouse:id,name',
+                'toWarehouse:id,name',
+                'fromBinLocation:id,name',
+                'toBinLocation:id,name',
+                'inventory.item:id,item_name',
+                'reason:id,name',
+                'createdBy:id,name',
+            ])
+            ->where('business_id', $business_id)
+            ->orderBy('created_at', 'desc');
+
+        // Handle filters
+        if ($request->has('status') && $request->input('status') !== 'all') {
+            $query->where('status', $request->input('status'));
+        }
+
+        if ($request->has('reason_id') && $request->input('reason_id') !== 'all') {
+            $query->where('reason_id', $request->input('reason_id'));
+        }
+        
+        if ($request->has('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('reference_number', 'like', "%{$search}%")
+                  ->orWhereHas('inventory.item', function ($sq) use ($search) {
+                      $sq->where('item_name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $stockMovements = $query->paginate($request->input('rows', 10));
+        // Get stock movement reasons
+        $reasons = DB::table('stock_movement_reasons')
+            ->where('business_id', $business_id)
+            ->orWhere('business_id', null)
+            ->select('id', 'name')
+            ->get();
+        
+        // Get status options for the dropdown
+        $statuses = [
+            ['label' => 'All', 'value' => 'all'],
+            ['label' => 'Draft', 'value' => 'draft'],
+            ['label' => 'Pending', 'value' => 'pending'],
+            ['label' => 'Completed', 'value' => 'completed'],
+            ['label' => 'Cancelled', 'value' => 'cancelled'],
+        ];
+
+        return \Inertia\Inertia::render('Inventory/Movements/StockMovement/Index', [
+            'stockMovements' => $stockMovements,
+            'reasons' => $reasons,
+            'statuses' => $statuses,
+            'filters' => $request->only(['status', 'reason_id', 'search']),
+        ]);
+    }
+
+    /**
+     * Display a listing of stock movements for API.
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
@@ -254,6 +320,38 @@ class StockMovementController extends Controller
      *
      * @param  int  $id
      * @return \Illuminate\Http\Response
+     */
+    /**
+     * Display the specified stock movement for web interface.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Inertia\Response
+     */
+    public function webShow(Request $request, $id)
+    {
+        $stockMovement = StockMovement::with([
+            'inventory.item', 
+            'inventory.warehouse', 
+            'inventory.binLocation',
+            'sourceInventory.warehouse',
+            'sourceInventory.binLocation',
+            'destinationInventory.warehouse',
+            'destinationInventory.binLocation',
+            'reason',
+            'createdBy'
+        ])->findOrFail($id);
+        
+        return \Inertia\Inertia::render('Inventory/Movements/StockMovement/Show', [
+            'stockMovement' => $stockMovement
+        ]);
+    }
+    
+    /**
+     * Display the specified stock movement for the API.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\JsonResponse
      */
     public function show($id)
     {

@@ -181,7 +181,7 @@ export const useResourceStore = defineStore("resource_store", {
                 this.loading = false;
             }
         },
-        
+
         // Add new method to fetch inventory for a resource
         async fetchInventoryByResource(resourceId) {
             const store = useUserStore();
@@ -196,7 +196,9 @@ export const useResourceStore = defineStore("resource_store", {
             this.error = null;
 
             try {
-                const response = await axios.get(`/api/item/${businessId}/inventory/${resourceId}`);
+                const response = await axios.get(
+                    `/api/item/${businessId}/inventory/${resourceId}`
+                );
                 if (response.data.error) {
                     this.error = response.data.message;
                     return null;
@@ -213,6 +215,10 @@ export const useResourceStore = defineStore("resource_store", {
             } finally {
                 this.loading = false;
             }
+        },
+        clearErrors() {
+            this.error = null;
+            this.success = null;
         },
     },
 });

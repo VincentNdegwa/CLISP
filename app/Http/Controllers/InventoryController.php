@@ -48,7 +48,7 @@ class InventoryController extends Controller
         ]);
     }
 
-    public function index(Request $request)
+    public function apiIndex(Request $request)
     {
         $query = Inventory::with(['item', 'warehouse', 'binLocation'])
             ->where('business_id', $request->business_id);
@@ -76,6 +76,9 @@ class InventoryController extends Controller
         $inventories = $query->paginate($request->input('rows', 20));
 
         return response()->json($inventories);
+    }
+    public function index(){
+        return Inertia::render('Inventory/Inventory/Index');
     }
     public function view(Request $request, $id)
     {
