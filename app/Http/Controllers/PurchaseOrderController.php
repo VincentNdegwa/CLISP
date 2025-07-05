@@ -55,7 +55,7 @@ class PurchaseOrderController extends Controller
         $purchaseOrders = $query->paginate(10);
         $suppliers = Supplier::where('business_id', $business)->select('id', 'name')->get();
 
-        return Inertia::render('Inventory/Purchasing/PurchaseOrder/Index', [
+        return Inertia::render('Purchasing/Orders/Index', [
             'purchaseOrders' => $purchaseOrders,
             'suppliers' => $suppliers,
             'filters' => $request->only(['status', 'supplier_id', 'search']),
@@ -74,14 +74,13 @@ class PurchaseOrderController extends Controller
             ->select('id', 'item_name', 'price', 'unit')
             ->get();
 
-        return Inertia::render('Inventory/PurchaseOrders/Create', [
+        return Inertia::render('Purchasing/Orders/Create', [
             'suppliers' => $suppliers,
             'items' => $items,
             'nextPoNumber' => $this->generateNextPoNumber($business),
         ]);
     }
 
-    // store method removed as we're using API routes for data operations
 
     /**
      * Display the specified purchase order.

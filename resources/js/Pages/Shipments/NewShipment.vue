@@ -472,7 +472,7 @@ export default {
                 </Column>
             </DataTable>
 
-            <div v-if="shipment.items.length === 0" class="text-center py-4 bg-gray-50 rounded-md">
+            <div v-if="shipment.items.length === 0" class="text-center py-4 rounded-md">
                 <p class="text-gray-500">No items added to this shipment</p>
             </div>
         </div>

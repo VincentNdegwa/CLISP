@@ -15,7 +15,7 @@ use Illuminate\Support\Str;
 
 class ShipmentController extends Controller
 {
-    public function view()
+    public function salesIndex()
     {
         return Inertia::render('Shipments/Main');
     }
