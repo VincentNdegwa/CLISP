@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Inertia\Inertia;
 use App\Models\Customer;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -9,6 +10,10 @@ use Illuminate\Validation\ValidationException;
 
 class CustomerController extends Controller
 {
+    public function index()
+    {
+        return Inertia::render('Customers/MyCustomers');
+    }
     public function create(Request $request)
     {
 

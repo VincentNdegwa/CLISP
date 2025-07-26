@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Business;
+use App\Models\Inventory;
 use App\Models\ItemBusiness;
 use App\Models\ResourceItem;
-use App\Models\TransactionItemHistory;
 use Illuminate\Http\Request;
+use App\Models\InventoryBatch;
 use Illuminate\Support\Facades\DB;
+use App\Models\TransactionItemHistory;
 use Illuminate\Validation\ValidationException;
 
 class ResourceItemController extends Controller
@@ -244,6 +246,55 @@ class ResourceItemController extends Controller
                 'error' => true,
                 'message' => $th->getMessage(),
             ]);
+        }
+    }
+
+    public function getInventoryByResource($business_id, $resourceId)
+    {
+        try {
+            $resource = ResourceItem::where('id', $resourceId)
+                ->where('business_id', $business_id)
+                ->first();
+                
+            if (!$resource) {
+                return response()->json([
+                    'error' => true,
+                    'message' => 'Resource not found.'
+                ], 404);
+            }
+            
+            // Get all inventory items for this resource
+            $inventoryItems = Inventory::where('item_id', $resourceId)
+                ->where('business_id', $business_id)
+                ->with(['warehouse', 'binLocation', 
+                    'batches' => function($query) {
+                        $query->where('status', '!=', InventoryBatch::STATUS_SOLD)
+                              ->where('quantity', '>', 0)
+                              ->orderBy('expiry_date', 'asc'); // FEFO - First Expiry, First Out
+                    }
+                ])
+                ->get();
+                
+            // Calculate total available quantity across all inventories and batches
+            $totalAvailable = $inventoryItems->sum(function($item) {
+                return $item->batches->sum('quantity');
+            });
+            
+            return response()->json([
+                'error' => false,
+                'message' => 'Inventory fetched successfully.',
+                'data' => [
+                    'resource' => $resource,
+                    'inventoryItems' => $inventoryItems,
+                    'totalAvailable' => $totalAvailable
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => true,
+                'message' => 'An error occurred while fetching inventory.',
+                'details' => $e->getMessage()
+            ], 500);
         }
     }
 }

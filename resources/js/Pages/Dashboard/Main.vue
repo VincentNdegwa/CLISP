@@ -65,7 +65,7 @@ export default {
         </div>
 
         <!-- Dashboard Content -->
-        <div v-if="dashboardData && !loading" class="p-6">
+        <div v-if="dashboardData && !loading" class="">
             <RevenueSummary :revenueSummary="dashboardData.revenueSummary" />
             <BusinessSummary :businessSummary="dashboardData.businessSummary" />
             <div class="flex flex-col lg:flex-row gap-4 m-4">

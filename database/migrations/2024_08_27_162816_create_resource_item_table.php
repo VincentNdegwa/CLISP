@@ -14,7 +14,7 @@ return new class extends Migration
     {
         Schema::create('resource_item', function (Blueprint $table) {
             $table->id();
-            $table->string('business_id');
+            $table->unsignedBigInteger('business_id');
             $table->string('item_name');
             $table->text('description')->nullable();
             $table->string('category_id')->nullable();

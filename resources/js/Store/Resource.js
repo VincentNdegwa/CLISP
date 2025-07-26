@@ -11,6 +11,7 @@ export const useResourceStore = defineStore("resource_store", {
         error: null,
         success: null,
         singleItem: {},
+        inventoryItems: [], // New state for inventory items
     }),
     actions: {
         async fetchResources(queries) {
@@ -179,6 +180,45 @@ export const useResourceStore = defineStore("resource_store", {
             } finally {
                 this.loading = false;
             }
+        },
+
+        // Add new method to fetch inventory for a resource
+        async fetchInventoryByResource(resourceId) {
+            const store = useUserStore();
+            const businessId = store.business;
+
+            if (!businessId) {
+                this.error = "Business ID not found.";
+                return null;
+            }
+
+            this.loading = true;
+            this.error = null;
+
+            try {
+                const response = await axios.get(
+                    `/api/item/${businessId}/inventory/${resourceId}`
+                );
+                if (response.data.error) {
+                    this.error = response.data.message;
+                    return null;
+                } else {
+                    this.inventoryItems = response.data.data.inventoryItems;
+                    // Return the full data object which includes resource info and inventoryItems
+                    return response.data.data;
+                }
+            } catch (error) {
+                this.error = error.response
+                    ? error.response.data.message || error.response.data.details
+                    : error.message;
+                return null;
+            } finally {
+                this.loading = false;
+            }
+        },
+        clearErrors() {
+            this.error = null;
+            this.success = null;
         },
     },
 });

@@ -1,8 +1,8 @@
 <script>
 import Modal from "@/Components/Modal.vue";
 import SearchInput from "@/Components/SearchInput.vue";
-import NewResource from "./NewResource.vue";
-import NewCategory from "./NewCategory.vue";
+import NewResource from "./Create.vue";
+import NewCategory from "../Category/Create.vue";
 import { useResourceCategoryStore } from "@/Store/ResourceCategory";
 import { useResourceStore } from "@/Store/Resource";
 import TableSkeleton from "@/Components/TableSkeleton.vue";

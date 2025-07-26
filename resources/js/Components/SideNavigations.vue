@@ -19,23 +19,6 @@ export default {
                     subItems: null,
                 },
                 {
-                    name: "Inventory",
-                    icon: "bi bi-box-seam",
-                    open: localStorage.getItem("Inventory") === "true",
-                    subItems: [
-                        {
-                            name: "Resources",
-                            route: "inventory.resources",
-                            icon: "bi bi-archive",
-                        },
-                        {
-                            name: "Categories",
-                            route: "inventory.categories",
-                            icon: "bi bi-tags",
-                        },
-                    ],
-                },
-                {
                     name: "Business",
                     icon: "bi bi-briefcase",
                     open: localStorage.getItem("Business") === "true",
@@ -53,61 +36,131 @@ export default {
                     ],
                 },
                 {
-                    name: "Customer",
-                    route: "customer.my-customers",
-                    open: localStorage.getItem("Customer") === "true",
-                    icon: "bi bi-person-circle",
-                    subItems: null,
-                },
-                {
-                    name: "B2B Trade",
-                    icon: "bi bi-arrow-left-right",
-                    open: localStorage.getItem("B2B Trade") === "true",
+                    name: "Warehouse",
+                    route: "warehouse.warehouses",
+                    open: localStorage.getItem("Warehouse") === "true",
+                    icon: "bi bi-building",
                     subItems: [
                         {
-                            name: "Purchases",
-                            route: "b2b.purchase",
-                            icon: "bi bi-cart",
+                            name: "Warehouses",
+                            route: "warehouse.warehouses",
+                            icon: "bi bi-building",
                         },
                         {
-                            name: "Borrowings",
-                            route: "b2b.borrowing",
-                            icon: "bi bi-arrow-down-up",
+                            name: "Bin Locations",
+                            route: "warehouse.bin-locations",
+                            icon: "bi bi-box-seam",
                         },
                         {
-                            name: "Leasing",
-                            route: "b2b.leasing",
-                            icon: "bi bi-file-earmark-text",
+                            name: "Zones",
+                            route: "warehouse.zones",
+                            icon: "bi bi-grid-3x3-gap",
+                        },
+                        {
+                            name: "Stock Movements",
+                            route: "warehouse.movements",
+                            icon: "bi bi-arrow-left-right",
+                        },
+                        {
+                            name: "Stock Counts",
+                            route: "warehouse.counts",
+                            icon: "bi bi-clipboard-check",
                         },
                     ],
                 },
                 {
-                    name: "B2C Trade",
-                    icon: "bi bi-people",
-                    open: localStorage.getItem("B2C Trade") === "true",
+                    name: "Inventory",
+                    icon: "bi bi-box-seam",
+                    open: localStorage.getItem("Inventory") === "true",
                     subItems: [
                         {
-                            name: "Direct Sale",
-                            route: "b2c.sale",
-                            icon: "bi bi-currency-dollar",
+                            name: "Resources",
+                            route: "inventory.resources",
+                            icon: "bi bi-archive",
                         },
                         {
-                            name: "Borrowings",
-                            route: "b2c.borrowing",
-                            icon: "bi bi-arrow-repeat",
+                            name: "Inventory Items",
+                            route: "inventory.index",
+                            icon: "bi bi-box",
                         },
                         {
-                            name: "Leasing",
-                            route: "b2c.leasing",
-                            icon: "bi bi-file-earmark-text",
+                            name: "Categories",
+                            route: "inventory.categories",
+                            icon: "bi bi-tags",
                         },
+                        {
+                            name: "Adjustments",
+                            route: "inventory.adjustments",
+                            icon: "bi bi-pencil-square",
+                        },
+                    ],
+                },
+                {
+                    name: "Purchasing",
+                    icon: "bi bi-cart-plus",
+                    open: localStorage.getItem("Purchasing") === "true",
+                    subItems: [
+                        {
+                            name: "Purchase Orders",
+                            route: "purchasing.orders",
+                            icon: "bi bi-cart",
+                        },
+                        {
+                            name: "Suppliers",
+                            route: "purchasing.suppliers",
+                            icon: "bi bi-building",
+                        },
+                        {
+                            name: "Goods Receipt",
+                            route: "purchasing.receipts",
+                            icon: "bi bi-box-arrow-in-down",
+                        }
+                    ],
+                },
+                {
+                    name: "Sales",
+                    icon: "bi bi-cart-check",
+                    open: localStorage.getItem("Sales") === "true",
+                    subItems: [
+                        {
+                            name: "Sales Orders",
+                            route: "sales.orders",
+                            icon: "bi bi-receipt",
+                        },
+                        {
+                            name: "Customers",
+                            route: "sales.customers",
+                            icon: "bi bi-people",
+                        },
+                        {
+                            name: "Shipments",
+                            route: "sales.shipments",
+                            icon: "bi bi-truck",
+                        }
                     ],
                 },
                 {
                     name: "Logistics",
-                    route: "logistics.shipments",
-                    open: localStorage.getItem("Logistics") === "true",
                     icon: "bi bi-truck",
+                    open: localStorage.getItem("Logistics") === "true",
+                    subItems: [
+                        {
+                            name: "Shipments",
+                            route: "logistics.shipments",
+                            icon: "bi bi-truck",
+                        },
+                        {
+                            name: "Carriers",
+                            route: "logistics.carriers",
+                            icon: "bi bi-boxes",
+                        }
+                    ],
+                },
+                {
+                    name: "Customers",
+                    route: "customer.my-customers",
+                    open: localStorage.getItem("Customer") === "true",
+                    icon: "bi bi-person-circle",
                     subItems: null,
                 },
             ],
@@ -250,7 +303,7 @@ export default {
                 v-for="(item, index) in navItems"
                 :key="index"
                 :class="[
-                    'w-full h-fit p-3 mt-1 cursor-pointer transition-none ease-linear duration-1000',
+                    'w-full h-fit p-2 mt-1 cursor-pointer transition-none ease-linear duration-1000',
                     item.open ? '' : '',
                 ]"
             >
@@ -289,22 +342,22 @@ export default {
 
                 <div
                     v-if="item.subItems && item.open"
-                    class="w-full flex flex-col gap-1 items-center"
+                    class="w-full flex mt-1 flex-col items-center"
                 >
                     <Link
                         v-for="(subItem, subIndex) in item.subItems"
                         :href="route(subItem.route)"
                         :key="subIndex"
                         :class="[
-                            'w-full h-fit pl-6 p-2 cursor-pointer',
+                            'w-full h-fit cursor-pointer',
                             isActiveSubNav(subItem)
-                                ? 'bg-rose-50 text-rose-500'
+                                ? 'bg-rose-50 dark:bg-slate-500/10 text-rose-500'
                                 : '',
                         ]"
                     >
-                        <div class="p-0 h-full w-full">
+                        <div class="h-full ml-6 p-2 w-full">
                             <div class="text-sm flex flex-row gap-4">
-                                <i :class="subItem.icon"></i>
+                                <!-- <i :class="subItem.icon"></i> -->
                                 <div>{{ subItem.name }}</div>
                             </div>
                         </div>

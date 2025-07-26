@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             IndustrySeeder::class,
             PaymentMethodsSeeder::class,
             SubscriptionPlansSeeder::class,
+            StockAdjustmentReasonSeeder::class
         ]);
     }
 }

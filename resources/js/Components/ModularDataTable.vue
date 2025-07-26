@@ -309,9 +309,9 @@ export default {
         <Toolbar v-if="showToolbar" class="mb-4">
             <template #start>
                 <div class="flex items-center gap-2">
-                    <h3 v-if="toolbarTitle" class="text-lg font-medium text-slate-800 dark:text-slate-200 mr-4">
+                    <!-- <h3 v-if="toolbarTitle" class="text-lg font-medium text-slate-800 dark:text-slate-200 mr-4">
                         {{ toolbarTitle }}
-                    </h3>
+                    </h3> -->
                     <div class="flex flex-wrap gap-2">
                         <Button v-for="(action, index) in startActions" :key="'start-action-' + index"
                             :label="action.label" :icon="action.icon" :severity="action.severity || 'secondary'"
@@ -403,7 +403,7 @@ export default {
         <div class="flex justify-between flex-column sm:flex-row mb-4">
             <div v-if="showSearch" class="w-full sm:w-64 mb-3 sm:mb-0">
                 <span class="p-input-icon-left w-full">
-                    <InputText v-model="searchQuery" id="search-input" @input="handleSearch" :placeholder="searchPlaceholder"
+                    <InputText v-model="searchQuery" id="search-input" @keyup-enter="handleSearch" :placeholder="searchPlaceholder"
                         class="w-full" />
                 </span>
             </div>
