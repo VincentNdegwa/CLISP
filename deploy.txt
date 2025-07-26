@@ -1,0 +1,11 @@
+/etc/supervisor/conf.d/clisp-worker.conf
+[program:clisp-worker]
+process_name=%(program_name)s_%(process_num)02d
+command=php /var/www/clisp/current/artisan queue:work --sleep=3 --tries=3 --timeout=60
+autostart=true
+autorestart=true
+user=www-data
+numprocs=1
+redirect_stderr=true
+stdout_logfile=/var/www/clisp/current/storage/logs/worker.log
+stopwaitsecs=3600
