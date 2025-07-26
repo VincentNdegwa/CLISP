@@ -102,7 +102,7 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // Inventory and warehouse management
-    Route::resource('inventory', InventoryController::class);
+    Route::resource('inventory', InventoryController::class)->names('api.inventory');
 
     // Shipment routes
     Route::resource('shipments', ShipmentController::class);
