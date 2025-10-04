@@ -1,8 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-* {
-    /* transition: all ease-in-out 300ms; */
+* {lol p
     margin: 0;
     border: 0;
     box-sizing: border-box;
