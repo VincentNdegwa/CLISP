@@ -4,7 +4,6 @@ namespace Deployer;
 
 require 'recipe/laravel.php';
 
-// Configurations
 set('repository', 'https://github.com/VincentNdegwa/CLISP.git');
 set('keep_releases', 2);
 
